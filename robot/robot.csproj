@@ -59,7 +59,6 @@
   <ItemGroup>
     <Compile Include="client\net\IClientNet.cs" />
     <Compile Include="client\net\ManagerNet.cs" />
-    <Compile Include="client\net\OnResponse.cs" />
     <Compile Include="client\net\unity3d\AgentNet.cs" />
     <Compile Include="client\net\unity3d\Encryption.cs" />
     <Compile Include="client\net\unity3d\HelloMtProErrorCode.cs" />
@@ -117,6 +116,9 @@
     <Compile Include="client\UZlib\Zlib\ZlibConstants.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="client\ServerData\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

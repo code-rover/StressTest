@@ -79,10 +79,10 @@ namespace net.unity3d
 
 				_XmanLogic.set_account(pluiChannel, pluiAccount);
 				_XmanLogic.set_macid(psMacId);
-				Debug.Log("logic ip = "+ m_LogicNote._serverIp);
-				Debug.Log("logic port = "+ m_LogicNote._serverProt);
+				Console.WriteLine("logic ip = "+ m_LogicNote._serverIp);
+                Console.WriteLine( "logic port = " + m_LogicNote._serverProt );
 	            _XmanLogic.open(m_LogicNote);
-				Debug.Log("connect realm server ip = " + m_LogicNote._serverIp);
+                Console.WriteLine( "connect realm server ip = " + m_LogicNote._serverIp );
 			}
 			catch(Exception ex)
 			{
@@ -906,12 +906,18 @@ namespace net.unity3d
 			string lsServer = "server";
 			mgr.addCurServerId();
 			int index = mgr.getCurServerId();
-			Debug.Log("getRealmInfobyareaid set acount id = " + accountId);
+			//Debug.Log("getRealmInfobyareaid set acount id = " + accountId);
 			_channelId = channelId;
 			_accountId = accountId;
 			mgr.addFactory(new net.unity3d.UConnNetFactory(lsServer + index.ToString()));
 			_LoginSer = mgr.createNetObject<IConnection>(lsServer + index.ToString());
 	         NoteServer sLogin = mgr.getNoteServer(area);
+
+             //TODO
+             sLogin._serverId = 3;
+             sLogin._serverIp = "192.168.1.2";
+             sLogin._serverProt = 12007;
+             sLogin._timeOut = 30;
 	        _LoginSer.EventConnected += OnLoginSerConnected;
 	        _LoginSer.open(sLogin);
 		}
@@ -985,6 +991,7 @@ namespace net.unity3d
             node = lNetWorker.tick();
             if (null != node)
             {
+                Console.WriteLine( "recv: " + node.msg );
 				set_is_ping_back(true);
 				ARequestOverTime = DateTime.Now; //现在时间
 				//Debug.Log("ping request over time = " + ARequestOverTime);

@@ -12,8 +12,6 @@ namespace robot
     {
         public static AgentNet XmanNetAgent;
 
-
-
         static void Main( string[] args )
         {
             Console.WriteLine("===========================================================");
@@ -25,10 +23,10 @@ namespace robot
 
             AgentNet.getInstance().close();
             ///设置登陆信息
-            AgentNet.getInstance().setLoginInfo( "2002", "123", "012345", ( byte ) 1, "1", "2", "3" );
+            AgentNet.getInstance().setLoginInfo( "2001", "123", "012345", ( byte ) 1, "", "", "");
             AgentNet.getInstance().bingAccountSer();
 
-            initListener();
+            initListener();  //消息监听注册
 
             while( true )
             {
@@ -46,7 +44,7 @@ namespace robot
         {
             AC2C_ACCOUNT_INFO recv = args.getData<AC2C_ACCOUNT_INFO>();
 
-            AgentNet.getInstance().getRelamInfo("2002");
+            AgentNet.getInstance().getRelamInfoByAreaId(recv.sAccountAC2C.getChannelIdStr(), recv.sAccountAC2C.getAccountIdStr(), 1); //getRelamInfo("2002");
 
             if( recv.iResult == 1 )
             {
@@ -78,12 +76,63 @@ namespace robot
                 net.unity3d.AgentNet.getInstance().initLogic( recv.getIp(), ( short ) recv.port, ( int ) recv.timeOut );
                 //ManagerServer.getInstance().connecteRealm();
                 //AgentNet.getInstance().openLogicServer( _channelID, AccountId, _account );
+                AgentNet.getInstance().openLogicServer( "chan1", "2002", "12345" );
             }
             else
             {
                 Console.WriteLine( " recvLoginServer error, iresult = " + recv.iResult );
             }
         }
+
+        ///协议返回 realm返回
+        protected static void recvLogin( ArgsEvent args )
+        {
+            RM2C_LOGIN recv = args.getData<RM2C_LOGIN>();
+            
+            Console.WriteLine( "connect Realm Result: " + recv.iResult );
+
+            if( recv.iResult == ( int ) EM_CLIENT_ERRORCODE.EE_M2C_NEED_CREATE_ROLE )
+            {
+                Console.WriteLine( "需要创建角色" );
+                //ManagerServer.isLoadStatueNew = true;
+                /// 剧情
+                //ManagerSenceAutoCombat.start( 1 );
+
+                //			/// 直接创建角色s
+                //		DataModeServer.sendCreatRole(61, null);
+
+                //			/// 原先选择角色ui
+                //			WindowsMngr.getInstance().openWindow(WindowsID.CREAT);
+            }
+            else if( recv.iResult == ( int ) EM_CLIENT_ERRORCODE.EE_ACCOUNT_NOT_EXIST )
+            {
+                Console.WriteLine("Realm msg: 帐号不存在");
+            }
+            
+        }
+
+        ///用户基本信息 last update in 14.3.28 by yxh
+        protected static void recvMaster( ArgsEvent args )
+        {
+            RM2C_MASTER_BASE_INFO recv = args.getData<RM2C_MASTER_BASE_INFO>();
+            Console.WriteLine( "RECV:RM2C_MASTER_BASE_INFO >> " + recv.SPlayerInfo.sPlayerBaseInfo.uiIdMaster );
+
+            SPlayerInfo playerInfo = recv.SPlayerInfo;
+
+            Console.WriteLine( "玩家基本信息： " );
+            Console.WriteLine( "=========================================" );
+            Console.WriteLine( "player name: " + playerInfo.sPlayerBaseInfo.getMasterName() );
+            Console.WriteLine( "player idServer: " + playerInfo.sPlayerBaseInfo.uiIdMaster );
+            Console.WriteLine( "player vip: " + playerInfo.sPlayerBaseInfo.uiVip );
+            Console.WriteLine( "player exp: " + playerInfo.sPlayerBaseInfo.luiExp );
+            Console.WriteLine( "player power: " + playerInfo.sLeadPowerInfo.usPower );
+            Console.WriteLine( "=========================================" );
+
+            
+            //TODO ...
+
+        }
+
 
         /// 初始化真挺
         public static void initListener()
@@ -95,24 +144,26 @@ namespace robot
             ///login返回
             AgentNet.getInstance().addListenEvent( ( ushort ) E_OPCODE.EP_LS2C_LOGIN_RESPONSE, recvLoginServer );
 
-            /**
+            
             ///断线之后的重连
-            AgentNet.getInstance().addListenEvent( ( ushort ) E_OPCODE.EP_RM2C_ON_WEB_CLOSE, recvWebClose );
+            //AgentNet.getInstance().addListenEvent( ( ushort ) E_OPCODE.EP_RM2C_ON_WEB_CLOSE, recvWebClose );
 
-            AgentNet.getInstance().addListenEvent( ( ushort ) E_OPCODE.EP_RM2C_RELOGIN, recvWebOpen );
+            //AgentNet.getInstance().addListenEvent( ( ushort ) E_OPCODE.EP_RM2C_RELOGIN, recvWebOpen );
 
             ///返回登陆 realmF
             AgentNet.getInstance().addListenEvent( ( ushort ) E_OPCODE.EP_RM2C_LOGIN, recvLogin );
 
+            
             ///被踢掉通知客户端
-            AgentNet.getInstance().addListenEvent( ( ushort ) E_OPCODE.EP_RM2C_TICK_BY_OTHER, recvTick );
+            //AgentNet.getInstance().addListenEvent( ( ushort ) E_OPCODE.EP_RM2C_TICK_BY_OTHER, recvTick );
 
             //禁言
-            AgentNet.getInstance().addListenEvent( ( ushort ) E_OPCODE.EP_RM2C_STOP_INFO, recvStopInfo );
+            //AgentNet.getInstance().addListenEvent( ( ushort ) E_OPCODE.EP_RM2C_STOP_INFO, recvStopInfo );
 
             ///用户基本信息
             AgentNet.getInstance().addListenEvent( ( ushort ) E_OPCODE.EP_RM2C_MASTER_BASE_INFO, recvMaster );
 
+            /**
             ///发送背包宠物信息
             AgentNet.getInstance().addListenEvent( ( ushort ) E_OPCODE.EP_RM2C_PET_INFO_BAG, recvHeroBag );
 
