@@ -35,6 +35,8 @@ namespace net.unity3d
 		
         private TcpClient _tcp_client;
 
+        public AgentNet agentNet;
+
         private void _OnPreClose(ArgsEvent args)
         {
             HandleNetEvent handle = EventPreClose;
@@ -375,8 +377,8 @@ namespace net.unity3d
                     args = new ArgsEvent(true);
 
                     _session = new USession(tcp.GetStream());
-					//_session.set_tcp_client(tcp);
-					//_session.set_conn(this);
+                    _session.agentNet = this.agentNet;
+
                 }
                 else
                 {

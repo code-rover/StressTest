@@ -244,8 +244,8 @@ namespace net.unity3d
 		private bool _is_relogin = false;
 		private System.DateTime RequestTime =new System.DateTime();
 		private System.DateTime RequestOverTime =new System.DateTime();
-		
 
+        public AgentNet agentNet;
 		
 		public bool is_relogin()
 		{
@@ -364,8 +364,8 @@ namespace net.unity3d
 							NodeQueue qn = new NodeQueue();
 							qn.msg = msg;
 							qn.args = args;
-							workerNet lNetWork = workerNet.getInstance();
-							lNetWork.AddQueue(qn);
+
+                            this.agentNet.lNetWorker.AddQueue( qn );
 						}
 	                }
 	                _package = rs.Pkg = new PackageOne(rs.Pkg.StreamNet);

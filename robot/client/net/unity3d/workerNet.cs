@@ -18,6 +18,7 @@ namespace net.unity3d
 
         }
 		
+        /**
 		public static workerNet getInstance()
         {
             if (_self == null)
@@ -25,7 +26,8 @@ namespace net.unity3d
 
             return _self;
         }
-		
+		**/
+
 		// 单独出啦，管理所有包。在逻辑层取包，调用回调。
         private Queue<NodeQueue> _recv_queue = new Queue<NodeQueue>();
 		private static workerNet _self;

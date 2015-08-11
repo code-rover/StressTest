@@ -18,20 +18,11 @@ namespace net.unity3d
 		public static string URL_CONFIG = "";
 		public static string URL_CONFIG_ACCOUNT = "";
 		public static readonly string accountServerId = "account_server";
-		
-		
+
+        public workerNet lNetWorker = new workerNet();
+
 		public AgentNet()
         {
-//			LoadMngr loadMngr  = LoadMngr.getInstance();
-//            ManagerNet mgr = ManagerNet.getInstance();
-//			string configXml = "";
-
-//			configXml = loadMngr.GetText(URL_CONFIG);
-			
-//            mgr.init(configXml);
-			
-//			configXml = loadMngr.GetText(URL_CONFIG_ACCOUNT);
-//			mgr.initAccountNote(configXml);
 			ARequestOverTime = DateTime.Now; //现在时间
 			ARequestTime = DateTime.Now; //现在时间
 			    
@@ -43,31 +34,16 @@ namespace net.unity3d
 			mgr.init(ListNote);
 		}
 		
-//		public void initClientNote(string xml_str)
-//		{
-//			ManagerNet mgr = ManagerNet.getInstance();
-//			string configXml = "";
-//			mgr.init(xml_str);
-//		}
 		public void initAccountNote(List<NoteServer> ListNote)
 		{
 			ManagerNet mgr = ManagerNet.getInstance();
 			mgr.initAccountNote(ListNote);
 		}
-//		public void initAccountNote(string xml_str)
-//		{
-//			LoadMngr loadMngr  = LoadMngr.getInstance();
-//			ManagerNet mgr = ManagerNet.getInstance();
-//			string configXml = "";
-//			configXml = loadMngr.GetText(URL_CONFIG_ACCOUNT);
-//			mgr.initAccountNote(configXml);
-//		}
 
 		public void openLogicServer(string pluiChannel, string pluiAccount, string psMacId )
         {
             ManagerNet mgr = ManagerNet.getInstance();
 			
-
 			try
 			{
 				mgr.addCurServerId();
@@ -75,6 +51,8 @@ namespace net.unity3d
 				//mgr.addFactory(new net.unity3d.UConnNetFactory("server" + index.ToString()));
 
                 _XmanLogic = new UConnection();
+                _XmanLogic.agentNet = this;
+
 	            _XmanLogic.EventConnected += OnXmanLogicConnected;
 
 				//_XmanLogic.set_account(_channelId, _accountId);
@@ -86,7 +64,7 @@ namespace net.unity3d
 			catch(Exception ex)
 			{
 				Debug.LogError("create realm conn exp = " + ex);	
-				workerNet lNetWorker = workerNet.getInstance();
+				
 				NodeQueue node = new NodeQueue();
 				RM2C_ON_REALM_SERVER_CLOSE pro = new RM2C_ON_REALM_SERVER_CLOSE();
 				pro.uiReason = 1;
@@ -94,8 +72,8 @@ namespace net.unity3d
 	            NodeQueue qn = new NodeQueue();
 	            qn.msg = (ushort)RM2C_ON_REALM_SERVER_CLOSE.OPCODE;
 	            qn.args = largs;
-	            lNetWorker.AddQueue(qn);
-				node = lNetWorker.tick();
+	            this.lNetWorker.AddQueue(qn);
+				node = this.lNetWorker.tick();
 	            if (null != node)
 	            {
 	                callEvent(node.msg, node.args);
@@ -144,7 +122,7 @@ namespace net.unity3d
 			catch(Exception ex)
 			{
 				Debug.LogError("create guest conn exp = " + ex);	
-				workerNet lNetWorker = workerNet.getInstance();
+				
 				NodeQueue node = new NodeQueue();
 				RM2C_ON_REALM_SERVER_CLOSE pro = new RM2C_ON_REALM_SERVER_CLOSE();
 				pro.uiReason = 1;
@@ -197,8 +175,7 @@ namespace net.unity3d
             NodeQueue qn = new NodeQueue();
             qn.msg = (ushort)RM2C_ON_REALM_SERVER_CLOSE.OPCODE;
             qn.args = largs;
-            workerNet lNetWorker = workerNet.getInstance();
-            lNetWorker.AddQueue(qn);
+            this.lNetWorker.AddQueue(qn);
 		}
 		
 		public void OnXmanLogicConnected(object sender, net.ArgsEvent args)
@@ -218,8 +195,7 @@ namespace net.unity3d
             NodeQueue qn = new NodeQueue();
             qn.msg = (ushort)RM2C_ON_REALM_SERVER_CONN.OPCODE;
             qn.args = largs;
-            workerNet lNetWorker = workerNet.getInstance();
-            lNetWorker.AddQueue(qn);
+            this.lNetWorker.AddQueue(qn);
 
 			sendRMLogin();
         }
@@ -256,8 +232,7 @@ namespace net.unity3d
             NodeQueue qn = new NodeQueue();
             qn.msg = (ushort)RM2G_ON_GUEST_SERVER_CONN.OPCODE;
             qn.args = largs;
-            workerNet lNetWorker = workerNet.getInstance();
-            lNetWorker.AddQueue(qn);
+            this.lNetWorker.AddQueue(qn);
 		}
 
         public void OnLoginSerConnected(object sender, net.ArgsEvent args)
@@ -278,8 +253,7 @@ namespace net.unity3d
             NodeQueue qn = new NodeQueue();
             qn.msg = (ushort)LS2C_ON_LOGIN_SERVER_CONN.OPCODE;
             qn.args = largs;
-            workerNet lNetWorker = workerNet.getInstance();
-            lNetWorker.AddQueue(qn);
+            this.lNetWorker.AddQueue(qn);
 			
 			C2LS_LOGIN_REQUEST loginPro = new C2LS_LOGIN_REQUEST();
 			loginPro.setChannelIdStr(_channelId);
@@ -385,8 +359,7 @@ namespace net.unity3d
             NodeQueue qn = new NodeQueue();
             qn.msg = (ushort)RM2C_RELOGIN.OPCODE;
             qn.args = largs;
-            workerNet lNetWorker = workerNet.getInstance();
-            lNetWorker.AddQueue(qn);
+            this.lNetWorker.AddQueue(qn);
 		}
 
         public void loginSerRegisterProtocol(USession Session)
@@ -862,18 +835,20 @@ namespace net.unity3d
 		
 		public void bingAccountSer()
 		{
-			ManagerNet mgr = ManagerNet.getInstance();
+			//ManagerNet mgr = ManagerNet.getInstance();
 			//mgr.addFactory(new net.unity3d.UConnNetFactory(accountServerId));
 			//_AccountSer = mgr.createNetObject<UConnection>(accountServerId);
             _AccountSer = new UConnection();
-			NoteServer sAccount = mgr.getAccountNoteServer();
+            _AccountSer.agentNet = this;
+
+            NoteServer sAccount = new NoteServer(); //mgr.getAccountNoteServer();
 
             sAccount._serverIp = "192.168.1.2";
             sAccount._serverProt = 11111;
             sAccount._timeOut = 30;
             sAccount._serverId = 2;
 
-			_AccountSer.EventConnected += OnAccountSerConnected;
+			_AccountSer.EventConnected += this.OnAccountSerConnected;
 			_AccountSer.open(sAccount);
 		}
 
@@ -908,7 +883,9 @@ namespace net.unity3d
 			_accountId = accountId;
 			//mgr.addFactory(new net.unity3d.UConnNetFactory(lsServer + index.ToString()));
 			//_LoginSer = mgr.createNetObject<UConnection>(lsServer + index.ToString());
+
              _LoginSer = new UConnection();
+             _LoginSer.agentNet = this;
 
 	         NoteServer sLogin = mgr.getNoteServer(area);
 
@@ -946,7 +923,6 @@ namespace net.unity3d
         /// </summary>
         public void tick()
         {
-			workerNet lNetWorker = workerNet.getInstance();
 			NodeQueue node = new NodeQueue();
 			if(null != _XmanLogic)
 			{
@@ -958,8 +934,8 @@ namespace net.unity3d
 		            NodeQueue qn = new NodeQueue();
 		            qn.msg = (ushort)RM2C_ON_REALM_SERVER_CLOSE.OPCODE;
 		            qn.args = largs;
-		            lNetWorker.AddQueue(qn);
-					node = lNetWorker.tick();
+		            this.lNetWorker.AddQueue(qn);
+					node = this.lNetWorker.tick();
 		            if (null != node)
 		            {
 		                //callEvent(node.msg, node.args);
@@ -1180,6 +1156,93 @@ namespace net.unity3d
         private Dictionary<ushort, EListenerNet> _event_listeners = new Dictionary<ushort, EListenerNet>();
 
         private static AgentNet _self;
+
+
+
+
+        /// account返回
+        public void recvAccountServer( ArgsEvent args )
+        {
+            AC2C_ACCOUNT_INFO recv = args.getData<AC2C_ACCOUNT_INFO>();
+
+            this.getRelamInfoByAreaId( recv.sAccountAC2C.getChannelIdStr(), recv.sAccountAC2C.getAccountIdStr(), 1 ); //getRelamInfo("2002");
+
+            if( recv.iResult == 1 )
+            {
+                //ManagerServer.getInstance().lastLoginServerIndex = ( int ) recv.sAccountAC2C.uiServer[ 0 ];
+            }
+
+            //ManagerServer.getInstance().AccountId = recv.sAccountAC2C.getAccountIdStr();
+
+            Console.WriteLine( "RECV SERVER ACCOUNT = " + recv.sAccountAC2C.getAccountIdStr() );
+
+            //ManagerNet mgr = ManagerNet.getInstance();
+            //mgr.removeFactory( AgentNet.accountServerId );
+
+            //ManagerServer.getInstance().recvAccount( recv.iResult );
+
+        }
+
+        /// login返回
+        public void recvLoginServer( ArgsEvent args )
+        {
+            LS2C_LOGIN_RESPONSE recv = args.getData<LS2C_LOGIN_RESPONSE>();
+
+            Console.WriteLine( "LS2C_LOGIN_RESPONSE >> " + recv.iResult.ToString() );
+            if( recv.iResult == 1 )
+            {
+                Console.WriteLine( "Login Authentication Success" );
+                Console.WriteLine( "realm server info: " + recv.getIp() + ":" + recv.port );
+
+                this.initLogic( recv.getIp(), ( short ) recv.port, ( int ) recv.timeOut );
+                //ManagerServer.getInstance().connecteRealm();
+                //agent.openLogicServer( _channelID, AccountId, _account );
+                this.openLogicServer( "", "2002", "12345" );
+            }
+            else
+            {
+                Console.WriteLine( " recvLoginServer error, iresult = " + recv.iResult );
+            }
+        }
+
+        ///协议返回 realm返回
+        public void recvLogin( ArgsEvent args )
+        {
+            RM2C_LOGIN recv = args.getData<RM2C_LOGIN>();
+
+            Console.WriteLine( "connect Realm Result: " + recv.iResult );
+
+            if( recv.iResult == ( int ) EM_CLIENT_ERRORCODE.EE_M2C_NEED_CREATE_ROLE )
+            {
+                Console.WriteLine( "需要创建角色" );
+            }
+            else if( recv.iResult == ( int ) EM_CLIENT_ERRORCODE.EE_ACCOUNT_NOT_EXIST )
+            {
+                Console.WriteLine( "Realm msg: 帐号不存在" );
+            }
+        }
+
+
+        ///用户基本信息 last update in 14.3.28 by yxh
+        public void recvMaster( ArgsEvent args )
+        {
+            RM2C_MASTER_BASE_INFO recv = args.getData<RM2C_MASTER_BASE_INFO>();
+            Console.WriteLine( "RECV:RM2C_MASTER_BASE_INFO >> " + recv.SPlayerInfo.sPlayerBaseInfo.uiIdMaster );
+
+            SPlayerInfo playerInfo = recv.SPlayerInfo;
+
+            Console.WriteLine( "玩家基本信息： " );
+            Console.WriteLine( "=========================================" );
+            Console.WriteLine( "player name: " + playerInfo.sPlayerBaseInfo.getMasterName() );
+            Console.WriteLine( "player idServer: " + playerInfo.sPlayerBaseInfo.uiIdMaster );
+            Console.WriteLine( "player vip: " + playerInfo.sPlayerBaseInfo.uiVip );
+            Console.WriteLine( "player exp: " + playerInfo.sPlayerBaseInfo.luiExp );
+            Console.WriteLine( "player power: " + playerInfo.sLeadPowerInfo.usPower );
+            Console.WriteLine( "=========================================" );
+
+            //TODO ...
+
+        }
 
     }
 	
