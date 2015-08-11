@@ -173,7 +173,7 @@ namespace net.unity3d
         public ArgsNetEvent args;
     }
 
-    class USession : ISession
+    public class USession
     {
 
         public static readonly byte REQUEST = 0;
@@ -240,7 +240,7 @@ namespace net.unity3d
         private Dictionary<ushort, CreateProtocal> _protocal_facs;
 		private bool _is_close = false;
 		private TcpClient _u_tcp_client;
-		private IConnection _my_conn;
+		private UConnection _my_conn;
 		private bool _is_relogin = false;
 		private System.DateTime RequestTime =new System.DateTime();
 		private System.DateTime RequestOverTime =new System.DateTime();
@@ -262,7 +262,7 @@ namespace net.unity3d
 			_u_tcp_client = Client;
 		}
 		
-		public void set_conn(IConnection Conn)
+		public void set_conn(UConnection Conn)
 		{
 			_my_conn = Conn;
 		}

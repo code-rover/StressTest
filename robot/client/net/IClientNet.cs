@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using System.Net.Sockets;
 using System.Net;
+using net.unity3d;
 
 namespace net
 {
@@ -73,111 +74,6 @@ namespace net
     public delegate void HandleNetEvent(object sender,ArgsEvent args);
 	
 	public delegate void EHandleNetEvent(ArgsEvent args);
-
-    /// <summary>
-    /// 网络连接接口.
-    /// </summary>
-    public interface IConnection
-    {
-		
-		bool send(IProtocal pro, bool isNotify);
-		bool isConnected();
-		
-		bool is_error();
-		bool is_relogin();
-		void set_is_relogin(bool pbIsReLogin);
-		
-		void set_account(string psChannel, string psAccount);
-		void set_macid(string psMacId);
-
-        void send(IProtocal pro);
-
-        void addMethodToFactory(ushort msg, CreateProtocal fac_mtd);
-        void addListenEvent(ushort msg, HandleNetEvent event_handle);
-
-        /// <summary>
-        /// 打开一个网络连接.
-        /// </summary>
-        /// <param name="remote_ip">远程ip地址.</param>
-        /// <param name="remote_port">远程端口.</param>
-        /// <param name="timeout">超时(秒).</param>
-        void open(string remote_ip, short remote_port, int timeout);
-        void open(NoteServer sNote);
-		void reopen(string id_channel, string id_account, string id_mac); 
-		
-		/// <summary>
-		/// 断网重连后发生的事件.
-		/// </summary>
-		event HandleNetEvent EventReConnected;
-		
-		 /// <summary>
-        /// 网络连接后，发生的事件.
-        /// </summary>
-        event HandleNetEvent EventConnected;
-
-        /// <summary>
-        /// 网络关闭后，发生的事件.
-        /// </summary>
-        event HandleNetEvent EventClosed;
-
-        /// <summary>
-        /// 网络关闭后，发生的事件.
-        /// </summary>
-        event HandleNetEvent EventTick;
-
-        /// <summary>
-        /// 网络连接前，发生的事件
-        /// </summary>
-        event HandleNetEvent EventPreConnect;
-
-        /// <summary>
-        /// 网络关闭前，发生的事件
-        /// </summary>
-        event HandleNetEvent EventPreClose;
-		
-		/// <summary>
-        /// 获取远程端口.
-        /// </summary>
-        short RemotePort
-        {
-            get;
-        }
-
-        /// <summary>
-        /// 获取网络通信适配器.
-        /// </summary>
-        ISession Session
-        {
-            get;
-        }
-		
-        /// <summary>
-        /// 当前连接是否打开.
-        /// </summary>
-        bool IsOpen
-        {
-            get;
-        }
-
-        /// <summary>
-        /// 获取远程IP.
-        /// </summary>
-        string RemoteIP
-        {
-            get;
-        }
-
-
-		void tick();
-
-        /// <summary>
-        /// 关闭当前连接.
-        /// </summary>
-        void close();
-		
-		void begin_close();
-		
-    }
 
     public class HeaderBase
     {
@@ -366,47 +262,5 @@ namespace net
  
     };
 
-    /// <summary>
-    /// 网络请求及监听处理.
-    /// </summary>
-    public interface ISession
-    {
-		
-		bool is_error();
-		
-		bool is_relogin();
-		
-		void set_is_relogin(bool pbIsReLogin);
-		
-		void set_conn(IConnection Conn);
-		
-		void set_tcp_client(TcpClient Client);
-		
-		void set_net_stream(NetworkStream net_stream);
-		
-		/// <summary>
-        /// 网络监听器的索引器.
-        /// </summary>
-        /// <param name="msg">消息类型</param>
-        /// <returns>网络监听器</returns>
-        ListenerNet this[ushort msg]
-        {
-            get;
-        }
-		
-		/// <summary>
-        /// 添加协议创建的工厂方法.
-        /// </summary>
-        /// <param name="msg">消息类型.</param>
-        /// <param name="fac_mtd">工厂方法.</param>
-        void addFactoryMethod(ushort msg, CreateProtocal fac_mtd);
-		
-        /// <summary>
-        /// 向服务器发送请求.
-        /// </summary>
-        /// <param name="pro">协议</param>
-        /// <param name="isNotify">是否为通知请求</param>
-        /// <returns>请求是否成功</returns>
-        bool request(IProtocal pro, bool isNotify);
-    };
+
 }

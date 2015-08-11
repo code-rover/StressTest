@@ -72,7 +72,7 @@ namespace net.unity3d
 			{
 				mgr.addCurServerId();
 				int index = mgr.getCurServerId();
-				mgr.addFactory(new net.unity3d.UConnNetFactory("server" + index.ToString()));
+				//mgr.addFactory(new net.unity3d.UConnNetFactory("server" + index.ToString()));
 
                 _XmanLogic = new UConnection();
 	            _XmanLogic.EventConnected += OnXmanLogicConnected;
@@ -119,7 +119,7 @@ namespace net.unity3d
 			mgr.addCurServerId();
 			int index = mgr.getCurServerId();
 			mgr.addFactory(new net.unity3d.UConnNetFactory(lsServer + index.ToString()));
-            _XmanLogic = mgr.createNetObject<IConnection>(lsServer + index.ToString());
+            _XmanLogic = mgr.createNetObject<UConnection>(lsServer + index.ToString());
 			Debug.Log("logic ip = "+ m_LogicNote._serverIp);
 			Debug.Log("logic port = "+ m_LogicNote._serverProt);
             _XmanLogic.open(m_LogicNote);
@@ -136,7 +136,7 @@ namespace net.unity3d
 				mgr.addCurServerId();
 				int index = mgr.getCurServerId();
 				mgr.addFactory(new net.unity3d.UConnNetFactory("guest" + index.ToString()));
-				_GuestSer = mgr.createNetObject<IConnection>("guest" + index.ToString());
+				_GuestSer = mgr.createNetObject<UConnection>("guest" + index.ToString());
 				
 	            _GuestSer.EventConnected += OnGuestSerConnected;
 	            _GuestSer.open(m_GuestNote);
@@ -173,7 +173,7 @@ namespace net.unity3d
 			mgr.addFactory(new net.unity3d.UConnNetFactory(lsServer + index.ToString()));
 
 			
-            _GuestSer = mgr.createNetObject<IConnection>(lsServer + index.ToString());
+            _GuestSer = mgr.createNetObject<UConnection>(lsServer + index.ToString());
 			_GuestSer.EventConnected += OnGuestSerConnected;
             _GuestSer.open(m_GuestNote);
 			
@@ -208,7 +208,7 @@ namespace net.unity3d
 			{
 				return;
 			}
-            IConnection conn = (IConnection)sender;
+            UConnection conn = (UConnection)sender;
             System.Console.WriteLine("connected : {0}:{1}", conn.RemoteIP, conn.RemotePort);
             logicRegisterProtocol(conn.Session);
 
@@ -246,7 +246,7 @@ namespace net.unity3d
 			{
 				return;
 			}
-            IConnection conn = (IConnection)sender;
+            UConnection conn = (UConnection)sender;
             System.Console.WriteLine("guest connected : {0}:{1}", conn.RemoteIP, conn.RemotePort);
             guestRegisterProtocol(conn.Session);
 			
@@ -268,7 +268,7 @@ namespace net.unity3d
 				return;
 			}
 			
-            IConnection conn = (IConnection)sender;
+            UConnection conn = (UConnection)sender;
             System.Console.WriteLine("connected : {0}:{1}", conn.RemoteIP, conn.RemotePort);
             loginSerRegisterProtocol(conn.Session);
 
@@ -295,7 +295,7 @@ namespace net.unity3d
 				return;
 			}
 			
-            IConnection conn = (IConnection)sender;
+            UConnection conn = (UConnection)sender;
             System.Console.WriteLine("connected : {0}:{1}", conn.RemoteIP, conn.RemotePort);
             accountSerRegisterProtocol(conn.Session);
 
@@ -389,7 +389,7 @@ namespace net.unity3d
             lNetWorker.AddQueue(qn);
 		}
 
-        public void loginSerRegisterProtocol(ISession Session)
+        public void loginSerRegisterProtocol(USession Session)
         {
             if (null == Session)
             {
@@ -400,7 +400,7 @@ namespace net.unity3d
 			Session.addFactoryMethod((ushort)LS2C_SERVER_STATE.OPCODE, LS2C_SERVER_STATE.Create);
         }
 		
-		public void accountSerRegisterProtocol(ISession Session)
+		public void accountSerRegisterProtocol(USession Session)
         {
             if (null == Session)
             {
@@ -413,7 +413,7 @@ namespace net.unity3d
 			
         }
 
-        public void logicRegisterProtocol(ISession Session)
+        public void logicRegisterProtocol(USession Session)
         {
             if (null == Session)
             {
@@ -839,7 +839,7 @@ namespace net.unity3d
 		}
 		
 
-		public void guestRegisterProtocol(ISession Session)
+		public void guestRegisterProtocol(USession Session)
 		{
             if (null == Session)
             {
@@ -864,7 +864,7 @@ namespace net.unity3d
 		{
 			ManagerNet mgr = ManagerNet.getInstance();
 			//mgr.addFactory(new net.unity3d.UConnNetFactory(accountServerId));
-			//_AccountSer = mgr.createNetObject<IConnection>(accountServerId);
+			//_AccountSer = mgr.createNetObject<UConnection>(accountServerId);
             _AccountSer = new UConnection();
 			NoteServer sAccount = mgr.getAccountNoteServer();
 
@@ -884,7 +884,7 @@ namespace net.unity3d
 			mgr.addCurServerId();
 			int index = mgr.getCurServerId();
 			mgr.addFactory(new net.unity3d.UConnNetFactory(lsServer + index.ToString()));
-            _LoginSer = mgr.createNetObject<IConnection>(lsServer + index.ToString());
+            _LoginSer = mgr.createNetObject<UConnection>(lsServer + index.ToString());
 	        NoteServer sLogin = mgr.getNoteServer(0);
             //TODO
             sLogin._serverId = 3;
@@ -907,7 +907,7 @@ namespace net.unity3d
 			_channelId = channelId;
 			_accountId = accountId;
 			//mgr.addFactory(new net.unity3d.UConnNetFactory(lsServer + index.ToString()));
-			//_LoginSer = mgr.createNetObject<IConnection>(lsServer + index.ToString());
+			//_LoginSer = mgr.createNetObject<UConnection>(lsServer + index.ToString());
              _LoginSer = new UConnection();
 
 	         NoteServer sLogin = mgr.getNoteServer(area);
@@ -1044,17 +1044,17 @@ namespace net.unity3d
 			return false;
         }
 
-        public IConnection getLoginSer()
+        public UConnection getLoginSer()
         {
             return _LoginSer;
         }
 
-        public IConnection getXmanLogic()
+        public UConnection getXmanLogic()
         {
             return _XmanLogic;
         }
 		
-		public IConnection getGuestSer()
+		public UConnection getGuestSer()
 		{
 			return _GuestSer;
 		}
@@ -1161,10 +1161,10 @@ namespace net.unity3d
 		private NoteServer m_GuestNote;
 		private NoteServer m_LogicNote;
 
-		private IConnection _AccountSer = null;
-        private IConnection _LoginSer = null;
-        private IConnection _XmanLogic = null;
-		private IConnection _GuestSer = null;
+		private UConnection _AccountSer = null;
+        private UConnection _LoginSer = null;
+        private UConnection _XmanLogic = null;
+		private UConnection _GuestSer = null;
 		
 		
 		private string _account;

@@ -15,7 +15,7 @@ namespace net.unity3d
         public static readonly uint ERR_REPEAT_CONN = CONN_ERR + 1;
     }
 
-    sealed class UConnection : IConnection
+    public class UConnection
     {
         public UConnection()
         {
@@ -23,7 +23,7 @@ namespace net.unity3d
             _tcp_client = new TcpClient();
         }
 		
-		private ISession _session;
+		private USession _session;
         private string _remote_ip;
         private short _remote_port;
 		private NoteServer _note;
@@ -299,7 +299,7 @@ namespace net.unity3d
         }
 
 
-        public ISession Session
+        public USession Session
         {
             get { return _session; }
         }
