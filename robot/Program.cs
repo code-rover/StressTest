@@ -30,7 +30,7 @@ namespace robot
 
             while( true )
             {
-                Thread.Sleep( 1000 );
+                Thread.Sleep( 500 );
                 XmanNetAgent.tick();
             }
 
@@ -76,7 +76,7 @@ namespace robot
                 net.unity3d.AgentNet.getInstance().initLogic( recv.getIp(), ( short ) recv.port, ( int ) recv.timeOut );
                 //ManagerServer.getInstance().connecteRealm();
                 //AgentNet.getInstance().openLogicServer( _channelID, AccountId, _account );
-                AgentNet.getInstance().openLogicServer( "chan1", "2002", "12345" );
+                AgentNet.getInstance().openLogicServer("", "2002", "12345" );
             }
             else
             {

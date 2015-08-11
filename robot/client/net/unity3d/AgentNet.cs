@@ -73,16 +73,15 @@ namespace net.unity3d
 				mgr.addCurServerId();
 				int index = mgr.getCurServerId();
 				mgr.addFactory(new net.unity3d.UConnNetFactory("server" + index.ToString()));
-				_XmanLogic = mgr.createNetObject<IConnection>("server" + index.ToString());
-				
+
+                _XmanLogic = new UConnection();
 	            _XmanLogic.EventConnected += OnXmanLogicConnected;
 
-				_XmanLogic.set_account(pluiChannel, pluiAccount);
-				_XmanLogic.set_macid(psMacId);
+				//_XmanLogic.set_account(_channelId, _accountId);
+				//_XmanLogic.set_macid(psMacId);
 				Console.WriteLine("logic ip = "+ m_LogicNote._serverIp);
                 Console.WriteLine( "logic port = " + m_LogicNote._serverProt );
 	            _XmanLogic.open(m_LogicNote);
-                Console.WriteLine( "connect realm server ip = " + m_LogicNote._serverIp );
 			}
 			catch(Exception ex)
 			{
@@ -536,8 +535,6 @@ namespace net.unity3d
 			Session.addFactoryMethod((ushort)RM2C_FRIEND_POWER.OPCODE, RM2C_FRIEND_POWER.Create);
 			Session.addFactoryMethod((ushort)RM2C_FRIEND_POWER_NEW.OPCODE, RM2C_FRIEND_POWER_NEW.Create);
 			Session.addFactoryMethod((ushort)RM2C_FRIEND_POWER_GET.OPCODE, RM2C_FRIEND_POWER_GET.Create);
-			Session.addFactoryMethod((ushort)RM2C_PK_CHECK_TEAM.OPCODE, RM2C_PK_CHECK_TEAM.Create);
-			
 
 
 			///2014-04-09
@@ -783,7 +780,6 @@ namespace net.unity3d
 			Session.addFactoryMethod((ushort)RM2C_ESCORT_LOG.OPCODE, RM2C_ESCORT_LOG.Create);
 			Session.addFactoryMethod((ushort)RM2C_ESCORT_PK_GROUP.OPCODE, RM2C_ESCORT_PK_GROUP.Create);
 			Session.addFactoryMethod((ushort)RM2C_ESCORT_GIVE_UP.OPCODE, RM2C_ESCORT_GIVE_UP.Create);
-			Session.addFactoryMethod((ushort)RM2C_ESCORT_PK_GROUP.OPCODE, RM2C_ESCORT_PK_GROUP.Create);
 			Session.addFactoryMethod((ushort)RM2C_ESCORT_CREAT_LOG.OPCODE, RM2C_ESCORT_CREAT_LOG.Create);
 			Session.addFactoryMethod((ushort)RM2C_ESCORT_SUCCEED.OPCODE, RM2C_ESCORT_SUCCEED.Create);
 
@@ -867,8 +863,9 @@ namespace net.unity3d
 		public void bingAccountSer()
 		{
 			ManagerNet mgr = ManagerNet.getInstance();
-			mgr.addFactory(new net.unity3d.UConnNetFactory(accountServerId));
-			_AccountSer = mgr.createNetObject<IConnection>(accountServerId);
+			//mgr.addFactory(new net.unity3d.UConnNetFactory(accountServerId));
+			//_AccountSer = mgr.createNetObject<IConnection>(accountServerId);
+            _AccountSer = new UConnection();
 			NoteServer sAccount = mgr.getAccountNoteServer();
 
             sAccount._serverIp = "192.168.1.2";
@@ -909,8 +906,10 @@ namespace net.unity3d
 			//Debug.Log("getRealmInfobyareaid set acount id = " + accountId);
 			_channelId = channelId;
 			_accountId = accountId;
-			mgr.addFactory(new net.unity3d.UConnNetFactory(lsServer + index.ToString()));
-			_LoginSer = mgr.createNetObject<IConnection>(lsServer + index.ToString());
+			//mgr.addFactory(new net.unity3d.UConnNetFactory(lsServer + index.ToString()));
+			//_LoginSer = mgr.createNetObject<IConnection>(lsServer + index.ToString());
+             _LoginSer = new UConnection();
+
 	         NoteServer sLogin = mgr.getNoteServer(area);
 
              //TODO
@@ -992,8 +991,8 @@ namespace net.unity3d
             if (null != node)
             {
                 Console.WriteLine( "recv: " + node.msg );
-				set_is_ping_back(true);
-				ARequestOverTime = DateTime.Now; //现在时间
+				//set_is_ping_back(true);
+				//ARequestOverTime = DateTime.Now; //现在时间
 				//Debug.Log("ping request over time = " + ARequestOverTime);
                 callEvent(node.msg, node.args);
             }

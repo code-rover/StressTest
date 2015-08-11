@@ -202,9 +202,7 @@ namespace net.unity3d
 			try
 			{
 				_net_stream = net_stream;
-	            //_net_listeners = new Dictionary<ushort, NetListener>();
 	            _package = new PackageOne(net_stream);
-	            //_serialize = new USerialize();
 	            _protocal_facs = new Dictionary<ushort, CreateProtocal>();
 	            ReadState read = new ReadState(_package);
 	            _net_stream.BeginRead(read.Buffer, 0, read.Buffer.Length, new AsyncCallback(OnRead), read);
@@ -283,8 +281,7 @@ namespace net.unity3d
         {
             if (_protocal_facs.ContainsKey(msg))
             {
-				return;
-                //throw new NetException("the protocal factory method existed.", NET_MGR_ERR.NM_ERR_PFAC_EXISTED);
+                throw new NetException("the protocal factory method existed.", NET_MGR_ERR.NM_ERR_PFAC_EXISTED);
             }
             _protocal_facs.Add(msg, fac_mtd);
 
@@ -305,29 +302,13 @@ namespace net.unity3d
 			}
 			try
 			{
-//				if(_is_close)
-//				{
-//					_net_stream.Close();
-//					
-//					return;
-//					UIScreenLog.LogError("now close net_stream");
-//				}
 				if(!ar.IsCompleted)
 				{
 					Debug.LogError("asyn conn is not completed!!");
 				}
 				
-				//rs.Pkg.NetStream = _net_stream;
 				ReadState rs = (ReadState)ar.AsyncState;
-	            //if(rs.Pkg.StreamNet.DataAvailable)
-				//{
-					//return;
-	                //_package = rs.Pkg = new PackageV1(rs.Pkg.NetStream);
-		            //ReadState read2 = new ReadState(_package);
-		            //_net_stream.BeginRead(read2.Buffer, 0, read2.Buffer.Length, new AsyncCallback(OnRead), read2);
-									
-				//}
-				//_is_close = false;
+
 				if(!rs.Pkg.StreamNet.CanRead)
 				{
 					return;
@@ -367,8 +348,7 @@ namespace net.unity3d
 	                BinaryReader reader = new BinaryReader(rs.Pkg.BufferStream);
 	                reader.BaseStream.Seek(0, SeekOrigin.Begin);
 	                ushort msg = rs.Pkg.getHeader().Opcode;
-					//NetAgent lNetAgent = NetAgent.getInstance();
-	                //if (_protocal_facs.ContainsKey(msg) && lNetAgent.isListenPro(msg))
+
 					if (_protocal_facs.ContainsKey(msg))
 	                {
 	                    IProtocal pro = _protocal_facs[msg](msg, rs.Pkg.getHeader());
@@ -393,15 +373,9 @@ namespace net.unity3d
 	            }
 	
 	            ReadState read = new ReadState(_package);
-//				while(_net_stream.DataAvailable)
-//				{
 
 				_net_stream.BeginRead(read.Buffer, 0, read.Buffer.Length, new AsyncCallback(OnRead), read);
-
 					
-//				}
-	            
-				
 			}
 			catch(Exception ex)
 			{
@@ -461,33 +435,12 @@ namespace net.unity3d
         /// <returns>请求是否成功</returns>
         public bool request(IProtocal pro, bool isNotify)
         {
-			
-			
-//			TimeSpan ts1 = new TimeSpan(RequestTime.Ticks);  
-//	        TimeSpan ts2 = new TimeSpan(RequestOverTime.Ticks);  
-//	        TimeSpan ts = ts1.Subtract(ts2).Duration();  
-//	        
-//			int liDTime = ts.Seconds + ts.Minutes * 60 + ts.Hours * 60 * 60 + ts.Days * 60 * 60 * 24;
-//			///如果3秒钟还没有收到异步调用回复，认为网络断开
-//			if(liDTime >= 3)
-//			{
-//				_is_relogin = true;
-//				int liIam = 1;
-//			}
-//			RequestTime = DateTime.Now;
-			
-			
             if (!_net_stream.CanWrite)
 			{
                 return false;
 			}
             try
             {
-
-				
-				
-                //MemoryStream ms = new MemoryStream();
-                //_serialize.Serialize(ms, pro);
                 byte[] bytes = pro.getBuffer();
                 if (null == bytes)
                 {
@@ -501,7 +454,6 @@ namespace net.unity3d
                     isCompress = 1;
                     realBytes = ZlibStream.CompressBuffer(bytes);
                 }
-
                 
                 HeaderBase header = null;
                 uint length = (uint)IPAddress.HostToNetworkOrder((realBytes.Length + HeaderBase.getHdrLen()));

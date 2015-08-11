@@ -332,14 +332,14 @@ namespace net.unity3d
         /// <param name="ar">异步通信结果</param>
         void OnConnected(IAsyncResult ar)
         {
-//			Debug.Log("!!!!@@@@@----0");
+
 			if(null == _tcp_client)
 			{
 				Debug.LogError("conned error!!");
 				return;
 			}
 			
-			TcpClient tcp = null;//new TcpClient ();
+			TcpClient tcp = null;
 			try
 			{
 				tcp = (TcpClient)ar.AsyncState;
@@ -368,19 +368,19 @@ namespace net.unity3d
             try
             {
                 ArgsEvent args;
-				//Debug.Log("error info " + tcp.Available)
+
                 if (tcp.Connected)
                 {
                     //连接成功.
                     args = new ArgsEvent(true);
-//					Debug.Log("!!!!@@@@@----1");
+
                     _session = new USession(tcp.GetStream());
 					//_session.set_tcp_client(tcp);
 					//_session.set_conn(this);
                 }
                 else
                 {
-//					Debug.Log("!!!!@@@@@----2");
+
 					Debug.LogWarning("conn failed!!");
                     //连接失败.
                     args = new ArgsEvent(false);
@@ -497,10 +497,10 @@ namespace net.unity3d
 
                 ArgsEvent args = new ArgsEvent(_tcp_client);
                 _OnPreConnect(args);
-				//IPAddress;
+
                 //异步连接.
                 _tcp_client.BeginConnect(remote_ip, remote_port, new AsyncCallback(OnConnected), _tcp_client);
-				//_tcp_client.Connect(_remote_ip, _remote_port);
+
 				
             }
             catch (Exception e)
