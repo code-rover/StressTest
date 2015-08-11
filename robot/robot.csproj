@@ -1,0 +1,129 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="3.5" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>9.0.30729</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{5D7FB7C5-E977-42BD-B811-F67B2246646F}</ProjectGuid>
+    <OutputType>Exe</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>robot</RootNamespace>
+    <AssemblyName>robot</AssemblyName>
+    <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="Ionic.Zip, Version=1.9.1.8, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>client\UZlib\Zip\bin\Debug\Ionic.Zip.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Core">
+      <RequiredTargetFramework>3.5</RequiredTargetFramework>
+    </Reference>
+    <Reference Include="System.Xml.Linq">
+      <RequiredTargetFramework>3.5</RequiredTargetFramework>
+    </Reference>
+    <Reference Include="System.Data.DataSetExtensions">
+      <RequiredTargetFramework>3.5</RequiredTargetFramework>
+    </Reference>
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
+    <Reference Include="UnityEditor, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>D:\Program Files\Unity\Editor\Data\Managed\UnityEditor.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>D:\Program Files\Unity\Editor\Data\Managed\UnityEngine.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="client\net\IClientNet.cs" />
+    <Compile Include="client\net\ManagerNet.cs" />
+    <Compile Include="client\net\OnResponse.cs" />
+    <Compile Include="client\net\unity3d\AgentNet.cs" />
+    <Compile Include="client\net\unity3d\Encryption.cs" />
+    <Compile Include="client\net\unity3d\HelloMtProErrorCode.cs" />
+    <Compile Include="client\net\unity3d\HelloMtProNum.cs" />
+    <Compile Include="client\net\unity3d\HelloMtProtocol.cs" />
+    <Compile Include="client\net\unity3d\HelloMtProtocol2.cs" />
+    <Compile Include="client\net\unity3d\HelloMtProtocol3.cs" />
+    <Compile Include="client\net\unity3d\HelloMtProtocolCharge.cs" />
+    <Compile Include="client\net\unity3d\NewSerialize.cs" />
+    <Compile Include="client\net\unity3d\ProtocolActivEvent.cs" />
+    <Compile Include="client\net\unity3d\ProtocolBash.cs" />
+    <Compile Include="client\net\unity3d\ProtocolBeast.cs" />
+    <Compile Include="client\net\unity3d\ProtocolEmail.cs" />
+    <Compile Include="client\net\unity3d\ProtocolEquip.cs" />
+    <Compile Include="client\net\unity3d\ProtocolEscort.cs" />
+    <Compile Include="client\net\unity3d\ProtocolGameUnion.cs" />
+    <Compile Include="client\net\unity3d\ProtocolMotPk.cs" />
+    <Compile Include="client\net\unity3d\ProtocolPk.cs" />
+    <Compile Include="client\net\unity3d\ProtocolStone.cs" />
+    <Compile Include="client\net\unity3d\ProtocolTower.cs" />
+    <Compile Include="client\net\unity3d\ProtocolWBoss.cs" />
+    <Compile Include="client\net\unity3d\UConnection.cs" />
+    <Compile Include="client\net\unity3d\USerialize.cs" />
+    <Compile Include="client\net\unity3d\USession.cs" />
+    <Compile Include="client\net\unity3d\workerNet.cs" />
+    <Compile Include="client\Utils\ConfigFile.cs" />
+    <Compile Include="client\Utils\GUtil.cs" />
+    <Compile Include="client\Utils\Logger.cs" />
+    <Compile Include="client\Utils\Profile.cs" />
+    <Compile Include="client\Utils\Section.cs" />
+    <Compile Include="client\Utils\UtilCsvReader.cs" />
+    <Compile Include="client\Utils\UtilLog.cs" />
+    <Compile Include="client\Utils\ValuePair.cs" />
+    <Compile Include="client\UZlib\BZip2\BitWriter.cs" />
+    <Compile Include="client\UZlib\BZip2\Rand.cs" />
+    <Compile Include="client\UZlib\CommonSrc\CRC32.cs" />
+    <Compile Include="client\UZlib\SolutionInfo.cs" />
+    <Compile Include="client\UZlib\Zip\EncryptionAlgorithm.cs" />
+    <Compile Include="client\UZlib\Zip\Exceptions.cs" />
+    <Compile Include="client\UZlib\Zip\ExtractExistingFileAction.cs" />
+    <Compile Include="client\UZlib\Zip\OffsetStream.cs" />
+    <Compile Include="client\UZlib\Zip\Shared.cs" />
+    <Compile Include="client\UZlib\Zip\ZipConstants.cs" />
+    <Compile Include="client\UZlib\Zip\ZipEntrySource.cs" />
+    <Compile Include="client\UZlib\Zip\ZipErrorAction.cs" />
+    <Compile Include="client\UZlib\Zlib\Deflate.cs" />
+    <Compile Include="client\UZlib\Zlib\DeflateStream.cs" />
+    <Compile Include="client\UZlib\Zlib\GZipStream.cs" />
+    <Compile Include="client\UZlib\Zlib\Inflate.cs" />
+    <Compile Include="client\UZlib\Zlib\InfTree.cs" />
+    <Compile Include="client\UZlib\Zlib\Tree.cs" />
+    <Compile Include="client\UZlib\Zlib\Zlib.cs" />
+    <Compile Include="client\UZlib\Zlib\ZlibBaseStream.cs" />
+    <Compile Include="client\UZlib\Zlib\ZlibCodec.cs" />
+    <Compile Include="client\UZlib\Zlib\ZlibConstants.cs" />
+    <Compile Include="Program.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>
