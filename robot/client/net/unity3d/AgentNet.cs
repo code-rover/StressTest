@@ -32,10 +32,8 @@ namespace net.unity3d
 			mgr.initAccountNote(ListNote);
 		}
 
-		public void openLogicServer(string pluiChannel, string pluiAccount, string psMacId )
+		public void connectRealmServer()
         {
-            ManagerNet mgr = ManagerNet.getInstance();
-			
 			try
 			{
                 _XmanLogic = new UConnection();
@@ -749,8 +747,8 @@ namespace net.unity3d
 			_AccountSer.EventConnected += this.OnAccountSerConnected;
 			_AccountSer.open(ip, port, timeout);
 		}
-		
-		public void getRelamInfoByAreaId (string channelId, string accountId, int area)
+
+        public void connectLoginServer( string channelId, string accountId)
 		{
 			_channelId = channelId;
 			_accountId = accountId;
@@ -758,14 +756,8 @@ namespace net.unity3d
              _LoginSer = new UConnection();
              _LoginSer.agentNet = this;
 
-             NoteServer sLogin = new NoteServer();
-             sLogin._serverId = 3;
-             sLogin._serverIp = "192.168.1.2";
-             sLogin._serverProt = 12007;
-             sLogin._timeOut = 30;
-
 	        _LoginSer.EventConnected += OnLoginSerConnected;
-	        _LoginSer.open(sLogin);
+            _LoginSer.open( robot.Program.LOGIN_IP, robot.Program.LOGIN_PORT, robot.Program.LOGIN_TIMEOUT);
 		}
 
         public void callEvent(ushort msg, ArgsNetEvent args)
@@ -1008,22 +1000,13 @@ namespace net.unity3d
         {
             AC2C_ACCOUNT_INFO recv = args.getData<AC2C_ACCOUNT_INFO>();
 
-            this.getRelamInfoByAreaId( recv.sAccountAC2C.getChannelIdStr(), recv.sAccountAC2C.getAccountIdStr(), 1 ); //getRelamInfo("2002");
+            this.connectLoginServer( recv.sAccountAC2C.getChannelIdStr(), recv.sAccountAC2C.getAccountIdStr() ); //getRelamInfo("2002");
 
             if( recv.iResult == 1 )
             {
                 //ManagerServer.getInstance().lastLoginServerIndex = ( int ) recv.sAccountAC2C.uiServer[ 0 ];
             }
-
-            //ManagerServer.getInstance().AccountId = recv.sAccountAC2C.getAccountIdStr();
-
             Logger.Info( "RECV SERVER ACCOUNT = " + recv.sAccountAC2C.getAccountIdStr() );
-
-            //ManagerNet mgr = ManagerNet.getInstance();
-            //mgr.removeFactory( AgentNet.accountServerId );
-
-            //ManagerServer.getInstance().recvAccount( recv.iResult );
-
         }
 
         /// login返回
@@ -1038,9 +1021,7 @@ namespace net.unity3d
                 Logger.Info( "realm server info: " + recv.getIp() + ":" + recv.port );
 
                 this.initLogic( recv.getIp(), ( short ) recv.port, ( int ) recv.timeOut );
-                //ManagerServer.getInstance().connecteRealm();
-                //agent.openLogicServer( _channelID, AccountId, _account );
-                this.openLogicServer( "", "2002", "12345" );
+                this.connectRealmServer();
             }
             else
             {

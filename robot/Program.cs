@@ -14,6 +14,10 @@ namespace robot
         public static short  ACCOUNT_PORT = 11111;
         public static int    ACCOUNT_TIMEOUT = 30;
 
+        public static string LOGIN_IP = "192.168.1.2";
+        public static short  LOGIN_PORT = 12007;
+        public static int    LOGIN_TIMEOUT = 30;
+
         public static AgentNet[] agents = new AgentNet[COUNT];
 
         static void Main( string[] args )
