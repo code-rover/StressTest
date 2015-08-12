@@ -47,14 +47,6 @@
     </Reference>
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
-    <Reference Include="UnityEditor, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>D:\Program Files\Unity\Editor\Data\Managed\UnityEditor.dll</HintPath>
-    </Reference>
-    <Reference Include="UnityEngine, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>D:\Program Files\Unity\Editor\Data\Managed\UnityEngine.dll</HintPath>
-    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="client\net\IClientNet.cs" />
@@ -87,7 +79,6 @@
     <Compile Include="client\Utils\ConfigFile.cs" />
     <Compile Include="client\Utils\GUtil.cs" />
     <Compile Include="client\Utils\Logger.cs" />
-    <Compile Include="client\Utils\Profile.cs" />
     <Compile Include="client\Utils\Section.cs" />
     <Compile Include="client\Utils\UtilCsvReader.cs" />
     <Compile Include="client\Utils\UtilLog.cs" />

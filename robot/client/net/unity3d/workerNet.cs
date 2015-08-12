@@ -4,13 +4,6 @@ using System.Collections.Generic;
 namespace net.unity3d
 {
 
-    //public class QueueNode
-    //{
-    //    public ushort msg;
-    //    public NetEventArgs args;
-    //}
-
-
     public class workerNet
     {
         public workerNet()

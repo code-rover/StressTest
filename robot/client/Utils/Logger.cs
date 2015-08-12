@@ -18,5 +18,10 @@ namespace utils
         {
             Console.WriteLine( msg );
         }
+
+        public static void Warning( string msg )
+        {
+            Console.WriteLine( msg );
+        }
     }    
 };

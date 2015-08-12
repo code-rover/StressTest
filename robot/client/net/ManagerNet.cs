@@ -1,12 +1,9 @@
 using System;
 using System.Collections.Generic;
-//using System.Linq;
-//using System.Text;
-//using utils;
 using System.Reflection;
 using System.IO;
+using utils;
 //using System.Xml;
-using UnityEngine;
 
 namespace net
 {
@@ -20,14 +17,7 @@ namespace net
         string IID { get; }
         string Discription { get; }
     }
-    /// <summary>
-    /// unity3d 客户端类ID.
-    /// </summary>
-    public static class UNITY3D
-    {
-        public static readonly string IID_CONN = "server";
-    }
-
+    
     /// <summary>
     /// 错误标识
     /// </summary>
@@ -279,11 +269,11 @@ namespace net
 			try
             {
 				curServerId++;
-                addFactory(new net.unity3d.UConnNetFactory(UNITY3D.IID_CONN + index.ToString()));
+                //addFactory(new net.unity3d.UConnNetFactory(UNITY3D.IID_CONN + index.ToString()));
             }
             catch (Exception e)
             {
-                Debug.LogError(e.Message);
+                Logger.Error(e.Message);
             }
 			
 			foreach (NoteServer server in ListNote)
@@ -294,41 +284,6 @@ namespace net
 			OnInit(new ArgsEvent(null));
 		}
 
-//        /// <summary>
-//        /// 初始化.
-//        /// </summary>
-//        /// <param name="cfg_path">配置文件路径，传空，则不加载配置文件.</param>
-//        public void init(string xml_str)
-//        {
-//            if (xml_str != null && xml_str != "")
-//            {
-//
-//                ReaderXml XRer = new ReaderXml();
-//                XmlNodeList servers = XRer.getXmlNodeList(xml_str);
-//                int index = 0;
-//
-//                try
-//                {
-//					curServerId++;
-//                    addFactory(new net.unity3d.UConnNetFactory(UNITY3D.IID_CONN + index.ToString()));
-//                }
-//                catch (Exception e)
-//                {
-//                    Debug.LogError(e.Message);
-//                }
-//				foreach (XmlNode server in servers)
-//                {
-//					 _serverNotesManager.addNoteServer(server);
-//                    index++;
-//                }
-//
-//            }
-//
-//
-//            OnInit(new ArgsEvent(null));
-//            
-//        }
-		
 		public void initAccountNote(List<NoteServer> ListNote)
 		{
 			foreach (NoteServer server in ListNote)

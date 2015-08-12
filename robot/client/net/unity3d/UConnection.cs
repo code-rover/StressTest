@@ -1,7 +1,7 @@
 using System;
 using System.Net.Sockets;
 using System.Net;
-using UnityEngine;
+using utils;
 using net;
 
 namespace net.unity3d
@@ -155,7 +155,7 @@ namespace net.unity3d
             }
             catch (SocketException ex)
             {
-                Debug.LogError(ex.Message);
+                Logger.Error(ex.Message);
             }
         }
 
@@ -177,12 +177,12 @@ namespace net.unity3d
 //			Debug.Log("!!!!@@@@@----0");
 			if(null == _tcp_client)
 			{
-				Debug.LogError("conned error!!");
+				Logger.Error("conned error!!");
 				return;
 			}
 			if(!_tcp_client.Connected)
 			{
-				Debug.LogError("conned error!!");
+				Logger.Error("conned error!!");
 				reopen(_channel, _account, _macid);
 				return;
 			}
@@ -195,7 +195,7 @@ namespace net.unity3d
 			}
             catch (SocketException ex)
             {
-				Debug.LogError(ex.Message);
+				Logger.Error(ex.Message);
                 //Debug.Log("error ======  " + ex.ToString());
             }
             try
@@ -225,7 +225,7 @@ namespace net.unity3d
                 else
                 {
 //					Debug.Log("!!!!@@@@@----2");
-					Debug.LogWarning("conn failed!!");
+					Logger.Warning("conn failed!!");
                     //连接失败.
                     args = new ArgsEvent(false);
                     _session = null;
@@ -237,7 +237,7 @@ namespace net.unity3d
             }
             catch (SocketException ex)
             {
-                Debug.LogError(ex.Message);
+                Logger.Error(ex.Message);
             }
         }
 		
@@ -337,7 +337,7 @@ namespace net.unity3d
 
 			if(null == _tcp_client)
 			{
-				Debug.LogError("conned error!!");
+				Logger.Error("conned error!!");
 				return;
 			}
 			
@@ -349,7 +349,7 @@ namespace net.unity3d
 			}
 			catch (SocketException ex)
             {
-				Debug.LogError(ex.Message);
+				Logger.Error(ex.Message);
             }
 			
 			if(!_tcp_client.Connected)
@@ -383,7 +383,7 @@ namespace net.unity3d
                 else
                 {
 
-					Debug.LogWarning("conn failed!!");
+					Logger.Warning("conn failed!!");
                     //连接失败.
                     args = new ArgsEvent(false);
                     _session = null;
@@ -395,7 +395,7 @@ namespace net.unity3d
             }
             catch (SocketException ex)
             {
-                Debug.LogError(ex.Message);
+                Logger.Error(ex.Message);
             }
         }
 		
@@ -406,7 +406,7 @@ namespace net.unity3d
         {
             try
             {
-				Debug.Log("call ~BeginDisconnect()");
+				Logger.Info("call ~BeginDisconnect()");
                 ArgsEvent args = new ArgsEvent(_tcp_client);
                 _OnPreClose(args);
                 //_tcp_client.Client.BeginDisconnect(true, new AsyncCallback(OnDisConnection), _tcp_client);
@@ -419,7 +419,7 @@ namespace net.unity3d
             }
             catch (Exception e)
             {
-                Debug.LogError(e.Message);
+                Logger.Error(e.Message);
             }
         }
 		
@@ -458,7 +458,7 @@ namespace net.unity3d
             try
             {
 				//if(UtilLog.isBulidLog)UtilLog.Log("call ~BeginDisconnect()");
-				Debug.Log("call ~BeginDisconnect()");
+				Logger.Info("call ~BeginDisconnect()");
                 ArgsEvent args = new ArgsEvent(_tcp_client);
                 _OnPreClose(args);
                 //_tcp_client.Client.BeginDisconnect(true, new AsyncCallback(OnDisConnection), _tcp_client);
@@ -472,7 +472,7 @@ namespace net.unity3d
             }
             catch (Exception e)
             {
-                Debug.LogError(e.Message);
+                Logger.Error(e.Message);
             }
         }
 
@@ -508,7 +508,7 @@ namespace net.unity3d
             catch (Exception e)
             {
 				//UIScreenLog.LogError(e.Message);
-                Debug.LogError("tcp conn open " + e.Message);
+                Logger.Error("tcp conn open " + e.Message);
             }
 			//Debug.Log("conn succeed");
         }
@@ -554,7 +554,7 @@ namespace net.unity3d
             catch (Exception e)
             {
 				//UIScreenLog.LogError(e.Message);
-                Debug.LogError("tcp conn reopen " + e.Message);
+                Logger.Error("tcp conn reopen " + e.Message);
             }
 		}
 
@@ -567,7 +567,7 @@ namespace net.unity3d
             }
             catch (Exception e)
             {
-                Debug.LogError(e.Message);
+                Logger.Error(e.Message);
             	
             }
         }

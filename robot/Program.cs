@@ -8,26 +8,32 @@ namespace robot
 {
     class Program
     {
-        public static int COUNT = 100;   
+        public static int COUNT = 100;
+
+        public static string ACCOUNT_IP = "192.168.1.2";
+        public static short  ACCOUNT_PORT = 11111;
+        public static int    ACCOUNT_TIMEOUT = 30;
 
         public static AgentNet[] agents = new AgentNet[COUNT];
 
         static void Main( string[] args )
         {
             Logger.Info("===========================================================");
-            Logger.Info( "stress Test for GameServer" );
+            Logger.Info( "    Stress Test Tool" );
             Logger.Info( "===========================================================" );
             Logger.Info("");
 
-            int account = 2000;
-
+            int account = 2000;    //开始帐号
+            string passwd = "123";
+            string macId = "123456";
+ 
             // init AgentNets
             for(int i=0; i<agents.Length; i++)
             {
                 agents[i] = new AgentNet();
                 agents[i].close();
-                agents[i].setLoginInfo( account.ToString(), "123", "012345", ( byte ) 1, "", "", "" );
-                agents[i].bingAccountSer();
+                agents[i].setLoginInfo( account.ToString(), passwd, macId, ( byte ) 1, "", "", "" );
+                agents[i].connectAccountServer( ACCOUNT_IP, ACCOUNT_PORT, ACCOUNT_TIMEOUT);
 
                 initListener(agents[i]);  //消息监听注册
                 account++;

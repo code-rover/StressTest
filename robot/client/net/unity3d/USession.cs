@@ -3,13 +3,10 @@ using System.Collections.Generic;
 using System.Net.Sockets;
 using System.Net;
 using System.IO;
-
 using System.ComponentModel;
-using System.Linq;
-
 using System.Threading;
 using Ionic.Zlib;
-using UnityEngine;
+using utils;
 
 namespace net.unity3d
 {
@@ -211,7 +208,7 @@ namespace net.unity3d
 			catch(Exception ex)
 			{
 				_is_close = true;
-				Debug.LogError("create session exp = " + ex);
+				Logger.Error("create session exp = " + ex);
 			}
             
         }
@@ -231,7 +228,7 @@ namespace net.unity3d
 			catch(Exception ex)
 			{
 				_is_close = true;
-				Debug.LogError("create session exp = " + ex);
+				Logger.Error("create session exp = " + ex);
 			}
 		}
 		
@@ -304,7 +301,7 @@ namespace net.unity3d
 			{
 				if(!ar.IsCompleted)
 				{
-					Debug.LogError("asyn conn is not completed!!");
+					Logger.Error("asyn conn is not completed!!");
 				}
 				
 				ReadState rs = (ReadState)ar.AsyncState;
@@ -324,14 +321,14 @@ namespace net.unity3d
 				catch(Exception ex)
 				{
 					_is_relogin = true;
-					Debug.LogError("socket end read  message = " + ex.Message + " inner ex = " + ex.InnerException);
+					Logger.Error("socket end read  message = " + ex.Message + " inner ex = " + ex.InnerException);
 					return;
 				}
 				
 				if(len < 1)
 				{
 					return;
-					Debug.LogError("socket is close");
+					Logger.Error("socket is close");
 					_u_tcp_client.Client.Shutdown(SocketShutdown.Both);
 					_u_tcp_client.Client.Close();
 				}
@@ -355,7 +352,7 @@ namespace net.unity3d
 						
 	                    if (false == pro.analysisBuffer(rs.Pkg.packetToArray()))
 	                    {
-	                        Debug.LogError("pro should not be analysised" +msg );
+	                        Logger.Error("pro should not be analysised" +msg );
 	                        return;
 	                    }
 						if(PackageOne.proNum > IproNum)
@@ -382,7 +379,7 @@ namespace net.unity3d
 				//_is_close = true;
 //				if(Application.isPlaying)
 //				{
-					Debug.LogError("socket error content = " + ex);
+					Logger.Error("socket error content = " + ex);
 //				}
 			}
             
@@ -444,7 +441,7 @@ namespace net.unity3d
                 byte[] bytes = pro.getBuffer();
                 if (null == bytes)
                 {
-                    Debug.LogError("pro body is null!" +pro.Message);
+                    Logger.Error("pro body is null!" +pro.Message);
                     return false;
                 }
                 byte[] realBytes = bytes;
@@ -485,7 +482,7 @@ namespace net.unity3d
 				{
 //					if(Application.isPlaying)
 //					{
-						Debug.LogError("socket begin write  ex = " + ex.Message);
+						Logger.Error("socket begin write  ex = " + ex.Message);
 //					}
 				}
                 
@@ -493,7 +490,7 @@ namespace net.unity3d
             catch (Exception ex)
             {
 				_is_relogin = true;
-                Debug.LogError(ex.Message);
+                Logger.Error(ex.Message);
                 return true;
             }
             return true;

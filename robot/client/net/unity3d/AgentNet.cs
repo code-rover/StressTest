@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-//using UnityEngine;
 using utils;
 
 namespace net.unity3d
@@ -11,13 +10,6 @@ namespace net.unity3d
 		/// <summary>
 		/// 客户端连接服务器配置文件路径
 		/// </summary>
-		
-		//57
-	//	public static string URL_CONFIG = "http://192.168.1.8/xman_assets/serverConfig/new_ClientNet_config.xml";
-		
-		//8
-		public static string URL_CONFIG = "";
-		public static string URL_CONFIG_ACCOUNT = "";
 		public static readonly string accountServerId = "account_server";
 
         public workerNet lNetWorker = new workerNet();
@@ -26,7 +18,6 @@ namespace net.unity3d
         {
 			ARequestOverTime = DateTime.Now; //现在时间
 			ARequestTime = DateTime.Now; //现在时间
-			    
         }
 		
 		public void initClientNoetNew(List<NoteServer> ListNote)
@@ -47,19 +38,11 @@ namespace net.unity3d
 			
 			try
 			{
-				mgr.addCurServerId();
-				int index = mgr.getCurServerId();
-				//mgr.addFactory(new net.unity3d.UConnNetFactory("server" + index.ToString()));
-
                 _XmanLogic = new UConnection();
                 _XmanLogic.agentNet = this;
-
 	            _XmanLogic.EventConnected += OnXmanLogicConnected;
 
-				//_XmanLogic.set_account(_channelId, _accountId);
-				//_XmanLogic.set_macid(psMacId);
-				Logger.Info("logic ip = "+ m_LogicNote._serverIp);
-                Logger.Info( "logic port = " + m_LogicNote._serverProt );
+                Logger.Info( "logic server: " + m_LogicNote._serverIp + ":" + m_LogicNote._serverProt );
 	            _XmanLogic.open(m_LogicNote);
 			}
 			catch(Exception ex)
@@ -83,82 +66,6 @@ namespace net.unity3d
 			}
 			
         }
-		
-		
-		
-		public void openLogicServerAgain()
-        {
-            ManagerNet mgr = ManagerNet.getInstance();
-			
-			if(null == _LoginSer)
-			{
-				return;
-			}
-			string lsServer = "server";
-			mgr.addCurServerId();
-			int index = mgr.getCurServerId();
-			mgr.addFactory(new net.unity3d.UConnNetFactory(lsServer + index.ToString()));
-            _XmanLogic = mgr.createNetObject<UConnection>(lsServer + index.ToString());
-			Logger.Info("logic ip = "+ m_LogicNote._serverIp);
-			Logger.Info("logic port = "+ m_LogicNote._serverProt);
-            _XmanLogic.open(m_LogicNote);
-			Logger.Info("connect realm again server ip =");
-			Logger.Info(m_LogicNote._serverIp);
-        }
-		
-		public void openGuestServer()
-		{
-			ManagerNet mgr = ManagerNet.getInstance();
-			
-			try
-			{
-				mgr.addCurServerId();
-				int index = mgr.getCurServerId();
-				mgr.addFactory(new net.unity3d.UConnNetFactory("guest" + index.ToString()));
-				_GuestSer = mgr.createNetObject<UConnection>("guest" + index.ToString());
-				
-	            _GuestSer.EventConnected += OnGuestSerConnected;
-	            _GuestSer.open(m_GuestNote);
-			}
-			catch(Exception ex)
-			{
-                Logger.Error( "create guest conn exp = " + ex );	
-				
-				NodeQueue node = new NodeQueue();
-				RM2C_ON_REALM_SERVER_CLOSE pro = new RM2C_ON_REALM_SERVER_CLOSE();
-				pro.uiReason = 1;
-				ArgsNetEvent largs = new ArgsNetEvent(pro);
-	            NodeQueue qn = new NodeQueue();
-	            qn.msg = (ushort)RM2C_ON_REALM_SERVER_CLOSE.OPCODE;
-	            qn.args = largs;
-	            lNetWorker.AddQueue(qn);
-				node = lNetWorker.tick();
-	            if (null != node)
-	            {
-	                callEvent(node.msg, node.args);
-	            }
-				close();
-			}
-			Logger.Info("connect guest server ip = " + m_GuestNote._serverIp);
-		}
-		
-		public void openGuestServerAgain()
-		{
-			ManagerNet mgr = ManagerNet.getInstance();
-			
-			string lsServer = "server";
-			mgr.addCurServerId();
-			int index = mgr.getCurServerId();
-			mgr.addFactory(new net.unity3d.UConnNetFactory(lsServer + index.ToString()));
-
-			
-            _GuestSer = mgr.createNetObject<UConnection>(lsServer + index.ToString());
-			_GuestSer.EventConnected += OnGuestSerConnected;
-            _GuestSer.open(m_GuestNote);
-			
-			Logger.Info("connect realm again server ip =");
-			Logger.Info(m_GuestNote._serverIp);
-		}
 		
 		public static AgentNet getInstance()
         {
@@ -834,67 +741,29 @@ namespace net.unity3d
             }
         }
 		
-		public void bingAccountSer()
+		public void connectAccountServer(string ip, short port, int timeout)
 		{
-			//ManagerNet mgr = ManagerNet.getInstance();
-			//mgr.addFactory(new net.unity3d.UConnNetFactory(accountServerId));
-			//_AccountSer = mgr.createNetObject<UConnection>(accountServerId);
             _AccountSer = new UConnection();
             _AccountSer.agentNet = this;
 
-            NoteServer sAccount = new NoteServer(); //mgr.getAccountNoteServer();
-
-            sAccount._serverIp = "192.168.1.2";
-            sAccount._serverProt = 11111;
-            sAccount._timeOut = 30;
-            sAccount._serverId = 2;
-
 			_AccountSer.EventConnected += this.OnAccountSerConnected;
-			_AccountSer.open(sAccount);
-		}
-
-		public void getRelamInfo(string psAccount)
-		{
-			ManagerNet mgr = ManagerNet.getInstance();
-			string lsServer = "server";
-			mgr.addCurServerId();
-			int index = mgr.getCurServerId();
-			mgr.addFactory(new net.unity3d.UConnNetFactory(lsServer + index.ToString()));
-            _LoginSer = mgr.createNetObject<UConnection>(lsServer + index.ToString());
-	        NoteServer sLogin = mgr.getNoteServer(0);
-            //TODO
-            sLogin._serverId = 3;
-            sLogin._serverIp = "192.168.1.2";
-            sLogin._serverProt = 12007;
-            sLogin._timeOut = 30;
-
-	        _LoginSer.EventConnected += OnLoginSerConnected;
-	        _LoginSer.open(sLogin);
-			//_account = psAccount;
+			_AccountSer.open(ip, port, timeout);
 		}
 		
 		public void getRelamInfoByAreaId (string channelId, string accountId, int area)
 		{
-			ManagerNet mgr = ManagerNet.getInstance();
-			string lsServer = "server";
-			mgr.addCurServerId();
-			int index = mgr.getCurServerId();
-			//Logger.Info("getRealmInfobyareaid set acount id = " + accountId);
 			_channelId = channelId;
 			_accountId = accountId;
-			//mgr.addFactory(new net.unity3d.UConnNetFactory(lsServer + index.ToString()));
-			//_LoginSer = mgr.createNetObject<UConnection>(lsServer + index.ToString());
 
              _LoginSer = new UConnection();
              _LoginSer.agentNet = this;
 
-	         NoteServer sLogin = mgr.getNoteServer(area);
-
-             //TODO
+             NoteServer sLogin = new NoteServer();
              sLogin._serverId = 3;
              sLogin._serverIp = "192.168.1.2";
              sLogin._serverProt = 12007;
              sLogin._timeOut = 30;
+
 	        _LoginSer.EventConnected += OnLoginSerConnected;
 	        _LoginSer.open(sLogin);
 		}
