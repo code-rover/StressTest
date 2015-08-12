@@ -49,6 +49,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="client\common\Dispatcher.cs" />
+    <Compile Include="client\common\UtilListener.cs" />
     <Compile Include="client\net\IClientNet.cs" />
     <Compile Include="client\net\ManagerNet.cs" />
     <Compile Include="client\net\unity3d\AgentNet.cs" />
@@ -76,6 +78,7 @@
     <Compile Include="client\net\unity3d\USerialize.cs" />
     <Compile Include="client\net\unity3d\USession.cs" />
     <Compile Include="client\net\unity3d\workerNet.cs" />
+    <Compile Include="client\Protocols.cs" />
     <Compile Include="client\Utils\ConfigFile.cs" />
     <Compile Include="client\Utils\GUtil.cs" />
     <Compile Include="client\Utils\Logger.cs" />

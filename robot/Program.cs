@@ -8,7 +8,7 @@ namespace robot
 {
     class Program
     {
-        public static int COUNT = 100;
+        public static int COUNT = 1;
 
         public static string ACCOUNT_IP = "192.168.1.2";
         public static short  ACCOUNT_PORT = 11111;
@@ -84,6 +84,9 @@ namespace robot
             ///用户基本信息
             agent.addListenEvent( ( ushort ) E_OPCODE.EP_RM2C_MASTER_BASE_INFO, agent.recvMaster );
 
+            ///改名返回消息
+            agent.addListenEvent( ( ushort ) E_OPCODE.EP_RM2C_ROLE_NAME, agent.recvChangeName );
+            
             /**
             ///发送背包宠物信息
             agent.addListenEvent( ( ushort ) E_OPCODE.EP_RM2C_PET_INFO_BAG, recvHeroBag );
@@ -122,7 +125,8 @@ namespace robot
 
             agent.addListenEvent( ( ushort ) E_OPCODE.EP_RM2C_NAME_RAND, recvRandomName );
 
-            agent.addListenEvent( ( ushort ) E_OPCODE.EP_RM2C_ROLE_NAME, recvChangeName );
+            
+
 
             agent.addListenEvent( ( ushort ) E_OPCODE.EP_RM2C_LUCKY_SHOP, recvLuckShop );
 
