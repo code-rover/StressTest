@@ -1,9 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 using System.Threading;
 using net;
 using net.unity3d;
+using utils;
 
 namespace robot
 {
@@ -15,13 +14,14 @@ namespace robot
 
         static void Main( string[] args )
         {
-            Console.WriteLine("===========================================================");
-            Console.WriteLine( "stress Test for GameServer" );
-            Console.WriteLine( "===========================================================" );
-            Console.WriteLine();
+            Logger.Info("===========================================================");
+            Logger.Info( "stress Test for GameServer" );
+            Logger.Info( "===========================================================" );
+            Logger.Info("");
 
             int account = 2000;
 
+            // init AgentNets
             for(int i=0; i<agents.Length; i++)
             {
                 agents[i] = new AgentNet();

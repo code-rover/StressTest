@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
-using UnityEngine;
+//using UnityEngine;
+using utils;
 
 namespace net.unity3d
 {
@@ -57,13 +58,13 @@ namespace net.unity3d
 
 				//_XmanLogic.set_account(_channelId, _accountId);
 				//_XmanLogic.set_macid(psMacId);
-				Console.WriteLine("logic ip = "+ m_LogicNote._serverIp);
-                Console.WriteLine( "logic port = " + m_LogicNote._serverProt );
+				Logger.Info("logic ip = "+ m_LogicNote._serverIp);
+                Logger.Info( "logic port = " + m_LogicNote._serverProt );
 	            _XmanLogic.open(m_LogicNote);
 			}
 			catch(Exception ex)
 			{
-				Debug.LogError("create realm conn exp = " + ex);	
+                Logger.Error( "create realm conn exp = " + ex );
 				
 				NodeQueue node = new NodeQueue();
 				RM2C_ON_REALM_SERVER_CLOSE pro = new RM2C_ON_REALM_SERVER_CLOSE();
@@ -98,11 +99,11 @@ namespace net.unity3d
 			int index = mgr.getCurServerId();
 			mgr.addFactory(new net.unity3d.UConnNetFactory(lsServer + index.ToString()));
             _XmanLogic = mgr.createNetObject<UConnection>(lsServer + index.ToString());
-			Debug.Log("logic ip = "+ m_LogicNote._serverIp);
-			Debug.Log("logic port = "+ m_LogicNote._serverProt);
+			Logger.Info("logic ip = "+ m_LogicNote._serverIp);
+			Logger.Info("logic port = "+ m_LogicNote._serverProt);
             _XmanLogic.open(m_LogicNote);
-			Debug.Log("connect realm again server ip =");
-			Debug.Log(m_LogicNote._serverIp);
+			Logger.Info("connect realm again server ip =");
+			Logger.Info(m_LogicNote._serverIp);
         }
 		
 		public void openGuestServer()
@@ -121,7 +122,7 @@ namespace net.unity3d
 			}
 			catch(Exception ex)
 			{
-				Debug.LogError("create guest conn exp = " + ex);	
+                Logger.Error( "create guest conn exp = " + ex );	
 				
 				NodeQueue node = new NodeQueue();
 				RM2C_ON_REALM_SERVER_CLOSE pro = new RM2C_ON_REALM_SERVER_CLOSE();
@@ -138,7 +139,7 @@ namespace net.unity3d
 	            }
 				close();
 			}
-			Debug.Log("connect guest server ip = " + m_GuestNote._serverIp);
+			Logger.Info("connect guest server ip = " + m_GuestNote._serverIp);
 		}
 		
 		public void openGuestServerAgain()
@@ -155,8 +156,8 @@ namespace net.unity3d
 			_GuestSer.EventConnected += OnGuestSerConnected;
             _GuestSer.open(m_GuestNote);
 			
-			Debug.Log("connect realm again server ip =");
-			Debug.Log(m_GuestNote._serverIp);
+			Logger.Info("connect realm again server ip =");
+			Logger.Info(m_GuestNote._serverIp);
 		}
 		
 		public static AgentNet getInstance()
@@ -186,7 +187,7 @@ namespace net.unity3d
 				return;
 			}
             UConnection conn = (UConnection)sender;
-            System.Console.WriteLine("connected : {0}:{1}", conn.RemoteIP, conn.RemotePort);
+            Logger.Info( "connected : {" + conn.RemoteIP + "}:{" + conn.RemotePort + "}" );
             logicRegisterProtocol(conn.Session);
 
             RM2C_ON_REALM_SERVER_CONN pro = new RM2C_ON_REALM_SERVER_CONN();
@@ -223,7 +224,7 @@ namespace net.unity3d
 				return;
 			}
             UConnection conn = (UConnection)sender;
-            System.Console.WriteLine("guest connected : {0}:{1}", conn.RemoteIP, conn.RemotePort);
+            Logger.Info( "guest connected : {" + conn.RemoteIP + "}:{" + conn.RemotePort + "}" );
             guestRegisterProtocol(conn.Session);
 			
 			RM2G_ON_GUEST_SERVER_CONN pro = new RM2G_ON_GUEST_SERVER_CONN();
@@ -244,7 +245,7 @@ namespace net.unity3d
 			}
 			
             UConnection conn = (UConnection)sender;
-            System.Console.WriteLine("connected : {0}:{1}", conn.RemoteIP, conn.RemotePort);
+            Logger.Info( "connected : {" + conn.RemoteIP + "}:{" + conn.RemotePort + "}" );
             loginSerRegisterProtocol(conn.Session);
 
             LS2C_ON_LOGIN_SERVER_CONN pro = new LS2C_ON_LOGIN_SERVER_CONN();
@@ -270,7 +271,7 @@ namespace net.unity3d
 			}
 			
             UConnection conn = (UConnection)sender;
-            System.Console.WriteLine("connected : {0}:{1}", conn.RemoteIP, conn.RemotePort);
+            Logger.Info( "connected : {" + conn.RemoteIP + "}:{" + conn.RemotePort + "}");
             accountSerRegisterProtocol(conn.Session);
 
             /**
@@ -339,7 +340,7 @@ namespace net.unity3d
 			accountPro.sAccountC2Ac.setChannelIdStr(channelId);
 			accountPro.sAccountC2Ac.setAccountIdStr(accountId);
 
-			//Debug.Log(" send account real!! account = " + accountPro.sAccountC2Ac.getAccount() + " session_id = " + accountPro.sAccountC2Ac.getSessionId()
+			//Logger.Info(" send account real!! account = " + accountPro.sAccountC2Ac.getAccount() + " session_id = " + accountPro.sAccountC2Ac.getSessionId()
 			//          + " account id = " + accountId);
 			send(accountPro);
 		}
@@ -878,7 +879,7 @@ namespace net.unity3d
 			string lsServer = "server";
 			mgr.addCurServerId();
 			int index = mgr.getCurServerId();
-			//Debug.Log("getRealmInfobyareaid set acount id = " + accountId);
+			//Logger.Info("getRealmInfobyareaid set acount id = " + accountId);
 			_channelId = channelId;
 			_accountId = accountId;
 			//mgr.addFactory(new net.unity3d.UConnNetFactory(lsServer + index.ToString()));
@@ -966,10 +967,10 @@ namespace net.unity3d
             node = lNetWorker.tick();
             if (null != node)
             {
-                Console.WriteLine( "recv: " + node.msg );
+                Logger.Info( "recv: " + node.msg );
 				//set_is_ping_back(true);
 				//ARequestOverTime = DateTime.Now; //现在时间
-				//Debug.Log("ping request over time = " + ARequestOverTime);
+				//Logger.Info("ping request over time = " + ARequestOverTime);
                 callEvent(node.msg, node.args);
             }
         }
@@ -981,18 +982,18 @@ namespace net.unity3d
             {
 				if(pro.Message == 322)
 				{
-					set_is_ping_back(false);
+					//set_is_ping_back(false);
 				}
 				ARequestTime = DateTime.Now; //现在时间
 				
-				//Debug.Log("ping request time = " + ARequestTime);
+				//Logger.Info("ping request time = " + ARequestTime);
 				if(_XmanLogic != null)
 				{
 					return _XmanLogic.send(pro, false);
 				}
 				else
 				{
-					Debug.LogError("_XmanLogic is null!");
+					Logger.Error("_XmanLogic is null!");
 				}
             }
             else if (pro.Message >= 5000 && pro.Message < 6000)
@@ -1003,7 +1004,7 @@ namespace net.unity3d
 				}
 				else
 				{
-					Debug.LogError("_LoginSer is null!");
+                    Logger.Error( "_LoginSer is null!" );
 				}
             }
 			else if (pro.Message >= 11000 && pro.Message <= 12000)
@@ -1014,7 +1015,7 @@ namespace net.unity3d
 				}
 				else
 				{
-					Debug.LogError("_AccountSer is null!");
+                    Logger.Error( "_AccountSer is null!" );
 				}
 			}
 			return false;
@@ -1087,16 +1088,6 @@ namespace net.unity3d
 			m_LogicNote._timeOut = timeout;
 		}
 		
-		public bool is_ping_back()
-		{
-			return _is_ping_back;
-		}
-		
-		public void set_is_ping_back(bool pbIsPingBack)
-		{
-			_is_ping_back = pbIsPingBack;
-		}
-		
 		public bool is_ping_out_time()
 		{
 			bool lbRes = false;
@@ -1105,7 +1096,7 @@ namespace net.unity3d
 	        TimeSpan ts = ts1.Subtract(ts2).Duration();  
 	        
 			int liDTime = ts.Seconds + ts.Minutes * 60 + ts.Hours * 60 * 60 + ts.Days * 60 * 60 * 24;
-			//Debug.Log("ping wait DTime = " + liDTime);
+			//Logger.Info("ping wait DTime = " + liDTime);
 			///如果3秒钟还没有收到异步调用回复，认为网络断开
 			if(liDTime >= 2.1)
 			{
@@ -1113,23 +1104,6 @@ namespace net.unity3d
 			}
 			return lbRes;
 		}
-		
-		public bool is_bad_web()
-		{
-			bool lbRes = false;
-			if(!_is_ping_back)
-			{
-				if(is_ping_out_time())
-				{
-					lbRes = true;
-				}
-			}
-			return lbRes;
-		}
-		
-		
-		private bool _is_ping_back = true;
-
 		
 		private System.DateTime ARequestTime =new System.DateTime();
 		private System.DateTime ARequestOverTime =new System.DateTime();
@@ -1174,7 +1148,7 @@ namespace net.unity3d
 
             //ManagerServer.getInstance().AccountId = recv.sAccountAC2C.getAccountIdStr();
 
-            Console.WriteLine( "RECV SERVER ACCOUNT = " + recv.sAccountAC2C.getAccountIdStr() );
+            Logger.Info( "RECV SERVER ACCOUNT = " + recv.sAccountAC2C.getAccountIdStr() );
 
             //ManagerNet mgr = ManagerNet.getInstance();
             //mgr.removeFactory( AgentNet.accountServerId );
@@ -1188,11 +1162,11 @@ namespace net.unity3d
         {
             LS2C_LOGIN_RESPONSE recv = args.getData<LS2C_LOGIN_RESPONSE>();
 
-            Console.WriteLine( "LS2C_LOGIN_RESPONSE >> " + recv.iResult.ToString() );
+            Logger.Info( "LS2C_LOGIN_RESPONSE >> " + recv.iResult.ToString() );
             if( recv.iResult == 1 )
             {
-                Console.WriteLine( "Login Authentication Success" );
-                Console.WriteLine( "realm server info: " + recv.getIp() + ":" + recv.port );
+                Logger.Info( "Login Authentication Success" );
+                Logger.Info( "realm server info: " + recv.getIp() + ":" + recv.port );
 
                 this.initLogic( recv.getIp(), ( short ) recv.port, ( int ) recv.timeOut );
                 //ManagerServer.getInstance().connecteRealm();
@@ -1201,7 +1175,7 @@ namespace net.unity3d
             }
             else
             {
-                Console.WriteLine( " recvLoginServer error, iresult = " + recv.iResult );
+                Logger.Info( " recvLoginServer error, iresult = " + recv.iResult );
             }
         }
 
@@ -1210,15 +1184,15 @@ namespace net.unity3d
         {
             RM2C_LOGIN recv = args.getData<RM2C_LOGIN>();
 
-            Console.WriteLine( "connect Realm Result: " + recv.iResult );
+            Logger.Info( "connect Realm Result: " + recv.iResult );
 
             if( recv.iResult == ( int ) EM_CLIENT_ERRORCODE.EE_M2C_NEED_CREATE_ROLE )
             {
-                Console.WriteLine( "需要创建角色" );
+                Logger.Info( "需要创建角色" );
             }
             else if( recv.iResult == ( int ) EM_CLIENT_ERRORCODE.EE_ACCOUNT_NOT_EXIST )
             {
-                Console.WriteLine( "Realm msg: 帐号不存在" );
+                Logger.Info( "Realm msg: 帐号不存在" );
             }
         }
 
@@ -1227,18 +1201,18 @@ namespace net.unity3d
         public void recvMaster( ArgsEvent args )
         {
             RM2C_MASTER_BASE_INFO recv = args.getData<RM2C_MASTER_BASE_INFO>();
-            Console.WriteLine( "RECV:RM2C_MASTER_BASE_INFO >> " + recv.SPlayerInfo.sPlayerBaseInfo.uiIdMaster );
+            Logger.Info( "RECV:RM2C_MASTER_BASE_INFO >> " + recv.SPlayerInfo.sPlayerBaseInfo.uiIdMaster );
 
             SPlayerInfo playerInfo = recv.SPlayerInfo;
 
-            Console.WriteLine( "玩家基本信息： " );
-            Console.WriteLine( "=========================================" );
-            Console.WriteLine( "player name: " + playerInfo.sPlayerBaseInfo.getMasterName() );
-            Console.WriteLine( "player idServer: " + playerInfo.sPlayerBaseInfo.uiIdMaster );
-            Console.WriteLine( "player vip: " + playerInfo.sPlayerBaseInfo.uiVip );
-            Console.WriteLine( "player exp: " + playerInfo.sPlayerBaseInfo.luiExp );
-            Console.WriteLine( "player power: " + playerInfo.sLeadPowerInfo.usPower );
-            Console.WriteLine( "=========================================" );
+            Logger.Info( "玩家基本信息： " );
+            Logger.Info( "=========================================" );
+            Logger.Info( "player name: " + playerInfo.sPlayerBaseInfo.getMasterName() );
+            Logger.Info( "player idServer: " + playerInfo.sPlayerBaseInfo.uiIdMaster );
+            Logger.Info( "player vip: " + playerInfo.sPlayerBaseInfo.uiVip );
+            Logger.Info( "player exp: " + playerInfo.sPlayerBaseInfo.luiExp );
+            Logger.Info( "player power: " + playerInfo.sLeadPowerInfo.usPower );
+            Logger.Info( "=========================================" );
 
             //TODO ...
 
