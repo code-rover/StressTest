@@ -8,12 +8,11 @@ namespace net.unity3d
 {
     public class AgentNet
     {
-		/// <summary>
-		/// 客户端连接服务器配置文件路径
-		/// </summary>
 		public static readonly string accountServerId = "account_server";
 
         public workerNet lNetWorker = new workerNet();
+
+        private DataMode dataMode = new DataMode();
 
 		public AgentNet()
         {
@@ -502,6 +501,10 @@ namespace net.unity3d
 
             C2RM_ROLE_NAME sender = new C2RM_ROLE_NAME();
             sender.setName( name );
+
+            //C2RM_NAME_RAND sender = new C2RM_NAME_RAND();
+
+
             sender.uiListen = Dispatcher.addListener(listener, null);   
             this.send( sender );
         }
@@ -523,7 +526,79 @@ namespace net.unity3d
                 Logger.Error( "aid: " + this._accountId + "改名失败: " + recv.iResult );
             }
             Dispatcher.dispatchListener( recv.uiListen, recv );
+
+
+            //发送获取邮件请求
+            sendWebEmail(null);
         }
+
+        ///向服务器发送邮件信息请求
+        public void sendWebEmail( FunctionListenerEvent listener )
+        {
+            dataMode._emailInfo.Clear();
+            Logger.Info( "SEND:C2RM_WEB_EMAIL >> " + "发送邮件信息请求 >> " );
+
+            C2RM_WEB_EMAIL sender = new C2RM_WEB_EMAIL();
+            sender.uiListen = Dispatcher.addListener( listener, null);
+
+            this.send( sender );
+        }
+
+        //response web email
+        ///接受所有邮件信息
+        public void recvWebEmail( ArgsEvent args )
+        {
+            RM2C_WEB_EMAIL recv = args.getData<RM2C_WEB_EMAIL>();
+
+            Logger.Info( "接收邮件回应 << " + recv.Message );
+
+            for( int i = 0; i < recv.sWebEmail.Length; i++ )
+            {
+                if( recv.sWebEmail[ i ].uiIdServer == 237275 )
+                {
+                    Logger.Error( "---237275" );
+                }
+
+                if( null == dataMode.getEmailInfo( recv.sWebEmail[ i ].uiIdServer ) )
+                {
+                    dataMode._emailInfo.Add( recv.sWebEmail[ i ].uiIdServer, new EmailInfo() );    
+                }
+                    
+                
+                EmailInfo reward = dataMode.getEmailInfo( recv.sWebEmail[ i ].uiIdServer );
+                reward.serverId = recv.sWebEmail[ i ].uiIdServer;
+                reward.isDes = recv.sWebEmail[ i ].isDes;
+                reward.isLoc = recv.sWebEmail[ i ].isLoc;
+                reward.isSpe = recv.sWebEmail[ i ].isSpe;
+                reward.isOpen = recv.sWebEmail[ i ].isOpen;
+                reward.csvId = ( int ) recv.sWebEmail[ i ].uiRoleId;
+                reward.limiltLv = ( int ) recv.sWebEmail[ i ].usLimitLv;
+                reward.outTime = ( int ) recv.sWebEmail[ i ].uiOutTime;
+                reward.sendTime = ( int ) recv.sWebEmail[ i ].uiSendTime;
+                reward.csvMailId = ( int ) recv.sWebEmail[ i ].uiIdWebEmail;
+                reward.title = recv.sWebEmail[ i ].getTitle();
+                reward.nameSend = recv.sWebEmail[ i ].getSendName();
+
+                /**
+                reward.Clear();
+                for( int m = 0; m < recv.sWebEmail[ i ].vctSWebGoodBase.Length; m++ )
+                {
+                    if( recv.sWebEmail[ i ].vctSWebGoodBase[ m ].cTypeGoods != 0 )
+                    {
+                        RewardItems item = new RewardItems();
+                        item.prop = new InfoProp();
+                        item.prop.idCsv = ( int ) recv.sWebEmail[ i ].vctSWebGoodBase[ m ].uiIdCsvGoods;
+                        item.prop.cnt = ( int ) recv.sWebEmail[ i ].vctSWebGoodBase[ m ].m_liCnt;
+                        item.emailType = recv.sWebEmail[ i ].vctSWebGoodBase[ m ].cTypeGoods;
+
+                        reward.addReward( item );
+                    }
+                }
+                 **/
+            }
+        }
+
+        
     }
 	
 }

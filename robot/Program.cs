@@ -27,7 +27,7 @@ namespace robot
             Logger.Info( "===========================================================" );
             Logger.Info("");
 
-            int account = 2000;    //开始帐号
+            int account = 4652;    //开始帐号
             string passwd = "123";
             string macId = "123456";
  
@@ -86,6 +86,10 @@ namespace robot
 
             ///改名返回消息
             agent.addListenEvent( ( ushort ) E_OPCODE.EP_RM2C_ROLE_NAME, agent.recvChangeName );
+
+            ///返回web email
+            agent.addListenEvent( ( ushort ) E_OPCODE.EP_RM2C_WEB_EMAIL, agent.recvWebEmail );
+            
             
             /**
             ///发送背包宠物信息

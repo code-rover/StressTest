@@ -79,6 +79,8 @@
     <Compile Include="client\net\unity3d\USession.cs" />
     <Compile Include="client\net\unity3d\workerNet.cs" />
     <Compile Include="client\Protocols.cs" />
+    <Compile Include="client\ServerData\DataMode.cs" />
+    <Compile Include="client\ServerData\DataModeType.cs" />
     <Compile Include="client\Utils\ConfigFile.cs" />
     <Compile Include="client\Utils\GUtil.cs" />
     <Compile Include="client\Utils\Logger.cs" />
@@ -110,9 +112,6 @@
     <Compile Include="client\UZlib\Zlib\ZlibConstants.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <Folder Include="client\ServerData\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

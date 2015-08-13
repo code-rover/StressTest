@@ -1,6 +1,7 @@
 using System;
 using System.Net.Sockets;
 using System.Net;
+using System.Threading;
 using utils;
 using net;
 
@@ -36,6 +37,8 @@ namespace net.unity3d
         private TcpClient _tcp_client;
 
         public AgentNet agentNet;
+
+        private ManualResetEvent timeoutObject = new ManualResetEvent( true );
 
         private void _OnPreClose(ArgsEvent args)
         {
@@ -334,6 +337,7 @@ namespace net.unity3d
         /// <param name="ar">异步通信结果</param>
         void OnConnected(IAsyncResult ar)
         {
+            this.timeoutObject.Set();
 
 			if(null == _tcp_client)
 			{
@@ -500,10 +504,19 @@ namespace net.unity3d
                 ArgsEvent args = new ArgsEvent(_tcp_client);
                 _OnPreConnect(args);
 
+                Logger.Info( "BeginConnect  " + remote_ip + ":" + remote_port );
+
+                this.timeoutObject.Reset();
+  
                 //异步连接.
                 _tcp_client.BeginConnect(remote_ip, remote_port, new AsyncCallback(OnConnected), _tcp_client);
 
-				
+                /**
+                if(!this.timeoutObject.WaitOne(1000, false ) )    //timeout 5 sec
+                {
+                    throw new Exception("连接超时  " + remote_ip + ":" + remote_port);
+                }  
+				**/
             }
             catch (Exception e)
             {
