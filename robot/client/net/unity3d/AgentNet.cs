@@ -476,7 +476,54 @@ namespace net.unity3d
             Logger.Info( "player power: " + playerInfo.sLeadPowerInfo.usPower );
             Logger.Info( "=========================================" );
 
+
+            /// 创建主角
+            //ManagerServer.getInstance().isBinded = recv.SPlayerInfo.sPlayerBaseInfo.cIsBind == 0 ? false : true;
+            if( null == DataMode.getPlayer( recv.SPlayerInfo.sPlayerBaseInfo.uiIdMaster ) )
+                DataMode._serverPlayer.Add( recv.SPlayerInfo.sPlayerBaseInfo.uiIdMaster, new InfoPlayer() );
+
+            ///  设定主角的基本信息
+            InfoPlayer player = DataMode.getPlayer( recv.SPlayerInfo.sPlayerBaseInfo.uiIdMaster );
+
+            /// 0点清0时间戳WILL DONE
+            player.timeTeampUpdate = ( double ) recv.SPlayerInfo.sPlayerBaseInfo.uiUpdateTime;
+            //ManagerUpdate.lockPlayUpdate = false;
+
+            //名字
+            player.name = recv.SPlayerInfo.sPlayerBaseInfo.getMasterName();
+            //serverid
+            player.idServer = recv.SPlayerInfo.sPlayerBaseInfo.uiIdMaster;
+            /// 声望
+            player.honer = ( long ) recv.SPlayerInfo.SLeadPkInfo.uiPrestige;
+            //经验
+            player.exp = recv.SPlayerInfo.sPlayerBaseInfo.luiExp;
+            //体力
+            player.power = recv.SPlayerInfo.sLeadPowerInfo.usPower;
+            //体力上限
+            //		player.powerMax = recv.SPlayerInfo.sLeadPowerInfo.usPowerMax;
+            //		player.setPowerMax();
+            //领取好友赠送的体力的次数
+            player.powerFriendCnt = ( int ) recv.SPlayerInfo.sLeadPowerInfo.sFriendPowerCnt;
+            ///今天购买体力的次数
+            player.powerBuyCnt = ( int ) recv.SPlayerInfo.sLeadPowerInfo.sPowerBuyCnt;
+            //今天购买金币次数
+            player.stoneBuyCnt = ( int ) recv.SPlayerInfo.sPlayerBaseInfo.sStoneTimes;
+
+            player.maxHeroList = ( int ) recv.SPlayerInfo.sLeadBagInfo.usCntBag;
+            player.maxEquipBagList = ( int ) recv.SPlayerInfo.sLeadBagInfo.usCntEquipBag;
+
+            //DataMode.ddnSeverFlag.DDNFlag = recv.SPlayerInfo.sPlayerBaseInfo.uiGuideDDN;
+
+            //游戏币
+            player.money_game = ( long ) recv.SPlayerInfo.sPlayerBaseInfo.luiSMoney;
+            //人民币
+            player.money = ( long ) recv.SPlayerInfo.sPlayerBaseInfo.luiQMoney;
+            ///正义徽章
+            //player.infoPoint.badge = ( int ) recv.SPlayerInfo.sPlayerBaseInfo.uiBadge;
             //TODO ...
+
+            /// 我的角色
+            DataMode.myPlayer = player;
 
             //发送更名请求
             sendChangeName( "Robot_" + this._accountId, ( UtilListenerEvent e) =>
@@ -550,7 +597,7 @@ namespace net.unity3d
         {
             RM2C_WEB_EMAIL recv = args.getData<RM2C_WEB_EMAIL>();
 
-            Logger.Info( "接收邮件回应 << " + recv.Message );
+            //Logger.Info( "接收邮件回应 << " + recv.Message );
 
             for( int i = 0; i < recv.sWebEmail.Length; i++ )
             {
@@ -563,7 +610,6 @@ namespace net.unity3d
                 {
                     dataMode._emailInfo.Add( recv.sWebEmail[ i ].uiIdServer, new EmailInfo() );    
                 }
-                    
                 
                 EmailInfo reward = dataMode.getEmailInfo( recv.sWebEmail[ i ].uiIdServer );
                 reward.serverId = recv.sWebEmail[ i ].uiIdServer;
@@ -578,8 +624,7 @@ namespace net.unity3d
                 reward.csvMailId = ( int ) recv.sWebEmail[ i ].uiIdWebEmail;
                 reward.title = recv.sWebEmail[ i ].getTitle();
                 reward.nameSend = recv.sWebEmail[ i ].getSendName();
-
-                /**
+                
                 reward.Clear();
                 for( int m = 0; m < recv.sWebEmail[ i ].vctSWebGoodBase.Length; m++ )
                 {
@@ -594,11 +639,94 @@ namespace net.unity3d
                         reward.addReward( item );
                     }
                 }
-                 **/
+                
             }
+
+            Logger.Info( "收到邮件数:" + dataMode._emailInfo.Count );
+
+            foreach( var e in dataMode._emailInfo )
+            {
+                if( (e.Value.csvMailId == 8 || e.Value.csvMailId == 78 || e.Value.csvMailId == 137) && e.Value.isOpen == 0)
+                {
+                    e.Value.isOpen = 1;
+                    sendOpenEmail( e.Key, null );
+                }
+            }
+
         }
 
-        
+        // 打开邮件 - wen
+        public void sendOpenEmail( ulong emailId, FunctionListenerEvent sListener )
+        {
+            Logger.Info( "打开邮件" );
+            C2RM_WEB_EMAIL_OPEN sender = new C2RM_WEB_EMAIL_OPEN();
+            sender.uiListen = Dispatcher.addListener( sListener, null);
+            sender.uiWebEmailId = emailId;
+            this.send( sender );
+        }
+
+        /// 打开邮件回调（获取物品）
+        public void recvOpenEmail( ArgsEvent args )
+        {
+            RM2C_WEB_EMAIL_OPEN recv = args.getData<RM2C_WEB_EMAIL_OPEN>();
+            Logger.Info( "打开邮件" + recv.iResult );
+            
+            if( recv.iResult == 1 )
+            {
+                EmailInfo ei = dataMode.getEmailInfo( recv.uiWebEmailId );
+                if( ei != null )
+                {
+                    ei.isOpen = 1;
+                }
+                
+                for( int i = 0; i < recv.vctSPiece.Length; i++ )
+                {
+                    if( recv.vctSPiece[ i ].luiIdPiece != 0 )
+                        dataMode.infoHeroChip.setHeroChip( ( int ) recv.vctSPiece[ i ].uiCsvId, recv.vctSPiece[ i ].iCnt );
+                }
+                
+                TypeCsvProp csvprop = null;
+                for( int i = 0; i < recv.vctSEquip.Length; i++ )
+                {
+                    if( recv.vctSEquip[ i ].uiIdCsvEquipment > 0 )
+                    {
+                        csvprop = ManagerCsv.getProp( ( int ) recv.vctSEquip[ i ].uiIdCsvEquipment );
+                        if( csvprop.isPropBeast() )
+                        {
+                            //DataMode.myPlayer.infoPropBeastList.changeProp( ( int ) recv.vctSEquip[ i ].uiIdCsvEquipment, recv.vctSEquip[ i ].iCnt );
+                        }
+                        else
+                        {
+                            //DataMode.myPlayer.infoPropList.changeProp( ( int ) recv.vctSEquip[ i ].uiIdCsvEquipment, recv.vctSEquip[ i ].iCnt );
+                        }
+                    }
+                }
+                
+                
+            }
+            //DataMode.dispatchListener( recv.uiListen, recv );
+        }
+
+        //除了物品奖励的其他奖励的发放
+        public void recvSignReward( ArgsEvent args )
+        {
+            RM2C_REWARD_MONEY recv = args.getData<RM2C_REWARD_MONEY>();
+
+            Logger.Info( "RM2C_REWARD_MONEY" );
+
+            
+            DataMode.myPlayer.money_game += ( long ) recv.sRewardMoney.uiSMoney;
+            DataMode.myPlayer.money += ( long ) recv.sRewardMoney.uiQMoney;
+            //DataMode.myPlayer.infoPK.score += ( int ) recv.sRewardMoney.uiScoreFight;
+            //DataMode.myPlayer.infoPoint.moneyTower += ( int ) recv.sRewardMoney.uiTiowerMoney;
+            //DataMode.myPlayer.infoPoint.badge += ( int ) recv.sRewardMoney.uiBadge;
+            DataMode.myPlayer.power += recv.sRewardMoney.uiPower;
+            DataMode.myPlayer.friendShip += ( int ) recv.sRewardMoney.uiFriendShip;
+            DataMode.myPlayer.honer += ( long ) recv.sRewardMoney.uiPrestige;
+            DataMode.myPlayer.exp += ( ulong ) recv.sRewardMoney.uiExp;
+            //DataMode.myPlayer.infoPoint.moneyTBC += ( long ) recv.sRewardMoney.uiMot;
+            
+        }
     }
 	
 }

@@ -1,0 +1,77 @@
+﻿using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Threading;
+
+namespace utils
+{
+    class FileReader
+    {
+        private string content;
+
+        private byte[] buffer;
+
+        private int buffSize = 512;
+
+        private delegate void CallBack();
+
+        private CallBack _cb; 
+
+        private FileReader _self;
+        public FileReader getInstance()
+        {
+            if( _self == null )
+            {
+                _self = new FileReader();
+            }
+            return _self;
+        }
+
+        public long read( string path, CallBack cb )
+        {
+            if( cb == null )
+            {
+                Logger.Error( "cb is null: " + path );
+                return -1;
+            }
+
+            _cb = cb;
+            content = "";
+
+            if( File.Exists( path ) )
+            {
+                FileStream fs = new FileStream(path, FileMode.Open);
+                fs.BeginRead( buffer, 0, buffSize, asyncReadCallBack, fs );
+
+            }
+            else
+            {
+                Logger.Error( "文件不存在: " + path );
+            }
+
+            return 0;
+        }
+
+        public void asyncReadCallBack(IAsyncResult ar)
+        {
+            FileStream fs = ar.AsyncState as FileStream;
+            if( fs != null )
+            {
+                int r = fs.EndRead( ar );
+                content = content + System.Text.Encoding.UTF8.GetString( this.buffer );
+
+                if( r <= buffSize )
+                {
+                    fs.BeginRead( buffer, 0, buffSize, asyncReadCallBack, fs );
+
+                }
+                else
+                {
+                    fs.Close();
+                    _cb();
+                }
+ 
+            }
+        }
+    }
+}

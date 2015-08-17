@@ -23,15 +23,19 @@ namespace robot
         static void Main( string[] args )
         {
             Logger.Info("===========================================================");
-            Logger.Info( "    Stress Test Tool" );
+            Logger.Info( "    Stress Test" );
             Logger.Info( "===========================================================" );
             Logger.Info("");
 
-            int account = 4652;    //开始帐号
+
+            load_csv();  //加载csv
+
+
+            int account = 4662;    //开始帐号
             string passwd = "123";
-            string macId = "123456";
+            string macId = "";
  
-            // init AgentNets
+            // create AgentNets
             for(int i=0; i<agents.Length; i++)
             {
                 agents[i] = new AgentNet();
@@ -55,7 +59,14 @@ namespace robot
             Console.ReadKey( true );
         }
 
-        /// 初始化真挺
+        //加载csv
+        public static void load_csv()
+        {
+            ManagerCsv.init_csv( "Info.csv" );
+            Logger.Info( "CSV表加载完成" );
+        }
+
+        /// 初始化监听
         public static void initListener(AgentNet agent)
         {
             ///account返回
@@ -89,8 +100,13 @@ namespace robot
 
             ///返回web email
             agent.addListenEvent( ( ushort ) E_OPCODE.EP_RM2C_WEB_EMAIL, agent.recvWebEmail );
-            
-            
+
+            ///返回web email打开
+            agent.addListenEvent( ( ushort ) E_OPCODE.EP_RM2C_WEB_EMAIL_OPEN, agent.recvOpenEmail );
+
+            agent.addListenEvent( ( ushort ) E_OPCODE.EP_RM2C_REWARD_MONEY, agent.recvSignReward );
+
+            ///
             /**
             ///发送背包宠物信息
             agent.addListenEvent( ( ushort ) E_OPCODE.EP_RM2C_PET_INFO_BAG, recvHeroBag );
@@ -144,7 +160,7 @@ namespace robot
 
             agent.addListenEvent( ( ushort ) E_OPCODE.EP_RM2C_SIGN_RE, recvSignRe );
 
-            agent.addListenEvent( ( ushort ) E_OPCODE.EP_RM2C_REWARD_MONEY, recvSignReward );
+            
 
             agent.addListenEvent( ( ushort ) E_OPCODE.EP_RM2C_TASK, recvTask );
 
