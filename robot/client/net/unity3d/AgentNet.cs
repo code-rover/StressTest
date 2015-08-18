@@ -793,6 +793,9 @@ namespace net.unity3d
             this.send( sender );
         }
 
+        //fb sweep task queue
+        private Queue<Action> sweep_queue = new Queue<Action>();
+
         //response 
         public void recvFBInfo( ArgsEvent args )
         {
@@ -802,8 +805,6 @@ namespace net.unity3d
             {
                 InfoPlayer player = this.dataMode.getPlayer( recv.uiMasterId );
 
-                // add by ssy 15-01-07
-                // if kick role clear all fb infos
                 this.dataMode._serverFB.Clear();
 
                 if(player == null) {
@@ -814,7 +815,6 @@ namespace net.unity3d
                 player.clearAllFB();
 
                 // add end
-
                 for( int index = 0; index < recv.vctSFBInfo.Length; index++ )
                 {
                     if( recv.vctSFBInfo[ index ].luiIdFB == 0 )
@@ -831,11 +831,36 @@ namespace net.unity3d
 
                 Debug.Assert( recv.vctSFBInfo.Length > 0, "副本列表为空" );
 
-                //遍历所有副本，扫荡
-                foreach(var item in this.dataMode._serverFB )
+                //fb sweep one by one
+                foreach( var item in this.dataMode._serverFB )
                 {
-                    sendFBSweep( (uint)item.Value.idCsvFB, null );    
+                    int csvFb = item.Value.idCsvFB;
+                    Action func = () =>
+                    {
+                        Logger.Info( "开始发送扫荡命令 " + csvFb );
+
+                        sendFBSweep( ( uint ) csvFb, ( UtilListenerEvent evt ) =>
+                        {
+                            RM2C_FB_SWEEP sweep = ( RM2C_FB_SWEEP ) evt.eventArgs;
+                            Action action = this.sweep_queue.Dequeue();
+                            action();
+                        } );
+
+                    };
+
+                    this.sweep_queue.Enqueue( func ); 
                 }
+
+                //sweep done!
+                Action end = () =>
+                {
+                    Logger.Info( "扫荡全部完成 ");
+
+                };
+                this.sweep_queue.Enqueue( end );
+
+                Action firstAction = this.sweep_queue.Dequeue();
+                firstAction();   //do the first task
 
             }
             Dispatcher.dispatchListener( recv.uiListen, recv );
@@ -876,7 +901,6 @@ namespace net.unity3d
             this.dataMode.infoFBRewardList.curFbCsvID = ( int ) recv.uiFbCsvId;
 
             Logger.Info( "扫荡返回  SMoney: " + recv.uiSMoney + " Exp: " + recv.uiExp + " csvId: " + recv.uiFbCsvId);
-            
 
             // dispatch
             Dispatcher.dispatchListener( recv.uiListen, ( object ) recv );

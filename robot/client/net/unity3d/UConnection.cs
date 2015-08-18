@@ -228,7 +228,7 @@ namespace net.unity3d
                 else
                 {
 //					Debug.Log("!!!!@@@@@----2");
-					Logger.Warning("conn failed!!");
+					Logger.Error("conn failed!!");
                     //连接失败.
                     args = new ArgsEvent(false);
                     _session = null;
@@ -387,7 +387,7 @@ namespace net.unity3d
                 else
                 {
 
-					Logger.Warning("conn failed!!");
+					Logger.Error("conn failed!!");
                     //连接失败.
                     args = new ArgsEvent(false);
                     _session = null;
