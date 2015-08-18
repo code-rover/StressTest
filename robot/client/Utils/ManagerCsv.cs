@@ -108,5 +108,21 @@ namespace utils
             return result;
         }
 
+        /// 检索副本的数据
+        public static TypeCsvFB getFB( int idCsv )
+        {
+            /// 数据缓存部分
+            //		string key = "public static TypeCsvFB getFB(int idCsv) idCsv = " + idCsv;
+            string key = string.Intern( new StringBuilder( "public static TypeCsvFB getFB(int idCsv) idCsv = " ).Append( idCsv ).ToString() );
+            if( _csvItemMemory.ContainsKey( key ) )
+                return ( TypeCsvFB ) _csvItemMemory[ key ];
+            /// 返回值
+            TypeCsvFB result = _csvTables[ "FB" ].searchAndNew<TypeCsvFB>( "id", idCsv );
+            /// 值存储
+            _csvItemMemory.Add( key, result );
+            /// 返回
+            return result;
+        }
+
     }
 }

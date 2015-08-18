@@ -7,10 +7,16 @@ using robot.client;
 public class DataMode
 {
     /// 我的主角
-    public static InfoPlayer myPlayer;
+    public InfoPlayer myPlayer;
 
     /// 主角缓存(idServer, value)
-    public static Dictionary<uint, InfoPlayer> _serverPlayer = new Dictionary<uint, InfoPlayer>();
+    public Dictionary<uint, InfoPlayer> _serverPlayer = new Dictionary<uint, InfoPlayer>();
+
+    // 副本缓存(idServer, value)
+    public Dictionary<ulong, InfoFB> _serverFB = new Dictionary<ulong, InfoFB>();
+
+    /// 副本奖励应该存的地方
+    public InfoFBRewardList infoFBRewardList = new InfoFBRewardList();
 
 	//邮件数据缓存
 	public Dictionary<ulong, EmailInfo> _emailInfo = new Dictionary<ulong, EmailInfo>();
@@ -32,13 +38,23 @@ public class DataMode
     public InfoHeroChip infoHeroChip = new InfoHeroChip();
 
     /// 获得 主角
-    public static InfoPlayer getPlayer( uint idServer )
+    public InfoPlayer getPlayer( uint idServer )
     {
         if( idServer == 0 )
             return null;
         if( !_serverPlayer.ContainsKey( idServer ) )
             return null;
         return _serverPlayer[ idServer ];
+    }
+
+    /// 获得 副本信息
+    public InfoFB getFB( ulong idServer )
+    {
+        if( idServer == 0 )
+            return null;
+        if( !_serverFB.ContainsKey( idServer ) )
+            return null;
+        return _serverFB[ idServer ];
     }
 }
 

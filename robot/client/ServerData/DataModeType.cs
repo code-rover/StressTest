@@ -3,6 +3,8 @@ using System.Collections;
 using System.Collections.Generic;
 using net;
 using robot.client;
+using utils;
+using net.unity3d;
 
 public class EmailInfo
 {
@@ -298,10 +300,544 @@ public class InfoHeroChip
 }
 
 
+/// 副本的基础信息
+public class InfoFB
+{
+    public ulong idServer;
+    public int idCsvFB;
+    public int score;
+    /// 是否通关
+    public bool isComplete;
+    //是否是第一次通关
+    public bool isFirstComplete;
+    // add by ssy today times
+    public int comTimes;
+    //允许扫荡次数
+    public int allowSweepCnt;
+    //重置副本次数
+    public int resetFBCnt;
+
+    public InfoFB( SFBInfo info )
+    {
+        idServer = info.luiIdFB;
+        idCsvFB = ( int ) info.uiIdCsvFB;
+        score = ( int ) info.cLvKo;
+
+        //判断是否是第一次通关副本  --wen
+        if( score > 0 && !isComplete )
+        {
+            isFirstComplete = true;
+        }
+        else
+        {
+            isFirstComplete = false;
+        }
+
+        if( score == 0 )
+        {
+            isComplete = false;
+        }
+        else
+        {
+            isComplete = true;
+        }
+        comTimes = ( int ) info.sKoTodayTimes;
+        resetFBCnt = ( int ) info.cResetTimes;
+    }
+
+    public InfoFB()
+    {
+        idServer = 0;
+        idCsvFB = 0;
+        score = 0;
+        isComplete = false;
+        isFirstComplete = false;
+        comTimes = 0;
+    }
+}
+
+
+
+/// 我的副本信息
+public class InfoFBList
+{
+    public InfoFBList(DataMode dm)
+    {
+        _dataMode = dm;        
+    }
+    private DataMode _dataMode;
+    private List<ulong> _fbs = new List<ulong>();
+    public List<ulong> fbs
+    {
+        get
+        {
+            return _fbs;
+        }
+    }
+    /// 获得副本信息
+    public InfoFB getFBInfoByCsv( int idCsv )
+    {
+        InfoFB ret = null;
+        foreach( ulong id in _fbs )
+        {
+            InfoFB info_fb = _dataMode.getFB( id );
+            if( info_fb.idCsvFB == idCsv )
+            {
+                ret = info_fb;
+                break;
+            }
+        }
+
+        return ret;
+    }
+    /// 设置副本信息
+    public void addFBInfo( ulong idServer )
+    {
+        if( -1 == _fbs.IndexOf( idServer ) )
+            _fbs.Add( idServer );
+    }
+    // add by ssy
+    /// <summary>
+    /// cache the id
+    /// </summary>
+    private ulong _noComID = 0;
+
+    /// 获得当前未通关的副本（算法只支持，同时只能存在一个未开启的副本）
+    public ulong getNotComFBId()
+    {
+        ulong ret_error = 0;
+        if( _fbs.Count <= 0 )
+        {
+            //UtilLog.LogError("还没获得任何id，系统开启后，至少得有一个未完成的吧!!");
+            // 存在没有开启任何副本的时候。逻辑变了
+            return ret_error;
+        }
+
+        if( _noComID != 0 &&
+           !_dataMode.getFB( _noComID ).isComplete )
+        {
+            return _noComID;
+        }
+        else
+        {
+            // 默认升序 
+            _fbs.Sort();
+
+            _noComID = _fbs[ _fbs.Count - 1 ];
+            if( _dataMode.getFB( _noComID ).isComplete )
+            {
+                Logger.Error( "没有未完成的副本呢！！！" );
+                return ret_error;
+
+            }
+            return _noComID;
+        }
+
+    }
+
+    /// <summary>
+    /// 获取所有已经开启的副本最大的id
+    /// </summary>
+    /// <returns>
+    /// The max COM FB identifier.
+    /// </returns>
+    public ulong getMaxComFBId()
+    {
+        ulong ret = 0;
+        if( _fbs.Count <= 0 )
+        {
+            Logger.Error( "还没获得任何id，系统开启后，至少得有一个未完成的吧!!" );
+            return ret;
+        }
+
+        if( _noComID != 0 &&
+           !_dataMode.getFB( _noComID ).isComplete )
+        {
+            ret = _noComID;
+            return ret;
+        }
+        else
+        {
+            // 默认升序 
+            _fbs.Sort();
+
+            ret = _fbs[ _fbs.Count - 1 ];
+
+            return ret;
+        }
+
+    }
+
+    /// <summary>
+    /// Clears the F.
+    /// </summary>
+    public void clearFB()
+    {
+        if( fbs.Count > 0 )
+        {
+            fbs.Clear();
+            _noComID = 0;
+        }
+    }
+
+    // add end
+    /// 重置副本今天的攻击次数 重置次数 扫荡次数
+    public void resetFBData()
+    {
+        foreach( ulong idServerFB in _fbs )
+        {
+            if( null == _dataMode.getFB( idServerFB ) )
+                continue;
+            _dataMode.getFB( idServerFB ).resetFBCnt = 0;
+            _dataMode.getFB( idServerFB ).comTimes = 0;
+            _dataMode.getFB( idServerFB ).allowSweepCnt = 0;
+        }
+    }
+}
+
+
+/// 副本奖励 列表
+public class InfoFBRewardList
+{
+    /// 缓存 object
+    private Dictionary<string, List<InfoFBReward>> _rewardObject = new Dictionary<string, List<InfoFBReward>>();
+    /// 缓存 钱
+    private Dictionary<string, int> _rewardMoneyGame = new Dictionary<string, int>();
+    /// 缓存 钻石
+    private Dictionary<string, int> _rewardMoney = new Dictionary<string, int>();
+    private Dictionary<string, int> _rewardExpPlayer = new Dictionary<string, int>();
+    private Dictionary<string, int> _rewardPower = new Dictionary<string, int>();
+
+    /// 缓存 卡牌进入副本前的经验
+    private Dictionary<ulong, ulong> _rewardExpBefore = new Dictionary<ulong, ulong>();
+    /// 缓存扫荡副本额外奖励
+    private Dictionary<string, List<InfoFBReward>> _sweepReward = new Dictionary<string, List<InfoFBReward>>();
+    /// 额外扫荡结果
+    private List<InfoFBReward> _rewardSweepResultObj = new List<InfoFBReward>();
+
+    private List<InfoFBReward> _rewardSweepObj = new List<InfoFBReward>();
+    private int _rewardSweepMoney = 0;
+    private bool _isDataOver = false;
+    /// 好友点数
+    public int friendPoint;
+    //扫荡次数
+    public int sweepCnt = 0;
+    public bool isDataOver
+    {
+        set
+        {
+            _isDataOver = value;
+        }
+        get
+        {
+            return _isDataOver;
+        }
+    }
+
+    // add end
+
+
+    /// 整个副本奖励的经验(玩家的 不是卡牌)
+    public ulong exp;
+    /// 星级宝箱 钻石(不是游戏币)
+    public long money = 0;
+    // add by ssy
+    public ulong expBegin;
+    public int curFbCsvID;
+    // add end
+
+    /// 添加钱
+    public void clear()
+    {
+        _rewardExpBefore.Clear();
+        _rewardObject.Clear();
+        _rewardMoneyGame.Clear();
+        _rewardMoney.Clear();
+        _rewardPower.Clear();
+        _rewardExpPlayer.Clear();
+        _isSweepRewardCom = false;
+        _rewardSweepObj.Clear();
+        _rewardSweepMoney = 0;
+        exp = 0;
+        money = 0;
+        _isDataOver = false;
+    }
+
+    /// 清空扫荡结果
+    public void clearSweepReward()
+    {
+        _sweepReward.Clear();
+        _rewardSweepResultObj.Clear();
+    }
+    // add by ssy 
+    private bool _isSweepRewardCom = false;
+    public bool isSweepRewardCom
+    {
+        get
+        {
+            return _isSweepRewardCom;
+        }
+        set
+        {
+            _isSweepRewardCom = value;
+        }
+    }
+
+    /// <summary>
+    ///  set sweep fb reward money
+    /// </summary>
+    /// <param name="money">Money.</param>
+    public void addMoneySweep( int money )
+    {
+        _rewardSweepMoney = money;
+    }
+
+    /// <summary>
+    /// Adds the reward sweep.
+    /// </summary>
+    /// <param name="fb_reward">Fb_reward.</param>
+    public void addRewardSweep( InfoFBReward fb_reward )
+    {
+        if( null == fb_reward )
+        {
+            return;
+        }
+        else
+        {
+            _rewardSweepObj.Add( fb_reward );
+        }
+    }
+
+    /// 扫荡副本的额外结果
+    public void addResultRewardSweep( InfoFBReward fb_reward )
+    {
+        if( null == fb_reward )
+        {
+            return;
+        }
+        else
+        {
+            _rewardSweepResultObj.Add( fb_reward );
+        }
+    }
+
+    // add end
+    /// 获得卡牌(队伍内的卡牌)进入副本之前的经验
+    public ulong getExpBefore( ulong serverId )
+    {
+        if( _rewardExpBefore.ContainsKey( serverId ) )
+            return _rewardExpBefore[ serverId ];
+        return 0;
+    }
+    public void setExpBefore( ulong serverId, ulong exp )
+    {
+        if( !_rewardExpBefore.ContainsKey( serverId ) )
+            _rewardExpBefore.Add( serverId, exp );
+        else
+            _rewardExpBefore[ serverId ] = exp;
+    }
+    /// 获得金钱
+    public int getMoneyGame( int indexBatch, int indexStand )
+    {
+        if( _rewardMoneyGame.ContainsKey( indexBatch + "/" + indexStand ) )
+            return _rewardMoneyGame[ indexBatch + "/" + indexStand ];
+        return 0;
+    }
+    public void setMoneyGame( int indexBatch, int indexStand, int money )
+    {
+        if( !_rewardMoneyGame.ContainsKey( indexBatch + "/" + indexStand ) )
+            _rewardMoneyGame.Add( indexBatch + "/" + indexStand, money );
+        else
+            _rewardMoneyGame[ indexBatch + "/" + indexStand ] = money;
+    }
+    /// 获得钻石
+    public int getMoney( int indexBatch, int indexStand )
+    {
+        if( _rewardMoney.ContainsKey( indexBatch + "/" + indexStand ) )
+            return _rewardMoney[ indexBatch + "/" + indexStand ];
+        return 0;
+    }
+    public void setMoney( int indexBatch, int indexStand, int money )
+    {
+        if( !_rewardMoney.ContainsKey( indexBatch + "/" + indexStand ) )
+            _rewardMoney.Add( indexBatch + "/" + indexStand, money );
+        else
+            _rewardMoney[ indexBatch + "/" + indexStand ] = money;
+    }
+
+    /// 获得 战队经验
+    public int getExpPlayer( int indexBatch, int indexStand )
+    {
+        if( _rewardExpPlayer.ContainsKey( indexBatch + "/" + indexStand ) )
+            return _rewardExpPlayer[ indexBatch + "/" + indexStand ];
+        return 0;
+    }
+    public void setExpPlayer( int indexBatch, int indexStand, int sExp )
+    {
+        if( !_rewardExpPlayer.ContainsKey( indexBatch + "/" + indexStand ) )
+            _rewardExpPlayer.Add( indexBatch + "/" + indexStand, sExp );
+        else
+            _rewardExpPlayer[ indexBatch + "/" + indexStand ] = sExp;
+    }
+    public int getAllExpPlayer()
+    {
+        int result = 0;
+        foreach( int nmb in _rewardExpPlayer.Values )
+        {
+            result += nmb;
+        }
+        return result;
+    }
+    /// 获得 体力值
+    public int getPower( int indexBatch, int indexStand )
+    {
+        if( _rewardPower.ContainsKey( indexBatch + "/" + indexStand ) )
+            return _rewardPower[ indexBatch + "/" + indexStand ];
+        return 0;
+    }
+    public void setPower( int indexBatch, int indexStand, int sPower )
+    {
+        if( !_rewardPower.ContainsKey( indexBatch + "/" + indexStand ) )
+            _rewardPower.Add( indexBatch + "/" + indexStand, sPower );
+        else
+            _rewardPower[ indexBatch + "/" + indexStand ] = sPower;
+    }
+    public int getAllPower()
+    {
+        int result = 0;
+        foreach( int nmb in _rewardPower.Values )
+        {
+            result += nmb;
+        }
+        return result;
+    }
+    /// 获得副本扫荡额外奖励
+    public List<InfoFBReward> getSweepReward( int indexBatch, int indexStand )
+    {
+        if( _sweepReward.ContainsKey( indexBatch + "/" + indexStand ) )
+            return _sweepReward[ indexBatch + "/" + indexStand ];
+        return null;
+    }
+    public void setSweepReward( int indexBatch, int indexStand, InfoFBReward reward )
+    {
+        if( !_sweepReward.ContainsKey( indexBatch + "/" + indexStand ) )
+            _sweepReward.Add( indexBatch + "/" + indexStand, new List<InfoFBReward>() );
+        _sweepReward[ indexBatch + "/" + indexStand ].Add( reward );
+    }
+    /// 获得副本扫荡额外所有奖励
+    public List<InfoFBReward> getSweepAllReward()
+    {
+        List<InfoFBReward> list = new List<InfoFBReward>();
+        foreach( List<InfoFBReward> reward in _sweepReward.Values )
+        {
+            foreach( InfoFBReward re in reward )
+            {
+                if( re != null )
+                {
+                    list.Add( re );
+                }
+            }
+        }
+
+        // add by ssy
+        foreach( InfoFBReward re in _rewardSweepResultObj )
+        {
+            if( re != null )
+            {
+                list.Add( re );
+            }
+        }
+        // add end
+        return list;
+    }
+
+
+    /// 获得奖励
+    public List<InfoFBReward> getReward( int indexBatch, int indexStand )
+    {
+        if( _rewardObject.ContainsKey( indexBatch + "/" + indexStand ) )
+            return _rewardObject[ indexBatch + "/" + indexStand ];
+        return null;
+    }
+    public void setReward( int indexBatch, int indexStand, InfoFBReward reward )
+    {
+        if( !_rewardObject.ContainsKey( indexBatch + "/" + indexStand ) )
+            _rewardObject.Add( indexBatch + "/" + indexStand, new List<InfoFBReward>() );
+        _rewardObject[ indexBatch + "/" + indexStand ].Add( reward );
+    }
+    /// 获得所有奖励
+    public List<InfoFBReward> getAllReward()
+    {
+        List<InfoFBReward> list = new List<InfoFBReward>();
+        foreach( List<InfoFBReward> reward in _rewardObject.Values )
+        {
+            foreach( InfoFBReward re in reward )
+            {
+                if( re != null )
+                {
+                    list.Add( re );
+                }
+            }
+        }
+
+        // add by ssy
+        foreach( InfoFBReward re in _rewardSweepObj )
+        {
+            if( re != null )
+            {
+                list.Add( re );
+            }
+        }
+        // add end
+        return list;
+    }
+    /// 获得所有的钱
+    public int getAllMoneyGame()
+    {
+        int money = 0;
+        foreach( int nmb in _rewardMoneyGame.Values )
+        {
+            money += nmb;
+        }
+        // add by ssy
+        money += _rewardSweepMoney;
+        // add end
+        return money;
+    }
+    /// 获得所有的钱
+    public int getAllMoney()
+    {
+        int money = 0;
+        foreach( int nmb in _rewardMoney.Values )
+        {
+            money += nmb;
+        }
+        return money;
+    }
+}
+/// 副本奖励
+public class InfoFBReward
+{
+    /// 我的csvID
+    public int idCsv;
+    ///掉落分类1货币2经验3碎片4卡牌5道具 8钻石
+    public byte type;
+    /// 我的个数
+    public int cnt;
+}
+
 
 /// 主角的信息
 public class InfoPlayer
 {
+    public InfoPlayer(DataMode dm)
+    {
+        this._dataMode = dm; 
+        this.infoFBList = new InfoFBList(this._dataMode);
+        this.infoFBListElit = new InfoFBList( this._dataMode );
+        this.infoFBListChallenge = new InfoFBList( this._dataMode );
+    }
+    private DataMode _dataMode;
 	public double timeTeampUpdate;
 	
 	/// serverID
@@ -539,15 +1075,17 @@ public class InfoPlayer
 		
 		return _isOpen;
 	}
-	
+	*/
 	/// 获得副本信息
-	public InfoFBList infoFBList = new InfoFBList();
-	public InfoFBList infoFBListElit = new InfoFBList ();
-	public InfoFBList infoFBListChallenge = new InfoFBList ();
+    public InfoFBList infoFBList;
+    public InfoFBList infoFBListElit;
+    public InfoFBList infoFBListChallenge;
+
 	public bool isOpenNewFB = false;
 	public bool isOpenNewFBElit = false;
 	public bool isOpenNewFBChallenge = false;
 	
+    /**
 	public bool isShowIcon = true;
 	
 	// add by ssy
@@ -766,7 +1304,7 @@ public class InfoPlayer
 			break;
 		}
 	}
-	
+	**/
 	// add by ssy
 	/// <summary>
 	/// open a new fb add depends on fb type
@@ -789,12 +1327,13 @@ public class InfoPlayer
 			infoFBListChallenge.addFBInfo(server_id);
 			break;
 			default:
-			UtilLog.LogError("fb type is not exist!! type = "  + csv_fb.type);
+			Logger.Error("fb type is not exist!! type = "  + csv_fb.type);
 			break;
 		}
 
 	}
 
+    /*
 	/// <summary>
 	/// 根据副本类型获得未通关的副本
 	/// </summary>
@@ -951,7 +1490,7 @@ public class InfoPlayer
 		return ret;
 
 	}
-	
+	**/
 	/// <summary>
 	/// Clears all F.
 	/// </summary>
@@ -964,8 +1503,8 @@ public class InfoPlayer
 	
 	
 	// add end
-     * 
-     **/
+      
+     
 }
 
 

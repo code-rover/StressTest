@@ -283,7 +283,7 @@ namespace net.unity3d
 			
             if (null != node)
             {
-                Logger.Info( "recv: " + node.msg );
+                Logger.Info("====> " + this._account + " recv: " + node.msg );
                 callEvent(node.msg, node.args);
             }
         }
@@ -479,11 +479,11 @@ namespace net.unity3d
 
             /// 创建主角
             //ManagerServer.getInstance().isBinded = recv.SPlayerInfo.sPlayerBaseInfo.cIsBind == 0 ? false : true;
-            if( null == DataMode.getPlayer( recv.SPlayerInfo.sPlayerBaseInfo.uiIdMaster ) )
-                DataMode._serverPlayer.Add( recv.SPlayerInfo.sPlayerBaseInfo.uiIdMaster, new InfoPlayer() );
+            if( null == this.dataMode.getPlayer( recv.SPlayerInfo.sPlayerBaseInfo.uiIdMaster ) )
+                this.dataMode._serverPlayer.Add( recv.SPlayerInfo.sPlayerBaseInfo.uiIdMaster, new InfoPlayer(this.dataMode) );
 
             ///  设定主角的基本信息
-            InfoPlayer player = DataMode.getPlayer( recv.SPlayerInfo.sPlayerBaseInfo.uiIdMaster );
+            InfoPlayer player = this.dataMode.getPlayer( recv.SPlayerInfo.sPlayerBaseInfo.uiIdMaster );
 
             /// 0点清0时间戳WILL DONE
             player.timeTeampUpdate = ( double ) recv.SPlayerInfo.sPlayerBaseInfo.uiUpdateTime;
@@ -523,13 +523,29 @@ namespace net.unity3d
             //TODO ...
 
             /// 我的角色
-            DataMode.myPlayer = player;
+            this.dataMode.myPlayer = player;
 
-            //发送更名请求
-            sendChangeName( "Robot_" + this._accountId, ( UtilListenerEvent e) =>
+            if( player.name == null )
             {
-                Console.WriteLine("Rename revold");
-            } );
+                //发送更名请求
+                sendChangeName( "Robot_" + this._accountId, ( UtilListenerEvent e ) =>
+                {
+                    //改名完成
+                    sendWebEmail( null );
+                    
+                } );
+            }
+            else
+            {
+                //发送获取邮件请求
+                sendWebEmail( null );        
+            }
+
+            if( this.dataMode.myPlayer.exp > 0 )  //经验>0, 认为奖励已经领取
+            {
+                sendFBUpdate(null);    
+            }
+
         }
 
         /// 创建角色
@@ -573,10 +589,6 @@ namespace net.unity3d
                 Logger.Error( "aid: " + this._accountId + "改名失败: " + recv.iResult );
             }
             Dispatcher.dispatchListener( recv.uiListen, recv );
-
-
-            //发送获取邮件请求
-            sendWebEmail(null);
         }
 
         ///向服务器发送邮件信息请求
@@ -590,6 +602,8 @@ namespace net.unity3d
 
             this.send( sender );
         }
+
+        private List<int> opendMails = new List<int>();   //已经打开过的mails
 
         //response web email
         ///接受所有邮件信息
@@ -642,17 +656,58 @@ namespace net.unity3d
                 
             }
 
-            Logger.Info( "收到邮件数:" + dataMode._emailInfo.Count );
+            Logger.Info( "收到邮件总数:" + dataMode._emailInfo.Count );
 
+            int cnt = 0;
             foreach( var e in dataMode._emailInfo )
             {
-                if( (e.Value.csvMailId == 8 || e.Value.csvMailId == 78 || e.Value.csvMailId == 137) && e.Value.isOpen == 0)
+                int csvMailId = e.Value.csvMailId;
+
+                if( e.Value.isOpen == 0 )
                 {
-                    e.Value.isOpen = 1;
-                    sendOpenEmail( e.Key, null );
+                    cnt++;
                 }
+
+                if( e.Value.isOpen == 0 && !opendMails.Contains( csvMailId ) )
+                {
+                    //开通全部副本
+                    if(csvMailId == 78 )  
+                    {
+                        opendMails.Add(csvMailId );
+                        sendOpenEmail( e.Key, ( UtilListenerEvent evt ) =>
+                        {
+                            Logger.Info( "打开全部副本 完成 " + evt );
+
+                            sendFBUpdate( null );  //打开副本后，获取副本列表
+                        } );
+                    }
+
+                    //领取很多钱
+                    else if(csvMailId == 8)
+                    {
+                        opendMails.Add(csvMailId );
+                        sendOpenEmail( e.Key, ( UtilListenerEvent evt ) =>
+                        {
+                            Logger.Info( "打开金钱奖励 完成 " + evt );
+
+                        } );
+                    }
+
+                    //开通60级
+                    else if(csvMailId == 137 )
+                    {
+                        opendMails.Add(csvMailId );
+                        sendOpenEmail( e.Key, ( UtilListenerEvent evt ) =>
+                        {
+                            Logger.Info( "打开60级奖励 完成 " + evt );
+
+                        } );       
+                    }
+                }
+                
             }
 
+            Logger.Info( "收到未读邮件数量:" + cnt );
         }
 
         // 打开邮件 - wen
@@ -701,10 +756,9 @@ namespace net.unity3d
                         }
                     }
                 }
-                
-                
             }
-            //DataMode.dispatchListener( recv.uiListen, recv );
+            Dispatcher.dispatchListener( recv.uiListen, recv );
+
         }
 
         //除了物品奖励的其他奖励的发放
@@ -715,17 +769,117 @@ namespace net.unity3d
             Logger.Info( "RM2C_REWARD_MONEY" );
 
             
-            DataMode.myPlayer.money_game += ( long ) recv.sRewardMoney.uiSMoney;
-            DataMode.myPlayer.money += ( long ) recv.sRewardMoney.uiQMoney;
-            //DataMode.myPlayer.infoPK.score += ( int ) recv.sRewardMoney.uiScoreFight;
-            //DataMode.myPlayer.infoPoint.moneyTower += ( int ) recv.sRewardMoney.uiTiowerMoney;
-            //DataMode.myPlayer.infoPoint.badge += ( int ) recv.sRewardMoney.uiBadge;
-            DataMode.myPlayer.power += recv.sRewardMoney.uiPower;
-            DataMode.myPlayer.friendShip += ( int ) recv.sRewardMoney.uiFriendShip;
-            DataMode.myPlayer.honer += ( long ) recv.sRewardMoney.uiPrestige;
-            DataMode.myPlayer.exp += ( ulong ) recv.sRewardMoney.uiExp;
-            //DataMode.myPlayer.infoPoint.moneyTBC += ( long ) recv.sRewardMoney.uiMot;
+            this.dataMode.myPlayer.money_game += ( long ) recv.sRewardMoney.uiSMoney;
+            this.dataMode.myPlayer.money += ( long ) recv.sRewardMoney.uiQMoney;
+            //this.dataMode.myPlayer.infoPK.score += ( int ) recv.sRewardMoney.uiScoreFight;
+            //this.dataMode.myPlayer.infoPoint.moneyTower += ( int ) recv.sRewardMoney.uiTiowerMoney;
+            //this.dataMode.myPlayer.infoPoint.badge += ( int ) recv.sRewardMoney.uiBadge;
+            this.dataMode.myPlayer.power += recv.sRewardMoney.uiPower;
+            this.dataMode.myPlayer.friendShip += ( int ) recv.sRewardMoney.uiFriendShip;
+            this.dataMode.myPlayer.honer += ( long ) recv.sRewardMoney.uiPrestige;
+            this.dataMode.myPlayer.exp += ( ulong ) recv.sRewardMoney.uiExp;
+            //this.dataMode.myPlayer.infoPoint.moneyTBC += ( long ) recv.sRewardMoney.uiMot;
             
+        }
+
+
+        ///获取副本信息
+        //request
+        public void sendFBUpdate( FunctionListenerEvent sListener )
+        {
+            Logger.Info( "SEND:C2RM_FB" );
+            C2RM_FB sender = new C2RM_FB();
+            sender.uiListen = Dispatcher.addListener( sListener, null);
+            this.send( sender );
+        }
+
+        //response 
+        public void recvFBInfo( ArgsEvent args )
+        {
+            RM2C_FB recv = args.getData<RM2C_FB>();
+            Logger.Info( "RECV:RM2C_FB >> " + recv.iResult );
+            if( recv.iResult == 1 )
+            {
+                InfoPlayer player = this.dataMode.getPlayer( recv.uiMasterId );
+
+                // add by ssy 15-01-07
+                // if kick role clear all fb infos
+                this.dataMode._serverFB.Clear();
+
+                if(player == null) {
+                    Debug.Assert(false, "player is null");
+                    Logger.Error("player is null  " + recv.uiMasterId);
+                    return;
+                }
+                player.clearAllFB();
+
+                // add end
+
+                for( int index = 0; index < recv.vctSFBInfo.Length; index++ )
+                {
+                    if( recv.vctSFBInfo[ index ].luiIdFB == 0 )
+                        continue;
+
+                    //changed by ssy diff type
+                    if( null == this.dataMode.getFB( recv.vctSFBInfo[ index ].luiIdFB ) )
+                        this.dataMode._serverFB.Add( recv.vctSFBInfo[ index ].luiIdFB, new InfoFB( recv.vctSFBInfo[ index ] ) );
+
+                    player.addFB( ( int ) recv.vctSFBInfo[ index ].uiIdCsvFB, recv.vctSFBInfo[ index ].luiIdFB );
+                    // changed end
+
+                }
+
+                Debug.Assert( recv.vctSFBInfo.Length > 0, "副本列表为空" );
+
+                //遍历所有副本，扫荡
+                foreach(var item in this.dataMode._serverFB )
+                {
+                    sendFBSweep( (uint)item.Value.idCsvFB, null );    
+                }
+
+            }
+            Dispatcher.dispatchListener( recv.uiListen, recv );
+        }
+
+        //副本扫荡
+        public void sendFBSweep( uint fb_id, FunctionListenerEvent sListener )
+        {
+            Logger.Info( "ac: " + this._account + " SEND:C2RM_FB_SWEEP " + fb_id);
+
+            C2RM_FB_SWEEP sender = new C2RM_FB_SWEEP();
+            sender.uiFbId = fb_id;
+            sender.uiListen = Dispatcher.addListener( sListener, null);
+
+            this.send( sender );
+
+            //sendPingTwo();  ? why
+        }
+
+        //扫荡副本返回
+        public void recvSweep( ArgsEvent args )
+        {
+            RM2C_FB_SWEEP recv = args.getData<RM2C_FB_SWEEP>();
+
+            Logger.Info( "RECV:RM2C_FB_SWEEP ret = " + recv.iResult );
+
+            if( recv.Message == (int)EM_CLIENT_ERRORCODE.EE_M2C_FB_ID_ERROR )
+            {
+                Logger.Error( "副本id错误" );
+                return;
+            }
+
+            // updata to temp datamode
+            this.dataMode.infoFBRewardList.addMoneySweep( ( int ) recv.uiSMoney );
+            this.dataMode.infoFBRewardList.exp += ( ulong ) recv.uiExp;
+            this.dataMode.infoFBRewardList.expBegin = ( ulong ) recv.uiPreExp;
+            this.dataMode.infoFBRewardList.isDataOver = true;
+            this.dataMode.infoFBRewardList.curFbCsvID = ( int ) recv.uiFbCsvId;
+
+            Logger.Info( "扫荡返回  SMoney: " + recv.uiSMoney + " Exp: " + recv.uiExp + " csvId: " + recv.uiFbCsvId);
+            
+
+            // dispatch
+            Dispatcher.dispatchListener( recv.uiListen, ( object ) recv );
         }
     }
 	

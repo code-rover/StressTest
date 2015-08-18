@@ -8,7 +8,7 @@ namespace robot
 {
     class Program
     {
-        public static int COUNT = 1;
+        public static int COUNT = 500;
 
         public static string ACCOUNT_IP = "192.168.1.2";
         public static short  ACCOUNT_PORT = 11111;
@@ -31,7 +31,7 @@ namespace robot
             load_csv();  //加载csv
 
 
-            int account = 4662;    //开始帐号
+            int account = 4000;    //开始帐号
             string passwd = "123";
             string macId = "";
  
@@ -106,6 +106,14 @@ namespace robot
 
             agent.addListenEvent( ( ushort ) E_OPCODE.EP_RM2C_REWARD_MONEY, agent.recvSignReward );
 
+            //返回副本信息
+            agent.addListenEvent( ( ushort ) E_OPCODE.EP_RM2C_FB, agent.recvFBInfo );
+
+            //返回副本扫荡
+            agent.addListenEvent( ( ushort ) E_OPCODE.EP_RM2C_FB_SWEEP, agent.recvSweep );
+
+
+            
             ///
             /**
             ///发送背包宠物信息
