@@ -113,7 +113,8 @@ namespace robot
             agent.addListenEvent( ( ushort ) E_OPCODE.EP_RM2C_FB_SWEEP, agent.recvSweep );
 
 
-            
+            agent.addListenEvent( ( ushort ) E_OPCODE.EP_RM2C_FB_RESET, agent.recvBuyFBCnt );
+
             ///
             /**
             ///发送背包宠物信息

@@ -830,6 +830,9 @@ namespace net.unity3d
                 }
 
                 Debug.Assert( recv.vctSFBInfo.Length > 0, "副本列表为空" );
+                Logger.Error( this._account + "  副本列表为空！");
+
+                this.sweep_queue.Clear();
 
                 //fb sweep one by one
                 foreach( var item in this.dataMode._serverFB )
@@ -843,6 +846,8 @@ namespace net.unity3d
                         {
                             RM2C_FB_SWEEP sweep = ( RM2C_FB_SWEEP ) evt.eventArgs;
                             Action action = this.sweep_queue.Dequeue();
+                            Debug.Assert( action != null);
+
                             action();
                         } );
 
@@ -862,6 +867,10 @@ namespace net.unity3d
                 Action firstAction = this.sweep_queue.Dequeue();
                 firstAction();   //do the first task
 
+            }
+            else
+            {
+                Logger.Error( this._account + " RM2C_FB error: " + recv.iResult );
             }
             Dispatcher.dispatchListener( recv.uiListen, recv );
         }
@@ -904,6 +913,33 @@ namespace net.unity3d
 
             // dispatch
             Dispatcher.dispatchListener( recv.uiListen, ( object ) recv );
+        }
+
+        /// 购买副本次数 request
+        public void sendBuyFBCnt( int idCsvFb, FunctionListenerEvent sListener )
+        {
+            C2RM_FB_RESET sender = new C2RM_FB_RESET();
+            sender.uiFbCsvId = ( uint ) idCsvFb;
+            sender.uiListen = Dispatcher.addListener( sListener, null);
+            this.send( sender );
+        }
+
+        //response 购买副本次数 
+        public void recvBuyFBCnt( ArgsEvent args )
+        {
+            RM2C_FB_RESET recv = args.getData<RM2C_FB_RESET>();
+            if( recv.iResult == 1 )
+            {
+                this.dataMode.myPlayer.money_game += recv.sMoney.iSMoney;
+                this.dataMode.myPlayer.money += recv.sMoney.iQMoney;
+
+                InfoFB _fb = this.dataMode.getFB( recv.sFb.luiIdFB );
+                _fb.score = ( int ) recv.sFb.cLvKo;
+                _fb.comTimes = ( int ) recv.sFb.sKoTodayTimes;
+                _fb.resetFBCnt = ( int ) recv.sFb.cResetTimes;
+                _fb.idCsvFB = ( int ) recv.sFb.uiIdCsvFB;
+            }
+            Dispatcher.dispatchListener( recv.uiListen, recv );
         }
     }
 	
