@@ -983,14 +983,14 @@ public class InfoPlayer
 	public int PowerMealCnt;
 
 
-    /**
+    
 
 	//远征商店
 	public InfoShop infoEDShop = new InfoShop();
 	//金币商店
 	public InfoShop infoMoneyShop = new InfoShop();
 
-
+    /**
 	/// 引导的系统 
 	public string guide = "";
 	//设置最大体力上限
@@ -1103,7 +1103,7 @@ public class InfoPlayer
 	/// 这个人的军衔信息
 	//public InfoNobility infoNobility = new InfoNobility();
 	/// 这个人的竞技信息
-	//public InfoPK infoPK = new InfoPK();
+	public InfoPK infoPK = new InfoPK();
 	/// 邮件数量
 	public int emailCnt
 	{
@@ -1508,5 +1508,72 @@ public class InfoPlayer
 }
 
 
+/// 商店
+public class InfoShop
+{
+    /// 我的 cd
+    //public InfoCD infoCD = new InfoCD();
+    /// 刷新的 次数
+    public int timesReset;
+    /// 刷新的 道具
+    public List<InfoShopObject> sells = new List<InfoShopObject>();
+}
+/// 商店商品
+public class InfoShopObject
+{
+    public int idCsvShop;
+    public bool isSell;
+    public int index;
+}
+
+
+/// 竞技场排位的信息
+public class InfoPK
+{
+    /// 我的我是谁
+    public uint idServerPlayer;
+    /// 我的名次
+    public int rank;
+    /// 上一次的排序
+    public int rankPre;
+    /// 积分
+    public int score;
+    /// 竞技等级
+    public int lv;
+    /// 竞技的总次数
+    public int combatTimes;
+    /// 胜利次数
+    public int combatTimesWin;
+    /// 还有多少次啊
+    public int cnt;
+    /// 购买次数
+    public int cntBuy;
+
+
+    /// 团队头像
+    public List<int> idTeamCsv = new List<int>();
+    /// 团队星级
+    public List<int> idTeamStar = new List<int>();
+    /// 团队等级
+    public List<ulong> idTeamExp = new List<ulong>();
+
+    /// 魂兽
+    public int idTeamCsvBeast = 1;
+
+
+    /// 竞技积分商店
+    public InfoShop infoShop = new InfoShop();
+
+    /// 是谁打的你呢
+    public string name
+    {
+        get
+        {
+            //if( null ==  _dataMode.getPlayer( idServerPlayer ) )
+                return "未知的名字";
+            //return DataMode.getPlayer( idServerPlayer ).name;
+        }
+    }
+}
 
 

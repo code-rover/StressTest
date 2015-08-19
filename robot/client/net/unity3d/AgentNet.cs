@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using utils;
 using robot.client.common;
 using System.Diagnostics;
+using System.Threading;
+using System.Timers;
 
 namespace net.unity3d
 {
@@ -404,6 +406,21 @@ namespace net.unity3d
 
         private Dictionary<ushort, EListenerNet> _event_listeners = new Dictionary<ushort, EListenerNet>();
 
+        //fb sweep task queue
+        private Queue<Action> sweep_queue = new Queue<Action>();
+
+        // buy fb task queue
+        private Queue<Action> buy_fb_queue = new Queue<Action>();
+
+        //buy goods task queue 
+        private Queue<Action> buy_goods_queue = new Queue<Action>();
+
+        //购买pk
+        private Queue<Action> buy_pk_queue = new Queue<Action>();
+
+        //购买海山商店
+        private Queue<Action> buy_mot_queue = new Queue<Action>();
+
         /// account返回
         public void recvAccountServer( ArgsEvent args )
         {
@@ -787,20 +804,20 @@ namespace net.unity3d
         //request
         public void sendFBUpdate( FunctionListenerEvent sListener )
         {
-            Logger.Info( "SEND:C2RM_FB" );
+            Logger.Info(this._account + " SEND:C2RM_FB" );
             C2RM_FB sender = new C2RM_FB();
             sender.uiListen = Dispatcher.addListener( sListener, null);
             this.send( sender );
         }
 
-        //fb sweep task queue
-        private Queue<Action> sweep_queue = new Queue<Action>();
+        
 
         //response 
         public void recvFBInfo( ArgsEvent args )
         {
             RM2C_FB recv = args.getData<RM2C_FB>();
             Logger.Info( "RECV:RM2C_FB >> " + recv.iResult );
+
             if( recv.iResult == 1 )
             {
                 InfoPlayer player = this.dataMode.getPlayer( recv.uiMasterId );
@@ -826,11 +843,155 @@ namespace net.unity3d
 
                     player.addFB( ( int ) recv.vctSFBInfo[ index ].uiIdCsvFB, recv.vctSFBInfo[ index ].luiIdFB );
                     // changed end
+                }
+
+                if( recv.vctSFBInfo.Length == 0 )
+                    Logger.Error( this._account + "  副本列表为空！" );
+                
+                Debug.Assert( recv.vctSFBInfo.Length > 0, "副本列表为空" );
+
+                this.buy_fb_queue.Clear();
+
+                //fb sweep one by one
+                foreach( var item in this.dataMode._serverFB )
+                {
+                    //if(item.Value.resetFBCnt > ?) {
+                    //    continue;
+                    //}
+
+                    int csvFb = item.Value.idCsvFB;
+                    Action func = () =>
+                    {
+                        Logger.Info( "开始发送购买副本命令 " + csvFb );
+
+                        sendBuyFBCnt((int)csvFb, ( UtilListenerEvent evt ) =>
+                        {
+                            Action action = this.buy_fb_queue.Dequeue();
+                            Debug.Assert( action != null);
+
+                            System.Timers.Timer timer = new System.Timers.Timer();
+                            timer.Interval = 50;
+                            timer.AutoReset = false; //once
+                            timer.Enabled = true;
+                            timer.Elapsed += new ElapsedEventHandler((object source, System.Timers.ElapsedEventArgs e) =>
+                            {
+                                action();            
+                            } );
+                        } );
+
+                    };
+
+                    this.buy_fb_queue.Enqueue( func ); 
+                }
+
+                //sweep done!
+                Action end = () =>
+                {
+                    Logger.Info( "购买副本重置全部完成 ");
+
+                    this.sweepFBStart();
+
+                };
+                this.buy_fb_queue.Enqueue( end );
+
+                Action firstAction = this.buy_fb_queue.Dequeue();
+                firstAction();   //do the first task
+
+            }
+            else
+            {
+                Logger.Error( this._account + " RM2C_FB_RESET error: " + recv.iResult );
+            }
+            Dispatcher.dispatchListener( recv.uiListen, recv );
+        }
+
+        //开始扫荡副本
+        private void sweepFBStart()
+        {
+            this.sweep_queue.Clear();
+
+            //fb sweep one by one
+            foreach( var item in this.dataMode._serverFB )
+            {
+                int csvFb = item.Value.idCsvFB;
+                Action func = () =>
+                {
+                    Logger.Info( "开始发送扫荡命令 " + csvFb );
+
+                    sendFBSweep( ( uint ) csvFb, ( UtilListenerEvent evt ) =>
+                    {
+                        RM2C_FB_SWEEP sweep = ( RM2C_FB_SWEEP ) evt.eventArgs;
+                        Action action = this.sweep_queue.Dequeue();
+                        Debug.Assert( action != null );
+
+                        System.Timers.Timer timer = new System.Timers.Timer();
+                        timer.Interval = 50;
+                        timer.AutoReset = false; //once
+                        timer.Enabled = true;
+                        timer.Elapsed += new ElapsedEventHandler( ( object source, System.Timers.ElapsedEventArgs e ) =>
+                        {
+                            action();
+                        } );
+                    } );
+
+                };
+
+                this.sweep_queue.Enqueue( func );
+            }
+
+            //sweep done!
+            Action end = () =>
+            {
+                Logger.Info( this._account + "  扫荡全部完成 " );
+
+                //this.sendFBUpdate(null);//loop
+                this.SMoneyShopStart();
+            };
+
+            this.sweep_queue.Enqueue( end );
+
+            Action firstAction = this.sweep_queue.Dequeue();
+            firstAction();   //do the first task
+
+        }
+
+        /**
+        //response 
+        public void recvFBInfo( ArgsEvent args )
+        {
+            RM2C_FB recv = args.getData<RM2C_FB>();
+            Logger.Info( "RECV:RM2C_FB >> " + recv.iResult );
+            if( recv.iResult == 1 )
+            {
+                InfoPlayer player = this.dataMode.getPlayer( recv.uiMasterId );
+
+                this.dataMode._serverFB.Clear();
+
+                if( player == null )
+                {
+                    Debug.Assert( false, "player is null" );
+                    Logger.Error( "player is null  " + recv.uiMasterId );
+                    return;
+                }
+                player.clearAllFB();
+
+                // add end
+                for( int index = 0; index < recv.vctSFBInfo.Length; index++ )
+                {
+                    if( recv.vctSFBInfo[ index ].luiIdFB == 0 )
+                        continue;
+
+                    //changed by ssy diff type
+                    if( null == this.dataMode.getFB( recv.vctSFBInfo[ index ].luiIdFB ) )
+                        this.dataMode._serverFB.Add( recv.vctSFBInfo[ index ].luiIdFB, new InfoFB( recv.vctSFBInfo[ index ] ) );
+
+                    player.addFB( ( int ) recv.vctSFBInfo[ index ].uiIdCsvFB, recv.vctSFBInfo[ index ].luiIdFB );
+                    // changed end
 
                 }
 
                 Debug.Assert( recv.vctSFBInfo.Length > 0, "副本列表为空" );
-                Logger.Error( this._account + "  副本列表为空！");
+                Logger.Error( this._account + "  副本列表为空！" );
 
                 this.sweep_queue.Clear();
 
@@ -846,20 +1007,20 @@ namespace net.unity3d
                         {
                             RM2C_FB_SWEEP sweep = ( RM2C_FB_SWEEP ) evt.eventArgs;
                             Action action = this.sweep_queue.Dequeue();
-                            Debug.Assert( action != null);
+                            Debug.Assert( action != null );
 
                             action();
                         } );
 
                     };
 
-                    this.sweep_queue.Enqueue( func ); 
+                    this.sweep_queue.Enqueue( func );
                 }
 
                 //sweep done!
                 Action end = () =>
                 {
-                    Logger.Info( "扫荡全部完成 ");
+                    Logger.Info( "扫荡全部完成 " );
 
                 };
                 this.sweep_queue.Enqueue( end );
@@ -873,6 +1034,84 @@ namespace net.unity3d
                 Logger.Error( this._account + " RM2C_FB error: " + recv.iResult );
             }
             Dispatcher.dispatchListener( recv.uiListen, recv );
+        }
+        **/
+
+
+        //开始金币商店相关操作
+        private void SMoneyShopStart()
+        {
+            this.sendGetSMoneyShop( ( UtilListenerEvent evt ) =>
+            {
+                RM2C_GET_SMONEY_SHOP res = (RM2C_GET_SMONEY_SHOP)evt.eventArgs;
+
+                Logger.Info( "商店列表返回: " + res.iResult );
+
+                if( res.iResult != 1 )
+                {
+                    Logger.Error( this._account + " 商店列表返回失败 " + res.iResult );
+                    return;
+                }
+
+                this.sendRefreshMoneyShop( 0, ( UtilListenerEvent ev ) =>
+                {
+                    RM2C_REFRESH_SMONEY_SHOP re = ( RM2C_REFRESH_SMONEY_SHOP ) ev.eventArgs;
+                    if( re.iResult != 1 )
+                    {
+                        Logger.Error( this._account + " 刷新金币商店返回失败 " + re.iResult );
+                        return;    
+                    }
+                    Logger.Info( "刷新商店返回" );
+                    Debug.Assert( this.dataMode.myPlayer.infoMoneyShop.sells.Count == 8 );
+
+
+                    this.buy_goods_queue.Clear();
+
+                    //遍历购买所有物品 8个
+                    foreach( InfoShopObject item in this.dataMode.myPlayer.infoMoneyShop.sells )
+                    {
+                        if( item.isSell == true )
+                            continue;
+
+                        int index = item.index;
+
+                        Action action = () =>
+                        {
+                            this.sendBuyMoneyShop(index, ( UtilListenerEvent e ) =>
+                            {
+                                RM2C_SMONEY_SHOP_BUY buy = ( RM2C_SMONEY_SHOP_BUY ) e.eventArgs;
+                                if( buy.iResult != 1 )
+                                {
+                                    Logger.Error( this._account + " 商店购买返回失败 " + buy.iResult );
+                                }
+                                Logger.Info( "商店购买返回  " + buy.iLoc );
+
+                                Action task = this.buy_goods_queue.Dequeue();
+
+                                task();
+                            } );     
+
+                        };
+
+                        this.buy_goods_queue.Enqueue( action );
+                    }
+
+                    //购买完成任务
+                    Action end = () =>
+                    {
+                        Logger.Info( "购买商品完成!" );
+
+                        this.PKShopStart();
+                    };
+
+                    this.buy_goods_queue.Enqueue(end);
+
+                    Action firstAction = this.buy_goods_queue.Dequeue();
+                    firstAction();
+
+                } );
+
+            } );    
         }
 
         //副本扫荡
@@ -940,6 +1179,485 @@ namespace net.unity3d
                 _fb.idCsvFB = ( int ) recv.sFb.uiIdCsvFB;
             }
             Dispatcher.dispatchListener( recv.uiListen, recv );
+        }
+
+
+        //C2RM_GET_SMONEY_SHOP
+        public void sendGetSMoneyShop( FunctionListenerEvent listener )
+        {
+            Logger.Info( "SEND:C2RM_GET_SMONEY_SHOP >> " + "金币商店信息获取 >> " );
+            C2RM_GET_SMONEY_SHOP sender = new C2RM_GET_SMONEY_SHOP();
+            sender.uiListen = Dispatcher.addListener( listener, null);
+            this.send( sender );
+        }
+
+        ///获取金币商店回复
+        public void recvReplyMoneyShop( ArgsEvent args )
+        {
+            RM2C_GET_SMONEY_SHOP recv = args.getData<RM2C_GET_SMONEY_SHOP>();
+            //this.dataMode.myPlayer.infoMoneyShop.infoCD.timeTeamp = ( double ) recv.uiRefreshTime;
+            
+            if( recv.iResult == 1 )
+            {
+                this.dataMode.myPlayer.infoMoneyShop.timesReset = recv.iCntRefresh;
+
+                int count = recv.m_vctShopGoodsp.Length;
+                this.dataMode.myPlayer.infoMoneyShop.sells.Clear();
+
+                for( int i = 0; i < count; i++ )
+                {
+                    InfoShopObject obj = new InfoShopObject();
+                    obj.index = i;
+                    obj.idCsvShop = ( int ) recv.m_vctShopGoodsp[ i ].uiIdCsvGoods;
+                    if( recv.m_vctShopGoodsp[ i ].cIsBuy == 0 )
+                    {
+                        obj.isSell = false;
+                    }
+                    else
+                    {
+                        obj.isSell = true;
+                    }
+                    this.dataMode.myPlayer.infoMoneyShop.sells.Add( obj );
+                }
+
+            }
+              
+            Dispatcher.dispatchListener( recv.uiListen, recv );
+        }
+
+        //刷新金币商店
+        public void sendRefreshMoneyShop( int type, FunctionListenerEvent listener )
+        {
+            Logger.Info( "SEND:C2RM_REFRESH_SMONEY_SHOP >> " + "刷新金币商店 >> " );
+            C2RM_REFRESH_SMONEY_SHOP sender = new C2RM_REFRESH_SMONEY_SHOP();
+            sender.cType = ( byte ) type;
+            sender.uiListen = Dispatcher.addListener( listener,null);
+            this.send( sender );
+        }
+
+        ///金币商店购买
+        public void sendBuyMoneyShop( int index, FunctionListenerEvent listener )
+        {
+            Logger.Info( "SEND:C2RM_SMONEY_SHOP_BUY >> " + "购买金币商店 >> " + index );
+            C2RM_SMONEY_SHOP_BUY sender = new C2RM_SMONEY_SHOP_BUY();
+            sender.iLoc = index;
+            sender.uiListen = Dispatcher.addListener( listener, null);
+            this.send( sender );
+        }
+
+        ///刷新金币商店回复
+        public void recvRefreshMoneyShop( ArgsEvent args )
+        {
+            RM2C_REFRESH_SMONEY_SHOP recv = args.getData<RM2C_REFRESH_SMONEY_SHOP>();
+            //this.dataMode.myPlayer.infoMoneyShop.infoCD.timeTeamp = ( double ) recv.uiRefreshTime;
+            if( recv.iResult == 1 )
+            {
+                this.dataMode.myPlayer.infoMoneyShop.timesReset = recv.iCntRefresh;
+
+                this.dataMode.myPlayer.money += recv.iCost;
+
+                int count = recv.m_vctShopGoodsp.Length;
+                this.dataMode.myPlayer.infoMoneyShop.sells.Clear();
+
+                for( int i = 0; i < count; i++ )
+                {
+                    InfoShopObject obj = new InfoShopObject();
+                    obj.index = i;
+                    obj.idCsvShop = ( int ) recv.m_vctShopGoodsp[ i ].uiIdCsvGoods;
+                    if( recv.m_vctShopGoodsp[ i ].cIsBuy == 0 )
+                    {
+                        obj.isSell = false;
+                    }
+                    else
+                    {
+                        obj.isSell = true;
+                    }
+                    this.dataMode.myPlayer.infoMoneyShop.sells.Add( obj );
+                }
+
+            }
+
+            Dispatcher.dispatchListener( recv.uiListen, recv );
+        }
+
+        
+        ///购买金币商店物品回复
+        public void recvBuyMoneyShop( ArgsEvent args )
+        {
+            RM2C_SMONEY_SHOP_BUY recv = args.getData<RM2C_SMONEY_SHOP_BUY>();
+            if( recv.iResult == 1 )
+            {
+                this.dataMode.myPlayer.infoMoneyShop.sells[ recv.iLoc ].isSell = true;
+                this.dataMode.myPlayer.money_game += recv.iCost;
+
+                if( recv.SPiece.uiCsvId > 0 )
+                    this.dataMode.infoHeroChip.setHeroChip( ( int ) recv.SPiece.uiCsvId, recv.SPiece.iCnt );
+
+                if( recv.SEquip.uiIdCsvEquipment > 0 )
+                {
+                    TypeCsvProp csvprop = ManagerCsv.getProp( ( int ) recv.SEquip.uiIdCsvEquipment );
+                    if( csvprop.isPropBeast() )
+                    {
+                        //this.dataMode.myPlayer.infoPropBeastList.changeProp( ( int ) recv.SEquip.uiIdCsvEquipment, recv.SEquip.iCnt );
+                    }
+                    else
+                    {
+                        //this.dataMode.myPlayer.infoPropList.changeProp( ( int ) recv.SEquip.uiIdCsvEquipment, recv.SEquip.iCnt );
+                    }
+                }
+
+                //TODO
+                
+
+            }
+            Dispatcher.dispatchListener( recv.uiListen, recv );
+        }
+
+        //开始pk shop相关操作
+        private void PKShopStart()
+        {
+            //get pkshop list
+            this.sendPKShopUpdate( ( UtilListenerEvent evt ) =>
+            {
+                //得到pk商店列表后，重置
+                this.sendPKShopReset(1, ( UtilListenerEvent ev ) =>
+                {
+                    Logger.Info( "刷新PK商店返回" );
+                    Debug.Assert( this.dataMode.myPlayer.infoPK.infoShop.sells.Count == 8 );
+
+                    this.buy_pk_queue.Clear();
+
+                    //遍历购买所有物品 8个
+                    foreach( InfoShopObject item in this.dataMode.myPlayer.infoPK.infoShop.sells )
+                    {
+                        if( item.isSell == true )
+                            continue;
+
+                        int index = item.index;
+
+                        Action action = () =>
+                        {
+                            //购买pk商店物品
+                            this.sendPKShopBuy( index, ( UtilListenerEvent e ) =>
+                            {
+                                RM2C_PK_SHOP_BUY buy = ( RM2C_PK_SHOP_BUY ) e.eventArgs;
+                                if( buy.iResult != 1 )
+                                {
+                                    Logger.Error( this._account + " PK商店购买返回失败 " + buy.iResult );
+                                }
+                                Logger.Info( "PK商店购买返回  " + buy.iLoc );
+
+                                Action task = this.buy_pk_queue.Dequeue();
+
+                                task();
+                            } );
+
+                        };
+
+                        this.buy_pk_queue.Enqueue( action );
+                    }
+
+                    //购买完成任务
+                    Action end = () =>
+                    {
+                        Logger.Info( "购买PK商品完成!" );
+
+
+                        this.MotShopStart();
+                    };
+
+                    this.buy_pk_queue.Enqueue( end );
+
+                    Action firstAction = this.buy_pk_queue.Dequeue();
+                    firstAction();
+
+                } );
+
+            } );      
+        }
+
+        //开始 Mot shop相关操作
+        private void MotShopStart()
+        {
+            Logger.Info( this._account + " 开始操作远征商店" );
+
+            //获取远征商店列表
+            this.sendGetEDShop( ( UtilListenerEvent evt ) =>
+            {
+                //得到远征商店列表后，重置
+                this.sendRefreshEDShop( 1, ( UtilListenerEvent ev ) =>
+                {
+                    Logger.Info( "刷新远程商店返回" );
+                    Debug.Assert( this.dataMode.myPlayer.infoEDShop.sells.Count == 8 );
+
+                    this.buy_mot_queue.Clear();
+
+                    //遍历购买所有物品 8个
+                    foreach( InfoShopObject item in this.dataMode.myPlayer.infoEDShop.sells )
+                    {
+                        if( item.isSell == true )
+                            continue;
+
+                        int index = item.index;
+
+                        Action action = () =>
+                        {
+                            //购买远征商店物品
+                            this.sendBuyEDShop( index, ( UtilListenerEvent e ) =>
+                            {
+                                RM2C_MOUNTAIN_SHOP_BUY buy = ( RM2C_MOUNTAIN_SHOP_BUY ) e.eventArgs;
+                                if( buy.iResult != 1 )
+                                {
+                                    Logger.Error( this._account + " 远征商店购买返回失败 " + buy.iResult );
+                                }
+                                Logger.Info( "远征商店购买返回  " + buy.iLoc );
+
+                                Action task = this.buy_mot_queue.Dequeue();
+
+                                task();
+                            } );
+
+                        };
+
+                        this.buy_mot_queue.Enqueue( action );
+                    }
+
+                    //购买完成任务
+                    Action end = () =>
+                    {
+                        Logger.Info( "购买远征商品完成!" );
+
+
+                    };
+
+                    this.buy_mot_queue.Enqueue( end );
+
+                    Action firstAction = this.buy_mot_queue.Dequeue();
+                    firstAction();
+
+                } );
+
+            } );
+        }
+
+        /// 竞技 商店 更新
+        public void sendPKShopUpdate( FunctionListenerEvent sListener )
+        {
+            Logger.Info( "SEND:C2RM_GET_PK_SHOP >> 竞技 商店 更新" );
+            C2RM_GET_PK_SHOP sender = new C2RM_GET_PK_SHOP();
+            sender.uiListen = Dispatcher.addListener( sListener, null);
+            this.send( sender );
+        }
+
+        /// 竞技 商店 刷新 0系统定时自动刷新，1竞技积分刷新
+        public void sendPKShopReset( byte sType, FunctionListenerEvent sListener )
+        {
+            Logger.Info( "SEND:C2RM_REFRESH_PK_SHOP >> 竞技 商店 刷新" );
+            C2RM_REFRESH_PK_SHOP sender = new C2RM_REFRESH_PK_SHOP();
+            sender.uiListen = Dispatcher.addListener( sListener, null);
+            sender.cType = sType;
+            this.send( sender );
+        }
+
+        /// 竞技 商店 购买
+        public void sendPKShopBuy( int sIndex, FunctionListenerEvent sListener )
+        {
+            Logger.Info( "SEND:C2RM_PK_SHOP_BUY >> 竞技 商店 购买 " + sIndex );
+            C2RM_PK_SHOP_BUY sender = new C2RM_PK_SHOP_BUY();
+            sender.uiListen = Dispatcher.addListener( sListener, null);
+            sender.iLoc = sIndex;
+            this.send( sender );
+        }
+
+        /// 竞技 商店 更新
+        public void recvPKShopUpdate( ArgsEvent args )
+        {
+            RM2C_GET_PK_SHOP recv = args.getData<RM2C_GET_PK_SHOP>();
+            Logger.Info( "RECV:RM2C_GET_PK_SHOP >> " + recv.iResult + "竞技 商店 更新" );
+
+            if( 1 == recv.iResult )
+            {
+                this.dataMode.myPlayer.infoPK.infoShop.sells.Clear();
+                //this.dataMode.myPlayer.infoPK.infoShop.infoCD.timeTeamp = ( double ) recv.uiRefreshTime;
+                this.dataMode.myPlayer.infoPK.infoShop.timesReset = recv.iCntRefresh;
+
+                for( int index = 0; index < recv.m_vctShopGoodsp.Length; index++ )
+                {
+                    InfoShopObject shopObj = new InfoShopObject();
+                    shopObj.idCsvShop = ( int ) recv.m_vctShopGoodsp[ index ].uiIdCsvGoods;
+                    shopObj.isSell = ( recv.m_vctShopGoodsp[ index ].cIsBuy == 1 );
+                    shopObj.index = index;
+                    this.dataMode.myPlayer.infoPK.infoShop.sells.Add( shopObj );
+                }
+            }
+            else
+            {
+                Logger.Error( this._account + " PK商店列表返回失败 " + recv.iResult );
+                return;
+            }
+            Dispatcher.dispatchListener( recv.uiListen, recv );
+        }
+
+        /// 竞技 商店 刷新 0系统定时自动刷新，1竞技积分刷新
+        public void recvPKShopReset( ArgsEvent args )
+        {
+            RM2C_REFRESH_PK_SHOP recv = args.getData<RM2C_REFRESH_PK_SHOP>();
+            Logger.Info( "RECV:RM2C_REFRESH_PK_SHOP >> " + recv.iResult + "竞技 商店 刷新" );
+
+            if( 1 == recv.iResult )
+            {
+                this.dataMode.myPlayer.infoPK.score += recv.iCostScoreFight;
+
+                this.dataMode.myPlayer.infoPK.infoShop.sells.Clear();
+                //this.dataMode.myPlayer.infoPK.infoShop.infoCD.timeTeamp = ( double ) recv.uiRefreshTime;
+                this.dataMode.myPlayer.infoPK.infoShop.timesReset = recv.iCntRefresh;
+
+                for( int index = 0; index < recv.m_vctShopGoodsp.Length; index++ )
+                {
+                    InfoShopObject shopObj = new InfoShopObject();
+                    shopObj.idCsvShop = ( int ) recv.m_vctShopGoodsp[ index ].uiIdCsvGoods;
+                    shopObj.isSell = ( recv.m_vctShopGoodsp[ index ].cIsBuy == 1 );
+                    shopObj.index = index;
+                    this.dataMode.myPlayer.infoPK.infoShop.sells.Add( shopObj );
+                }
+            }
+            else
+            {
+                Logger.Error( this._account + " 刷新PK商店返回失败 " + recv.iResult );
+                return;
+            }
+            Dispatcher.dispatchListener( recv.uiListen, recv );
+        }
+
+        /// 竞技 商店 购买
+        public void recvPKShopBuy( ArgsEvent args )
+        {
+            RM2C_PK_SHOP_BUY recv = args.getData<RM2C_PK_SHOP_BUY>();
+            Logger.Info( "RECV:RM2C_PK_SHOP_BUY >> " + recv.iResult + "竞技商店购买返回 " + recv.iLoc);
+
+            //TODO ...
+
+            Dispatcher.dispatchListener( recv.uiListen, recv );
+        }
+
+        ///获取海加尔山商店信息
+        public void sendGetEDShop( FunctionListenerEvent listener )
+        {
+            Logger.Info( "SEND:C2RM_GET_MOUNTAIN_SHOP >> " + "远征商店信息获取 >> " );
+            C2RM_GET_MOUNTAIN_SHOP sender = new C2RM_GET_MOUNTAIN_SHOP();
+            sender.uiListen = Dispatcher.addListener( listener, null);
+            this.send( sender );
+        }
+
+        ///刷新海加尔山商店
+        public void sendRefreshEDShop( int type, FunctionListenerEvent listener )
+        {
+            Logger.Info( "SEND:C2RM_REFRESH_MOUNTAIN_SHOP >> " + "刷新远征商店 >> " );
+            C2RM_REFRESH_MOUNTAIN_SHOP sender = new C2RM_REFRESH_MOUNTAIN_SHOP();
+            sender.cType = ( byte ) type;
+            sender.uiListen = Dispatcher.addListener( listener, null);
+            this.send( sender );
+        }
+
+        ///海加尔山商店购买
+        public void sendBuyEDShop( int index, FunctionListenerEvent listener )
+        {
+            Logger.Info( "SEND:C2RM_MOUNTAIN_SHOP_BUY >> " + "购买远征商店 >> " + index );
+            C2RM_MOUNTAIN_SHOP_BUY sender = new C2RM_MOUNTAIN_SHOP_BUY();
+            sender.iLoc = index;
+            sender.uiListen = Dispatcher.addListener( listener, null);
+            this.send( sender );
+        }
+
+        //获取海加尔山商店回复
+        public void recvReplyEDShop( ArgsEvent args )
+        {
+            RM2C_GET_MOUNTAIN_SHOP recv = args.getData<RM2C_GET_MOUNTAIN_SHOP>();
+            if( recv.iResult == 1 )
+            {
+                this.dataMode.myPlayer.infoEDShop.timesReset = recv.iCntRefresh;
+                //this.dataMode.myPlayer.infoEDShop.infoCD.timeTeamp = ( double ) recv.uiRefreshTime;
+                int count = recv.m_vctShopGoodsp.Length;
+                this.dataMode.myPlayer.infoEDShop.sells.Clear();
+                for( int i = 0; i < count; i++ )
+                {
+                    InfoShopObject obj = new InfoShopObject();
+                    obj.index = i;
+                    obj.idCsvShop = ( int ) recv.m_vctShopGoodsp[ i ].uiIdCsvGoods;
+                    if( recv.m_vctShopGoodsp[ i ].cIsBuy == 0 )
+                    {
+                        obj.isSell = false;
+                    }
+                    else
+                    {
+                        obj.isSell = true;
+                    }
+                    this.dataMode.myPlayer.infoEDShop.sells.Add( obj );
+                }
+
+            }
+            else
+            {
+                Logger.Error(this._account + " 远征商店获取失败 " + recv.iResult );
+                return;
+            }
+
+            Dispatcher.dispatchListener( recv.uiListen, recv );
+        }
+
+        ///刷新海加尔山商店
+        public void recvUpdateEDShop( ArgsEvent args )
+        {
+            RM2C_REFRESH_MOUNTAIN_SHOP recv = args.getData<RM2C_REFRESH_MOUNTAIN_SHOP>();
+            if( recv.iResult == 1 )
+            {
+                this.dataMode.myPlayer.infoEDShop.timesReset = recv.iCntRefresh;
+                //this.dataMode.myPlayer.infoEDShop.infoCD.timeTeamp = ( double ) recv.uiRefreshTime;
+
+                //这里面需要确认是否+=
+                //this.dataMode.myPlayer.infoPoint.moneyTBC += recv.iCost;
+
+                int count = recv.m_vctShopGoodsp.Length;
+                this.dataMode.myPlayer.infoEDShop.sells.Clear();
+                for( int i = 0; i < count; i++ )
+                {
+                    InfoShopObject obj = new InfoShopObject();
+                    obj.index = i;
+                    obj.idCsvShop = ( int ) recv.m_vctShopGoodsp[ i ].uiIdCsvGoods;
+                    if( recv.m_vctShopGoodsp[ i ].cIsBuy == 0 )
+                    {
+                        obj.isSell = false;
+                    }
+                    else
+                    {
+                        obj.isSell = true;
+                    }
+                    this.dataMode.myPlayer.infoEDShop.sells.Add( obj );
+                }
+                Dispatcher.dispatchListener( recv.uiListen, recv );
+            }
+            else
+            {
+                Logger.Error( this._account + " 刷新远征商店失败 " + recv.iResult );
+                return;
+            }
+
+        }
+
+        ///海加尔山商店购买回复
+        public void recvBuyEDShop( ArgsEvent args )
+        {
+            RM2C_MOUNTAIN_SHOP_BUY recv = args.getData<RM2C_MOUNTAIN_SHOP_BUY>();
+            //TODO
+
+            Dispatcher.dispatchListener( recv.uiListen, recv );
+        }
+
+        public void recvTickByOther( ArgsEvent args )
+        {
+            RM2C_TICK_BY_OTHER recv = args.getData<RM2C_TICK_BY_OTHER>();
+
+            Logger.Error( this._account + " 被踢  reson: " + recv.iReason );
         }
     }
 	
