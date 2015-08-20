@@ -133,6 +133,19 @@ namespace robot
             agent.addListenEvent( ( ushort ) E_OPCODE.EP_RM2C_REFRESH_MOUNTAIN_SHOP, agent.recvUpdateEDShop );
             agent.addListenEvent( ( ushort ) E_OPCODE.EP_RM2C_MOUNTAIN_SHOP_BUY, agent.recvBuyEDShop );
 
+            ///发送背包宠物信息
+            agent.addListenEvent( ( ushort ) E_OPCODE.EP_RM2C_PET_INFO_BAG, agent.recvHeroBag );
+
+            //piece 列表返回
+            agent.addListenEvent( ( ushort ) E_OPCODE.EP_RM2C_PIECE, agent.recvHeroChipUpdate );
+
+            //碎片合成返回
+            agent.addListenEvent( ( ushort ) E_OPCODE.EP_RM2C_PET_PIECE_TO_PET, agent.recvPetChipToPet );
+
+            agent.addListenEvent( ( ushort ) E_OPCODE.EP_RM2C_PET_STAR_UP, agent.recvPetStarUp );
+            //agent.addListenEvent( ( ushort ) E_OPCODE.EP_RM2C_STONE_INLAY, recvPetStoneInLay );
+            //agent.addListenEvent( ( ushort ) E_OPCODE.EP_RM2C_PET_STONE_UP, recvPetStoneUp );
+
             //agent.addListenEvent( ( ushort ) E_OPCODE.EP_RM2C_PING_PRO_TWO, recvPingTwo );
             //agent.addListenEvent( ( ushort ) E_OPCODE.EP_RM2C_BEAST_INFO, recvBeastInfo );
             //agent.addListenEvent( ( ushort ) E_OPCODE.EP_RM2C_BEAST_LV_UP, recvBeastLvUp );
@@ -151,8 +164,7 @@ namespace robot
 
             ///
             /**
-            ///发送背包宠物信息
-            agent.addListenEvent( ( ushort ) E_OPCODE.EP_RM2C_PET_INFO_BAG, recvHeroBag );
+            
 
             ///发送酒馆宠物信息
             agent.addListenEvent( ( ushort ) E_OPCODE.EP_RM2C_PET_INFO_BAR, recvHeroWarehouse );
@@ -215,11 +227,9 @@ namespace robot
 
             agent.addListenEvent( ( ushort ) E_OPCODE.EP_RM2C_TASK_LV, recvTaskLVReward );
 
-            agent.addListenEvent( ( ushort ) E_OPCODE.EP_RM2C_PET_STAR_UP, recvPetStarUp );
-            agent.addListenEvent( ( ushort ) E_OPCODE.EP_RM2C_STONE_INLAY, recvPetStoneInLay );
-            agent.addListenEvent( ( ushort ) E_OPCODE.EP_RM2C_PET_STONE_UP, recvPetStoneUp );
+            
 
-            agent.addListenEvent( ( ushort ) E_OPCODE.EP_RM2C_PET_PIECE_TO_PET, recvPetChipToPet );
+            
             agent.addListenEvent( ( ushort ) E_OPCODE.EP_RM2C_PET_PIECE_SELL, recvPetChipSell );
 
             

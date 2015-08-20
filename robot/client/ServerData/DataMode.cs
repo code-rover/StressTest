@@ -12,6 +12,9 @@ public class DataMode
     /// 主角缓存(idServer, value)
     public Dictionary<uint, InfoPlayer> _serverPlayer = new Dictionary<uint, InfoPlayer>();
 
+    /// 卡片缓存(idServer, value)
+    public Dictionary<ulong, InfoHero> _serverHero = new Dictionary<ulong, InfoHero>();
+
     // 副本缓存(idServer, value)
     public Dictionary<ulong, InfoFB> _serverFB = new Dictionary<ulong, InfoFB>();
 
@@ -45,6 +48,16 @@ public class DataMode
         if( !_serverPlayer.ContainsKey( idServer ) )
             return null;
         return _serverPlayer[ idServer ];
+    }
+
+    /// 获得 卡牌
+    public InfoHero getHero( ulong idServer )
+    {
+        if( idServer == 0 )
+            return null;
+        if( !_serverHero.ContainsKey( idServer ) )
+            return null;
+        return _serverHero[ idServer ];
     }
 
     /// 获得 副本信息

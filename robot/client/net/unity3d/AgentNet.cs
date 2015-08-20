@@ -421,6 +421,12 @@ namespace net.unity3d
         //购买海山商店
         private Queue<Action> buy_mot_queue = new Queue<Action>();
 
+        //碎片合成队列
+        private Queue<Action> piece_to_pet_queue = new Queue<Action>();
+
+        //升星
+        private Queue<Action> star_up_queue = new Queue<Action>();
+
         /// account返回
         public void recvAccountServer( ArgsEvent args )
         {
@@ -718,10 +724,18 @@ namespace net.unity3d
                         {
                             Logger.Info( "打开60级奖励 完成 " + evt );
 
-                        } );       
+                        } );
+                    }
+                    else
+                    {
+                        opendMails.Add( csvMailId );
+                        sendOpenEmail( e.Key, ( UtilListenerEvent evt ) =>
+                        {
+                            Logger.Info( "打开邮件奖励完成 --" );
+
+                        } );     
                     }
                 }
-                
             }
 
             Logger.Info( "收到未读邮件数量:" + cnt );
@@ -763,14 +777,7 @@ namespace net.unity3d
                     if( recv.vctSEquip[ i ].uiIdCsvEquipment > 0 )
                     {
                         csvprop = ManagerCsv.getProp( ( int ) recv.vctSEquip[ i ].uiIdCsvEquipment );
-                        if( csvprop.isPropBeast() )
-                        {
-                            //DataMode.myPlayer.infoPropBeastList.changeProp( ( int ) recv.vctSEquip[ i ].uiIdCsvEquipment, recv.vctSEquip[ i ].iCnt );
-                        }
-                        else
-                        {
-                            //DataMode.myPlayer.infoPropList.changeProp( ( int ) recv.vctSEquip[ i ].uiIdCsvEquipment, recv.vctSEquip[ i ].iCnt );
-                        }
+                        //...
                     }
                 }
             }
@@ -784,7 +791,6 @@ namespace net.unity3d
             RM2C_REWARD_MONEY recv = args.getData<RM2C_REWARD_MONEY>();
 
             Logger.Info( "RM2C_REWARD_MONEY" );
-
             
             this.dataMode.myPlayer.money_game += ( long ) recv.sRewardMoney.uiSMoney;
             this.dataMode.myPlayer.money += ( long ) recv.sRewardMoney.uiQMoney;
@@ -796,9 +802,7 @@ namespace net.unity3d
             this.dataMode.myPlayer.honer += ( long ) recv.sRewardMoney.uiPrestige;
             this.dataMode.myPlayer.exp += ( ulong ) recv.sRewardMoney.uiExp;
             //this.dataMode.myPlayer.infoPoint.moneyTBC += ( long ) recv.sRewardMoney.uiMot;
-            
         }
-
 
         ///获取副本信息
         //request
@@ -809,8 +813,6 @@ namespace net.unity3d
             sender.uiListen = Dispatcher.addListener( sListener, null);
             this.send( sender );
         }
-
-        
 
         //response 
         public void recvFBInfo( ArgsEvent args )
@@ -954,89 +956,6 @@ namespace net.unity3d
             firstAction();   //do the first task
 
         }
-
-        /**
-        //response 
-        public void recvFBInfo( ArgsEvent args )
-        {
-            RM2C_FB recv = args.getData<RM2C_FB>();
-            Logger.Info( "RECV:RM2C_FB >> " + recv.iResult );
-            if( recv.iResult == 1 )
-            {
-                InfoPlayer player = this.dataMode.getPlayer( recv.uiMasterId );
-
-                this.dataMode._serverFB.Clear();
-
-                if( player == null )
-                {
-                    Debug.Assert( false, "player is null" );
-                    Logger.Error( "player is null  " + recv.uiMasterId );
-                    return;
-                }
-                player.clearAllFB();
-
-                // add end
-                for( int index = 0; index < recv.vctSFBInfo.Length; index++ )
-                {
-                    if( recv.vctSFBInfo[ index ].luiIdFB == 0 )
-                        continue;
-
-                    //changed by ssy diff type
-                    if( null == this.dataMode.getFB( recv.vctSFBInfo[ index ].luiIdFB ) )
-                        this.dataMode._serverFB.Add( recv.vctSFBInfo[ index ].luiIdFB, new InfoFB( recv.vctSFBInfo[ index ] ) );
-
-                    player.addFB( ( int ) recv.vctSFBInfo[ index ].uiIdCsvFB, recv.vctSFBInfo[ index ].luiIdFB );
-                    // changed end
-
-                }
-
-                Debug.Assert( recv.vctSFBInfo.Length > 0, "副本列表为空" );
-                Logger.Error( this._account + "  副本列表为空！" );
-
-                this.sweep_queue.Clear();
-
-                //fb sweep one by one
-                foreach( var item in this.dataMode._serverFB )
-                {
-                    int csvFb = item.Value.idCsvFB;
-                    Action func = () =>
-                    {
-                        Logger.Info( "开始发送扫荡命令 " + csvFb );
-
-                        sendFBSweep( ( uint ) csvFb, ( UtilListenerEvent evt ) =>
-                        {
-                            RM2C_FB_SWEEP sweep = ( RM2C_FB_SWEEP ) evt.eventArgs;
-                            Action action = this.sweep_queue.Dequeue();
-                            Debug.Assert( action != null );
-
-                            action();
-                        } );
-
-                    };
-
-                    this.sweep_queue.Enqueue( func );
-                }
-
-                //sweep done!
-                Action end = () =>
-                {
-                    Logger.Info( "扫荡全部完成 " );
-
-                };
-                this.sweep_queue.Enqueue( end );
-
-                Action firstAction = this.sweep_queue.Dequeue();
-                firstAction();   //do the first task
-
-            }
-            else
-            {
-                Logger.Error( this._account + " RM2C_FB error: " + recv.iResult );
-            }
-            Dispatcher.dispatchListener( recv.uiListen, recv );
-        }
-        **/
-
 
         //开始金币商店相关操作
         private void SMoneyShopStart()
@@ -1307,7 +1226,6 @@ namespace net.unity3d
                 }
 
                 //TODO
-                
 
             }
             Dispatcher.dispatchListener( recv.uiListen, recv );
@@ -1427,7 +1345,7 @@ namespace net.unity3d
                     {
                         Logger.Info( "购买远征商品完成!" );
 
-
+                        this.piece2petStart();    
                     };
 
                     this.buy_mot_queue.Enqueue( end );
@@ -1438,6 +1356,100 @@ namespace net.unity3d
                 } );
 
             } );
+        }
+
+        //碎片合成
+        public void piece2petStart()
+        {
+            //获取碎片列表，准备合成英雄
+            this.sendHeroChipUpdate( ( UtilListenerEvent evt ) =>
+            {
+                Dictionary<int, long> chipHero = this.dataMode.infoHeroChip.chipHero;
+
+                this.piece_to_pet_queue.Clear();
+
+                foreach( var item in chipHero )
+                {
+                    int sameid = item.Key;
+
+                    Action action = () =>
+                    {
+                        Logger.Info( this._account + " 碎片合成 " + sameid );
+                        this.sendPetChipToPet( sameid, ( UtilListenerEvent evt2 ) =>
+                        {
+                            RM2C_PET_PIECE_TO_PET p2p = ( RM2C_PET_PIECE_TO_PET ) evt2.eventArgs;
+
+                            Logger.Info( this._account + " 碎片合成返回 " + p2p.sPiece.luiIdPiece );
+
+                            Action task = this.piece_to_pet_queue.Dequeue();
+                            task();
+                        } );   
+                    };
+                    this.piece_to_pet_queue.Enqueue( action );
+                }
+
+                Action end = () => {
+                    Logger.Info("碎片合成完成");
+
+                    this.heroStart();
+                };
+                this.piece_to_pet_queue.Enqueue( end );
+
+                Action firstAction = this.piece_to_pet_queue.Dequeue();
+                firstAction();  //start
+            } );
+
+        }
+
+        //英雄相关操作开始
+        public void heroStart()
+        {
+            Logger.Info( this._account + " 开始获取英雄列表" );
+
+            //获取英雄列表
+            this.sendHeroUpdateBag( ( UtilListenerEvent evt2 ) =>
+            {
+                RM2C_PET_INFO_BAG pet_bag = ( RM2C_PET_INFO_BAG ) evt2.eventArgs;
+
+                List<ulong> heroList = this.dataMode.myPlayer.infoHeroList.getHeroList();
+
+                foreach( ulong hid in heroList )
+                {
+                    InfoHero heroInfo = this.dataMode.getHero( hid );
+                    Debug.Assert( heroInfo != null, "heroInfo is null" );
+
+                    if( heroInfo.star == 10 )
+                        continue;
+
+                    Action action = () =>
+                    {
+                        Logger.Info( this._account + " pet开始升星  " + hid );
+                        sendPetStarUp( hid, ( UtilListenerEvent evt ) =>
+                        {
+                            RM2C_PET_STAR_UP starup = ( RM2C_PET_STAR_UP ) evt.eventArgs;
+                            Logger.Info( this._account + " 卡牌升级返回  star: " + starup.sPetStarInfo.uiStar );
+
+                            Action next = this.star_up_queue.Dequeue();
+                            next();   //execute next task in queue
+                        } );    
+                    };
+
+                    this.star_up_queue.Enqueue( action );
+                    
+                }
+
+                Action end = () =>
+                {
+                    Logger.Info("英雄升级己完成");
+
+                };
+                this.star_up_queue.Enqueue( end );
+
+                Action firstAction = this.star_up_queue.Dequeue();
+                firstAction();
+
+                Logger.Info( "Hero Bag info" );
+            } );     
         }
 
         /// 竞技 商店 更新
@@ -1649,6 +1661,171 @@ namespace net.unity3d
         {
             RM2C_MOUNTAIN_SHOP_BUY recv = args.getData<RM2C_MOUNTAIN_SHOP_BUY>();
             //TODO
+
+            Dispatcher.dispatchListener( recv.uiListen, recv );
+        }
+
+        ///获取背包宠物信息
+        public void sendHeroUpdateBag( FunctionListenerEvent sListener )
+        {
+            C2RM_PET_INFO_BAG sender = new C2RM_PET_INFO_BAG();
+            sender.uiListen = Dispatcher.addListener( sListener, null);
+            this.send( sender );
+        }
+
+        ///发送背包宠物信息
+        public void recvHeroBag( ArgsEvent args )
+        {
+            RM2C_PET_INFO_BAG recv = args.getData<RM2C_PET_INFO_BAG>();
+            /// 返回数据1
+            if( recv.iResult == 1 )
+            {
+                InfoPlayer player = this.dataMode.getPlayer( recv.uiMasterId );
+                if( recv.cIsBegin == 1 )
+                    player.infoHeroList.clear();
+
+                for( int index = 0; index < recv.vctSPetInfo.Length; index++ )
+                {
+                    if( recv.vctSPetInfo[ index ].uiIdPet == 0 )
+                        continue;
+                    
+                    /// 创建卡片
+                    if( null == this.dataMode.getHero( recv.vctSPetInfo[ index ].uiIdPet ) )
+                        this.dataMode._serverHero.Add( recv.vctSPetInfo[ index ].uiIdPet, new InfoHero() );
+
+                    player.infoHeroList.addHero( recv.vctSPetInfo[ index ].uiIdPet );
+                    /// 设计角色基本信息
+                    InfoHero hero = this.dataMode.getHero( recv.vctSPetInfo[ index ].uiIdPet );
+
+                    hero.exp = recv.vctSPetInfo[ index ].luiExp;
+                    hero.idCsv = ( int ) recv.vctSPetInfo[ index ].uiIdCsvPet;
+                    hero.idServer = recv.vctSPetInfo[ index ].uiIdPet;
+                    //				hero.addNumber = recv.vctSPetInfo[index].sAddNum;
+                    hero.isProtected = recv.vctSPetInfo[ index ].cIsProtect == 0 ? false : true;
+                    hero.star = ( int ) recv.vctSPetInfo[ index ].uiStar;
+                    //hero.infoStone.setStone( ( ulong ) recv.vctSPetInfo[ index ].uiStone );
+
+                    TypeCsvHero csvHero = ManagerCsv.getHero( hero.idCsv );
+                    /// 设置技能信息
+                    //hero.infoSkill.clear();
+                    if( csvHero == null )
+                    {
+                        Logger.Error( "hero not exist in csv hero id = " + hero.idCsv );
+                    }
+                    
+                    //TODO ...
+
+                }
+            }
+            else
+            {
+                Logger.Error( "RM2C_PET_INFO_BAG error " + recv.iResult );
+                return;
+            }
+
+            if( recv.cIsOver == 1 )  //本命令完成
+            {
+                Dispatcher.dispatchListener( recv.uiListen, recv );    
+            }
+            
+        }
+
+        /// 升级星级
+        public void sendPetStarUp( ulong serverId, FunctionListenerEvent sListener )
+        {
+            Logger.Info( "SEND : C2RM_PET_STAR_UP >> " + serverId );
+
+            C2RM_PET_STAR_UP sender = new C2RM_PET_STAR_UP();
+            sender.uiPetId = serverId;
+            sender.uiListen = Dispatcher.addListener( sListener, null);
+            this.send( sender );
+
+        }
+
+        /// 升星
+        public void recvPetStarUp( ArgsEvent args )
+        {
+            RM2C_PET_STAR_UP recv = args.getData<RM2C_PET_STAR_UP>();
+            Logger.Info( "RM2C_PET_STAR_UP >> iResult = " + recv.iResult );
+
+            //TODO ...
+
+            Dispatcher.dispatchListener( recv.uiListen, recv );
+        }
+
+        /// 碎片 信息更新
+        public void sendHeroChipUpdate( FunctionListenerEvent sListener )
+        {
+            C2RM_PIECE sender = new C2RM_PIECE();
+            Logger.Info( "SEND:C2RM_PIECE >> " + "碎片 信息更新" );
+            sender.uiListen = Dispatcher.addListener( sListener, null);
+            this.send( sender );
+        }
+
+        /// 碎片 信息更新
+        public void recvHeroChipUpdate( ArgsEvent args )
+        {
+            RM2C_PIECE recv = args.getData<RM2C_PIECE>();
+
+            Logger.Info(this._account + "  RECV:RM2C_PIECE >> " + "碎片 信息更新" );
+
+            this.dataMode.infoHeroChip.Clear();
+
+            /// 更新我的背包信息
+            for( int i = 0; i < recv.sPiece.Length; i++ )
+            {
+                this.dataMode.infoHeroChip.setHeroChip( ( int ) recv.sPiece[ i ].uiCsvId, recv.sPiece[ i ].iCnt );
+            }
+            Dispatcher.dispatchListener( recv.uiListen, recv );
+        }
+
+        /// 合成卡牌
+        public void sendPetChipToPet( int sameId, FunctionListenerEvent sListener )
+        {
+            Logger.Info( "SEND : sendPetChipToPet >> " );
+            C2RM_PET_PIECE_TO_PET sender = new C2RM_PET_PIECE_TO_PET();
+            sender.uiCsvId = ( uint ) sameId;
+            sender.uiListen = Dispatcher.addListener( sListener, null);
+            this.send( sender );
+        }
+
+        /// 合成卡牌
+        public void recvPetChipToPet( ArgsEvent args )
+        {
+            RM2C_PET_PIECE_TO_PET recv = args.getData<RM2C_PET_PIECE_TO_PET>();
+            Logger.Info( "RM2C_PET_PIECE_TO_PET >> iResult = " + recv.iResult );
+
+            if( recv.iResult == 1 )
+            {
+                this.dataMode.myPlayer.money += ( long ) recv.sMoney.iQMoney;
+                this.dataMode.myPlayer.money_game += ( long ) recv.sMoney.iSMoney;
+
+                /// 创建出来卡牌信息
+                if( !this.dataMode._serverHero.ContainsKey( recv.sPetInfo.uiIdPet ) )
+                    this.dataMode._serverHero.Add( recv.sPetInfo.uiIdPet, new InfoHero() );
+
+                InfoHero hero = this.dataMode.getHero( recv.sPetInfo.uiIdPet );
+                hero.exp = recv.sPetInfo.luiExp;
+                hero.idServer = recv.sPetInfo.uiIdPet;
+                hero.idCsv = ( int ) recv.sPetInfo.uiIdCsvPet;
+                hero.star = ( int ) recv.sPetInfo.uiStar;
+                //hero.infoStone.setStone( ( ulong ) recv.sPetInfo.uiStone );
+
+                this.dataMode.infoHeroChip.setHeroChip( ( int ) recv.sPiece.uiCsvId, recv.sPiece.iCnt );
+
+                TypeCsvHero csvHero = ManagerCsv.getHero( hero.idCsv );
+                /// 设置技能信息
+                //hero.infoSkill.clear();
+                
+                //TODO ...
+
+                /// 保存卡牌
+                this.dataMode.myPlayer.infoHeroList.addHero( hero.idServer );
+            }
+            else
+            {
+                Logger.Error( "RM2C_PET_PIECE_TO_PET error  " + recv.iResult );
+            }
 
             Dispatcher.dispatchListener( recv.uiListen, recv );
         }

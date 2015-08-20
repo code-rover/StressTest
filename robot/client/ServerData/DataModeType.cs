@@ -954,7 +954,7 @@ public class InfoPlayer
 	/// 卡牌仓库上限
 	public int maxHeroListWarehouse = 0;
 	/// 背包角色信息
-	//public InfoHeroList infoHeroList = new InfoHeroList();
+	public InfoHeroList infoHeroList = new InfoHeroList();
 	/// 魂兽背包信息
 	//public InfoBeastList infoBeastList = new InfoBeastList();
 	/// 好友
@@ -1577,3 +1577,92 @@ public class InfoPK
 }
 
 
+/// 卡片 信息
+public class InfoHero
+{
+    public ulong idServer;
+    public int idCsv;
+    public ulong exp;
+    /// 卡牌是几星的
+    public int star = 1;
+
+
+    /// 我会的技能
+    //public InfoSkillList infoSkill = new InfoSkillList();
+    /// 我的装备
+    //public InfoPropList infoEquip = new InfoPropList();
+    /// 我的进阶石属性增加
+    //public InfoStone infoStone = new InfoStone();
+
+    /// 计算我本身的进阶石头属性
+    
+    //TODO
+    //...
+
+    /// 属于团队几的
+    public bool isInTeam;
+    /// 是否是队长
+    public bool isTeamLeader;
+    /// 我的站立位置算法
+    public int standIndex;
+    /// 被保护起来的
+    public bool isProtected = false;
+
+
+    private static Dictionary<ulong, int> _fastExpLv = new Dictionary<ulong, int>();
+    public static void clearFastExpLv()
+    {
+        _fastExpLv.Clear();
+    }
+    
+
+}
+
+
+/// 卡片 列表
+public class InfoHeroList
+{
+	/// 获得角色
+    private List<ulong> _heros = new List<ulong>();
+
+    /// 获得所有的角色列表
+    public List<InfoHero> getHeros()
+    {
+        List<InfoHero> result = new List<InfoHero>();
+        /// 寻找相同团队的
+        //for( int index = 0; index < _heros.Count; index++ )
+        //{
+        //    result.Add(DataMode.getHero( _heros[ index ] ) );
+        //}
+        return result;
+    }
+
+    public List<ulong> getHeroList()
+    {
+        return _heros;
+    }
+
+    /// 添加数据
+    public void addHero( ulong idServerHero )
+    {
+        if( -1 == _heros.IndexOf( idServerHero ) )
+        {
+            _heros.Add( idServerHero );
+        }
+    }
+    /// 移除数据
+    public void removeHero( ulong idServerHero )
+    {
+        if( -1 != _heros.IndexOf( idServerHero ) )
+            _heros.Remove( idServerHero );
+    }
+
+    /// 清除
+    public void clear()
+    {
+        _heros.Clear();
+    }
+
+    //TODO ...
+
+}
