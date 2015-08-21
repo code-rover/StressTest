@@ -31,7 +31,7 @@ namespace robot
             load_csv();  //加载csv
 
 
-            int account = 4660;    //开始帐号
+            int account = 4661;    //开始帐号
             string passwd = "123";
             string macId = "";
  
@@ -143,6 +143,21 @@ namespace robot
             agent.addListenEvent( ( ushort ) E_OPCODE.EP_RM2C_PET_PIECE_TO_PET, agent.recvPetChipToPet );
 
             agent.addListenEvent( ( ushort ) E_OPCODE.EP_RM2C_PET_STAR_UP, agent.recvPetStarUp );
+
+            //吃经验药升级返回
+            agent.addListenEvent( ( ushort ) E_OPCODE.EP_RM2C_PET_LV_UP, agent.recvPetLvUp_New );
+
+            ///发送装备信息
+            agent.addListenEvent( ( ushort ) E_OPCODE.EP_RM2C_EQUIPMENT, agent.recvHeroEquip );
+
+            agent.addListenEvent( ( ushort ) E_OPCODE.EP_RM2C_POWER_ADD, agent.recvPowerAdd );
+
+            ///购买体力回调
+            agent.addListenEvent( ( ushort ) E_OPCODE.EP_RM2C_POWER_BUY, agent.recvPowerBuy );
+
+            //穿装备
+            agent.addListenEvent( ( ushort ) E_OPCODE.EP_RM2C_EQUIP_PET_NOTIFY, agent.recvHeroEquipChange );
+
             //agent.addListenEvent( ( ushort ) E_OPCODE.EP_RM2C_STONE_INLAY, recvPetStoneInLay );
             //agent.addListenEvent( ( ushort ) E_OPCODE.EP_RM2C_PET_STONE_UP, recvPetStoneUp );
 
@@ -178,8 +193,7 @@ namespace robot
             ///发送材料组
             //		agent.addListenEvent((ushort)E_OPCODE.EP_RM2C_EQUIP_GROUP, recvBagStuff);
 
-            ///发送装备信息
-            agent.addListenEvent( ( ushort ) E_OPCODE.EP_RM2C_EQUIPMENT, recvHeroEquip );
+            
 
             ///上阵好友信息
             agent.addListenEvent( ( ushort ) E_OPCODE.EP_RM2C_FRIEND_RECOMMEND, recvFriendRecommend );

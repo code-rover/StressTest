@@ -960,7 +960,7 @@ public class InfoPlayer
 	/// 好友
 	//public InfoFriend infoFriendList = new InfoFriend();
 	/// 道具背包
-	//public InfoPropList infoPropList = new InfoPropList();	
+	public InfoPropList infoPropList = new InfoPropList();	
 	/// 魂兽道具背包
 	//public InfoPropList infoPropBeastList = new InfoPropList();
 	/// 购买的材料背包上限
@@ -1590,7 +1590,7 @@ public class InfoHero
     /// 我会的技能
     //public InfoSkillList infoSkill = new InfoSkillList();
     /// 我的装备
-    //public InfoPropList infoEquip = new InfoPropList();
+    public InfoPropList infoEquip = new InfoPropList();
     /// 我的进阶石属性增加
     //public InfoStone infoStone = new InfoStone();
 
@@ -1614,8 +1614,32 @@ public class InfoHero
     {
         _fastExpLv.Clear();
     }
-    
 
+    /// 获得等级
+    public int lv
+    {
+        get
+        {
+            if( _fastExpLv.ContainsKey( exp ) )
+                return _fastExpLv[ exp ];
+
+            int resultLv = 1;
+            ulong expAdd = 0;
+            while( true )
+            {
+                if( resultLv >= ManagerCsv.getAttribute().limitLv )
+                    break;
+                if( null == ManagerCsv.getHeroLv( resultLv + 1 ) )
+                    break;
+                expAdd += ManagerCsv.getHeroLv( resultLv ).exp;
+                if( exp < expAdd )
+                    break;
+                resultLv += 1;
+            }
+            _fastExpLv.Add( exp, resultLv );
+            return resultLv;
+        }
+    }
 }
 
 
@@ -1665,4 +1689,154 @@ public class InfoHeroList
 
     //TODO ...
 
+}
+
+/// 背包信息
+public class InfoPropList
+{
+    /// 我的道具
+    private List<InfoProp> _props = new List<InfoProp>();
+    private Dictionary<int, InfoProp> _propsHashCsv = new Dictionary<int, InfoProp>();
+
+    /// 引导专用 add by yxh
+    public bool isChange = false;
+    private bool _needResetRed = false;
+    private Dictionary<int, int> _changeId = new Dictionary<int, int>();
+    /// 是否需要显示红点
+    public bool needResetRed
+    {
+        get
+        {
+            return _needResetRed;
+        }
+    }
+    /// 重置
+    public void ResetRed()
+    {
+        _needResetRed = false;
+        _changeId.Clear();
+    }
+    /// 记录具体发生变化的物品id
+    private void AddChangeData( int idCsv )
+    {
+        _needResetRed = true;
+        isChange = true;
+        if( !_changeId.ContainsKey( idCsv ) )
+        {
+            _changeId.Add( idCsv, 0 );
+        }
+    }
+    /// 获取具体发生变化的物品id 这个里面的东西可能在背包中是没有的 
+    public List<int> GetChangeData()
+    {
+        List<int> temp = new List<int>();
+        foreach( int id in _changeId.Keys )
+        {
+            temp.Add( id );
+        }
+        return temp;
+    }
+
+
+    /// 清除道具
+    public void clear()
+    {
+        _props.Clear();
+        _propsHashCsv.Clear();
+    }
+    /// 添加道具
+    public void changeProp( int idCsv, int cnt )
+    {
+        if( idCsv == 0 )
+            return;
+
+        AddChangeData( idCsv );
+        InfoProp infoProp = null;
+        if( _propsHashCsv.ContainsKey( idCsv ) )
+            infoProp = _propsHashCsv[ idCsv ];
+        if( cnt <= 0 && infoProp == null )
+            return;
+        /// 移除不需要的玩意
+        if( cnt <= 0 )
+        {
+            _props.Remove( infoProp );
+            _propsHashCsv.Remove( idCsv );
+            return;
+        }
+
+        if( null == infoProp )
+        {
+            infoProp = new InfoProp();
+            infoProp.idCsv = idCsv;
+            _propsHashCsv.Add( idCsv, infoProp );
+            _props.Add( infoProp );
+        }
+        infoProp.cnt = cnt;
+
+
+    }
+    /// 删除一个道具
+    public void removeProp( int idCsv, int cnt )
+    {
+        if( !_propsHashCsv.ContainsKey( idCsv ) )
+            return;
+        AddChangeData( idCsv );
+        _props.Remove( _propsHashCsv[ idCsv ] );
+        _propsHashCsv.Remove( idCsv );
+    }
+    /// 追加道具个数
+    public void addProp( int idCsv, int cnt )
+    {
+        AddChangeData( idCsv );
+        if( !_propsHashCsv.ContainsKey( idCsv ) )
+        {
+            changeProp( idCsv, cnt );
+            return;
+        }
+        changeProp( idCsv, _propsHashCsv[ idCsv ].cnt + cnt );
+    }
+    /// 直接在某个地方添加一个道具
+    public void setProp( int index, int idCsv )
+    {
+        AddChangeData( idCsv );
+        InfoProp infoProp = null;
+        if( idCsv != 0 )
+        {
+            infoProp = new InfoProp();
+            infoProp.idCsv = idCsv;
+            infoProp.cnt = 1;
+        }
+        while( _props.Count <= index )
+        {
+            _props.Add( null );
+        }
+        _props[ index ] = infoProp;
+    }
+    /// 获得道具
+    public List<InfoProp> getProps()
+    {
+        List<InfoProp> result = new List<InfoProp>();
+        for( int i = 0; i < _props.Count; i++ )
+        {
+            if( _props[ i ] != null )
+            {
+                result.Add( _props[ i ] );
+            }
+        }
+        return result;
+    }
+
+    public InfoProp getProp( int csvId )
+    {
+        if( _propsHashCsv.ContainsKey( csvId ) )
+        {
+            return _propsHashCsv[ csvId ];
+        }
+        else
+        {
+            return null;
+        }
+    }
+
+    //....
 }

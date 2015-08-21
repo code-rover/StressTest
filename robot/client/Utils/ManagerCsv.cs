@@ -7,16 +7,6 @@ namespace utils
 {
     class ManagerCsv
     {
-        /**
-        private static ManagerCsv _this;
-        public static ManagerCsv getInstance() {
-            if(_this == null) {
-                _this = new ManagerCsv();
-            }
-            return _this;
-        }
-        **/
-
         private static List<Dictionary<string, string>> csv_path_list;
 
         public static Dictionary<string, UtilCsvReader> _csvTables = new Dictionary<string, UtilCsvReader>();
@@ -118,6 +108,57 @@ namespace utils
                 return ( TypeCsvFB ) _csvItemMemory[ key ];
             /// 返回值
             TypeCsvFB result = _csvTables[ "FB" ].searchAndNew<TypeCsvFB>( "id", idCsv );
+            /// 值存储
+            _csvItemMemory.Add( key, result );
+            /// 返回
+            return result;
+        }
+
+        /// 变量数据
+        public static TypeCsvAttribute getAttribute()
+        {
+            /// 数据缓存部分
+            //		string key = "public static TypeCsvAttribute getAttribute()";
+            string key = string.Intern( "public static TypeCsvAttribute getAttribute()" );
+            if( _csvItemMemory.ContainsKey( key ) )
+                return ( TypeCsvAttribute ) _csvItemMemory[ key ];
+            /// 返回值
+            TypeCsvAttribute result = _csvTables[ "Attribute" ].getAttribue<TypeCsvAttribute>( "name", "val" );
+            /// 值存储
+            _csvItemMemory.Add( key, result );
+            /// 返回
+            return result;
+        }
+
+        /// 获得角色等级的*量数据
+        public static TypeCsvHeroLv getHeroLv( int lv )
+        {
+            string key = string.Intern( new StringBuilder( "public static TypeCsvHeroLv getHeroLv(int lv) lv = " ).Append( lv ).ToString() );
+            //		string key = "public static TypeCsvHeroLv getHeroLv(int lv) lv = " + lv;
+            if( _csvItemMemory.ContainsKey( key ) )
+                return ( TypeCsvHeroLv ) _csvItemMemory[ key ];
+            /// 返回值
+            TypeCsvHeroLv result = _csvTables[ "HeroLv" ].searchAndNew<TypeCsvHeroLv>( "lv", lv );
+            /// 值存储
+            _csvItemMemory.Add( key, result );
+            /// 返回
+            return result;
+        }
+
+
+        public static TypeCsvPropEquip getPropEquip( int idCsvProp )
+        {
+            /// 数据缓存部分
+            //		string key = "public static TypeCsvPropEquip getPropEquip(int idCsvProp) = " + idCsvProp;
+            string key = string.Intern( new StringBuilder( "public static TypeCsvPropEquip getPropEquip(int idCsvProp) = " ).Append( idCsvProp ).ToString() );
+            if( _csvItemMemory.ContainsKey( key ) )
+            {
+                return ( TypeCsvPropEquip ) _csvItemMemory[ key ];
+            }
+            /// 返回值
+            TypeCsvPropEquip result = _csvTables[ "PropEquip" ].searchAndNew<TypeCsvPropEquip>( "id", idCsvProp );
+            if( null != result )
+                _csvTables[ "Prop" ].searchAndSet<TypeCsvPropEquip>( result, "id", idCsvProp );
             /// 值存储
             _csvItemMemory.Add( key, result );
             /// 返回

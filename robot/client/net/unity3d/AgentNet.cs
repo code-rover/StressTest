@@ -427,6 +427,12 @@ namespace net.unity3d
         //升星
         private Queue<Action> star_up_queue = new Queue<Action>();
 
+        //pet lv up
+        private Queue<Action> pet_lvup_queue = new Queue<Action>();
+
+        //穿装备 queue
+        private Queue<Action> equip_up_queue = new Queue<Action>();
+
         /// account返回
         public void recvAccountServer( ArgsEvent args )
         {
@@ -569,6 +575,13 @@ namespace net.unity3d
                 sendFBUpdate(null);    
             }
 
+            this.sendPowerAdd(null); //领取体力 
+
+            for( int i = 0; i < 100; i++ )
+            {
+                this.sendPwoerBuy( null );
+            };
+                
         }
 
         /// 创建角色
@@ -1052,22 +1065,21 @@ namespace net.unity3d
         {
             RM2C_FB_SWEEP recv = args.getData<RM2C_FB_SWEEP>();
 
-            Logger.Info( "RECV:RM2C_FB_SWEEP ret = " + recv.iResult );
-
-            if( recv.Message == (int)EM_CLIENT_ERRORCODE.EE_M2C_FB_ID_ERROR )
+            if( recv.iResult == 1 )
             {
-                Logger.Error( "副本id错误" );
-                return;
+                // updata to temp datamode
+                this.dataMode.infoFBRewardList.addMoneySweep( ( int ) recv.uiSMoney );
+                this.dataMode.infoFBRewardList.exp += ( ulong ) recv.uiExp;
+                this.dataMode.infoFBRewardList.expBegin = ( ulong ) recv.uiPreExp;
+                this.dataMode.infoFBRewardList.isDataOver = true;
+                this.dataMode.infoFBRewardList.curFbCsvID = ( int ) recv.uiFbCsvId;
+
+                Logger.Info( "扫荡返回  SMoney: " + recv.uiSMoney + " Exp: " + recv.uiExp + " csvId: " + recv.uiFbCsvId );
             }
-
-            // updata to temp datamode
-            this.dataMode.infoFBRewardList.addMoneySweep( ( int ) recv.uiSMoney );
-            this.dataMode.infoFBRewardList.exp += ( ulong ) recv.uiExp;
-            this.dataMode.infoFBRewardList.expBegin = ( ulong ) recv.uiPreExp;
-            this.dataMode.infoFBRewardList.isDataOver = true;
-            this.dataMode.infoFBRewardList.curFbCsvID = ( int ) recv.uiFbCsvId;
-
-            Logger.Info( "扫荡返回  SMoney: " + recv.uiSMoney + " Exp: " + recv.uiExp + " csvId: " + recv.uiFbCsvId);
+            else
+            {
+                Logger.Error( "副本扫荡错误  ret = " + recv.iResult );    
+            }
 
             // dispatch
             Dispatcher.dispatchListener( recv.uiListen, ( object ) recv );
@@ -1221,7 +1233,7 @@ namespace net.unity3d
                     }
                     else
                     {
-                        //this.dataMode.myPlayer.infoPropList.changeProp( ( int ) recv.SEquip.uiIdCsvEquipment, recv.SEquip.iCnt );
+                        this.dataMode.myPlayer.infoPropList.changeProp( ( int ) recv.SEquip.uiIdCsvEquipment, recv.SEquip.iCnt );
                     }
                 }
 
@@ -1265,9 +1277,16 @@ namespace net.unity3d
                                 }
                                 Logger.Info( "PK商店购买返回  " + buy.iLoc );
 
-                                Action task = this.buy_pk_queue.Dequeue();
+                                Action next = this.buy_pk_queue.Dequeue();
 
-                                task();
+                                System.Timers.Timer timer = new System.Timers.Timer();
+                                timer.Interval = 50;
+                                timer.AutoReset = false; //once
+                                timer.Enabled = true;
+                                timer.Elapsed += new ElapsedEventHandler( ( object source, System.Timers.ElapsedEventArgs e2 ) =>
+                                {
+                                    next();   //execute next task in queue
+                                } );
                             } );
 
                         };
@@ -1330,9 +1349,16 @@ namespace net.unity3d
                                 }
                                 Logger.Info( "远征商店购买返回  " + buy.iLoc );
 
-                                Action task = this.buy_mot_queue.Dequeue();
+                                Action next = this.buy_mot_queue.Dequeue();
 
-                                task();
+                                System.Timers.Timer timer = new System.Timers.Timer();
+                                timer.Interval = 50;
+                                timer.AutoReset = false; //once
+                                timer.Enabled = true;
+                                timer.Elapsed += new ElapsedEventHandler( ( object source, System.Timers.ElapsedEventArgs e2 ) =>
+                                {
+                                    next();   //execute next task in queue
+                                } );
                             } );
 
                         };
@@ -1381,8 +1407,16 @@ namespace net.unity3d
 
                             Logger.Info( this._account + " 碎片合成返回 " + p2p.sPiece.luiIdPiece );
 
-                            Action task = this.piece_to_pet_queue.Dequeue();
-                            task();
+                            Action next = this.piece_to_pet_queue.Dequeue();
+
+                            System.Timers.Timer timer = new System.Timers.Timer();
+                            timer.Interval = 100;
+                            timer.AutoReset = false; //once
+                            timer.Enabled = true;
+                            timer.Elapsed += new ElapsedEventHandler( ( object source, System.Timers.ElapsedEventArgs e ) =>
+                            {
+                                next();   //execute next task in queue
+                            } );
                         } );   
                     };
                     this.piece_to_pet_queue.Enqueue( action );
@@ -1415,7 +1449,8 @@ namespace net.unity3d
 
                 foreach( ulong hid in heroList )
                 {
-                    InfoHero heroInfo = this.dataMode.getHero( hid );
+                    ulong serverId = hid;
+                    InfoHero heroInfo = this.dataMode.getHero( serverId );
                     Debug.Assert( heroInfo != null, "heroInfo is null" );
 
                     if( heroInfo.star == 10 )
@@ -1423,14 +1458,23 @@ namespace net.unity3d
 
                     Action action = () =>
                     {
-                        Logger.Info( this._account + " pet开始升星  " + hid );
-                        sendPetStarUp( hid, ( UtilListenerEvent evt ) =>
+                        Logger.Info( this._account + " pet开始升星  " + serverId );
+                        sendPetStarUp( serverId, ( UtilListenerEvent evt ) =>
                         {
                             RM2C_PET_STAR_UP starup = ( RM2C_PET_STAR_UP ) evt.eventArgs;
                             Logger.Info( this._account + " 卡牌升级返回  star: " + starup.sPetStarInfo.uiStar );
 
                             Action next = this.star_up_queue.Dequeue();
-                            next();   //execute next task in queue
+
+                            System.Timers.Timer timer = new System.Timers.Timer();
+                            timer.Interval = 80;
+                            timer.AutoReset = false; //once
+                            timer.Enabled = true;
+                            timer.Elapsed += new ElapsedEventHandler( ( object source, System.Timers.ElapsedEventArgs e ) =>
+                            {
+                                next();   //execute next task in queue
+                            } );
+                            
                         } );    
                     };
 
@@ -1442,14 +1486,175 @@ namespace net.unity3d
                 {
                     Logger.Info("英雄升级己完成");
 
+                    this.petLvUpStart();
+
                 };
                 this.star_up_queue.Enqueue( end );
 
                 Action firstAction = this.star_up_queue.Dequeue();
                 firstAction();
 
-                Logger.Info( "Hero Bag info" );
-            } );     
+            } );
+        }
+
+        //吃经验药升级开始
+        public void petLvUpStart()
+        {
+            //获取装备信息
+            this.sendEquipUpdate( (UtilListenerEvent evt) =>
+            {
+                List<InfoProp> props = this.dataMode.myPlayer.infoPropList.getProps();
+
+                Logger.Info( "" + props.Count );
+
+                Dictionary<int, int> propExp = new Dictionary<int, int>();  //idCsv,cnt
+
+                foreach( InfoProp item in props )
+                {
+                    if( item.idCsv >= 29 && item.idCsv <= 32 )
+                    {
+                        propExp.Add( item.idCsv, item.cnt );
+                    }
+                    
+                }
+
+                this.pet_lvup_queue.Clear();
+
+                List<ulong> heroList = this.dataMode.myPlayer.infoHeroList.getHeroList();
+
+                int exp = propExp[ 32 ] * 8000;  //特大经验瓶个数 * 经验值 = 特大瓶经验
+                int needExp = heroList.Count * 30000; //每个英雄升到40级大概需要30000左右的经验值
+
+                if( exp <= needExp )
+                {
+                    Logger.Error(this._account +  " 经验值不够 " + exp + "  " + needExp );
+                    Debug.Assert( false );
+                }
+
+                foreach( ulong hid in heroList )
+                {
+                    ulong serverId = hid;
+                    InfoHero heroInfo = this.dataMode.getHero( serverId );
+                    Debug.Assert( heroInfo != null, "heroInfo is null-" );
+
+                    if( heroInfo.lv >= 40 )  //己达到40级，无需再升
+                        continue;
+
+                    Action action = () =>
+                    {
+                        Logger.Info( this._account + " pet吃经验药升级  " + serverId );
+                        this.sendPetLvUp( serverId, 32, 4, ( UtilListenerEvent evt2 ) =>  //32  4  Hard code
+                        {
+                            RM2C_PET_LV_UP ret = ( RM2C_PET_LV_UP ) evt2.eventArgs;
+
+                            if( ret.iResult == 1 )
+                                Logger.Info( this._account + " 卡牌吃经验药升级返回 : " + ret.sPetEat.uiExp );
+
+                            Action next = this.pet_lvup_queue.Dequeue();
+
+                            System.Timers.Timer timer = new System.Timers.Timer();
+                            timer.Interval = 80;
+                            timer.AutoReset = false; //once
+                            timer.Enabled = true;
+                            timer.Elapsed += new ElapsedEventHandler( ( object source, System.Timers.ElapsedEventArgs e ) =>
+                            {
+                                next();   //execute next task in queue
+                            } );
+                        } );
+                    };
+
+                    this.pet_lvup_queue.Enqueue( action );
+
+                }
+
+                Action end = () =>
+                {
+                    Logger.Info( "Pet Lv up 完成" );
+
+
+                    this.EquipStart();  //升级完成，开始进行装备相关操作
+
+                };
+                this.pet_lvup_queue.Enqueue( end );
+
+                Action firstAction = this.pet_lvup_queue.Dequeue();
+                firstAction();
+
+            });
+        }
+
+        //穿装备
+        private void EquipStart()
+        {
+            this.equip_up_queue.Clear();
+
+            Dictionary<ulong, InfoHero> heroMap = this.dataMode._serverHero;
+            List<InfoProp> props = this.dataMode.myPlayer.infoPropList.getProps();
+
+            foreach( var item in heroMap )
+            {
+                InfoHero hero = item.Value;
+                int[] equips = new int[] { 0, 0, 0, 0, 0, 0 };
+                TypeCsvHero heroCsv = ManagerCsv.getHero( hero.idCsv );
+
+                foreach( InfoProp prop in props )
+                {
+                    TypeCsvPropEquip csvequip = ManagerCsv.getPropEquip( prop.idCsv );
+                    if( csvequip == null )
+                        continue;
+
+                    bool isCanUse = false;
+                    for( int i = 0; i < csvequip.limitJob.Length; i++ )
+                    {
+                        //如果职业&&等级符合条件
+                        if( csvequip.limitJob[ i ].ToString() == heroCsv.job.ToString() && csvequip.limitLv <= hero.lv)
+                        {
+                            isCanUse = true;
+                            break;
+                        }
+                    }
+                    if(!isCanUse)
+                        continue;
+
+                    TypeCsvPropEquip equ = ManagerCsv.getPropEquip( prop.idCsv );
+                    if( equ != null )
+                    {
+                        equips[equ.local] = equ.id;
+
+                        ulong idServer = hero.idServer;
+                        Action action = () =>
+                        {
+                            this.sendHeroEquipChange( idServer, equips, ( UtilListenerEvent evt ) =>
+                            {
+                                Action next = this.equip_up_queue.Dequeue();
+
+                                System.Timers.Timer timer = new System.Timers.Timer();
+                                timer.Interval = 80;
+                                timer.AutoReset = false; //once
+                                timer.Enabled = true;
+                                timer.Elapsed += new ElapsedEventHandler( ( object source, System.Timers.ElapsedEventArgs e ) =>
+                                {
+                                    next();   //execute next task in queue
+                                } );
+                                
+                            } );
+                        };
+
+                        this.equip_up_queue.Enqueue( action );
+                    }
+                }
+
+            }
+
+            Action end = () =>
+            {
+                Logger.Info( "穿装备己完成" );
+
+            };
+            this.equip_up_queue.Enqueue( end );
+
+            Action firstAction = this.equip_up_queue.Dequeue();
+            firstAction();
         }
 
         /// 竞技 商店 更新
@@ -1827,6 +2032,193 @@ namespace net.unity3d
                 Logger.Error( "RM2C_PET_PIECE_TO_PET error  " + recv.iResult );
             }
 
+            Dispatcher.dispatchListener( recv.uiListen, recv );
+        }
+
+        ///获取装备
+        public void sendEquipUpdate( FunctionListenerEvent sListener )
+        {
+            C2RM_EQUIPMENT sender = new C2RM_EQUIPMENT();
+            sender.uiListen = Dispatcher.addListener( sListener, null);
+            this.send( sender );
+        }
+
+        ///Response 装备信息
+        public void recvHeroEquip( ArgsEvent args )
+        {
+            Logger.Info( "RECV:RM2C_EQUIPMENT >> " );
+            RM2C_EQUIPMENT recv = args.getData<RM2C_EQUIPMENT>();
+            if( recv.iResult == 1 )
+            {
+                InfoPlayer player = this.dataMode.getPlayer( recv.uiMasterId );
+                if( recv.cIsBegin != 0 )
+                {
+                    player.infoPropList.clear();
+                    //player.infoPropBeastList.clear();
+                }
+
+                //bool b = myPlayer.idServer == player.idServer ? true : false;
+                TypeCsvProp csvprop = null;
+                for( int i = 0; i < recv.vctSEquipment.Length; i++ )
+                {
+                    if( recv.vctSEquipment[ i ].uiIdCsvEquipment <= 0 )
+                    {
+                        Logger.Error( "无意义的物品" );
+                        continue;
+                    }
+                    csvprop = ManagerCsv.getProp( ( int ) recv.vctSEquipment[ i ].uiIdCsvEquipment );
+                    if( csvprop.isPropBeast() )
+                    {
+                        //player.infoPropBeastList.changeProp( ( int ) recv.vctSEquipment[ i ].uiIdCsvEquipment, recv.vctSEquipment[ i ].iCnt );
+                    }
+                    else
+                    {
+                        player.infoPropList.changeProp( ( int ) recv.vctSEquipment[ i ].uiIdCsvEquipment, recv.vctSEquipment[ i ].iCnt );
+                    }
+                }
+            }
+            if( recv.cIsOver == 1 )
+            {
+                Dispatcher.dispatchListener( recv.uiListen, recv );
+            }
+            
+        }
+
+        /// 升级卡牌 吃药
+        public void sendPetLvUp( ulong serverId, int csvPropId, int propCnt, FunctionListenerEvent sListener )
+        {
+            Logger.Info( "SEND : C2RM_PET_LV_UP >> " + serverId );
+            C2RM_PET_LV_UP sender = new C2RM_PET_LV_UP();
+            sender.uiPetId = serverId;
+            sender.uiPropCsvId = ( uint ) csvPropId;
+            sender.uiCnt = ( uint ) propCnt;
+            sender.uiListen = Dispatcher.addListener( sListener, null);
+            this.send( sender );
+        }
+
+        ///卡牌升级
+        public void recvPetLvUp_New( ArgsEvent args )
+        {
+            RM2C_PET_LV_UP recv = args.getData<RM2C_PET_LV_UP>();
+            //TODO ...
+            if( recv.iResult != 1 )
+            {
+                Logger.Error( this._account + " RM2C_PET_LV_UP error " + recv.iResult );
+            }
+
+            Dispatcher.dispatchListener( recv.uiListen, recv );
+        }
+
+        /// 增加体力
+        public void sendPowerAdd( FunctionListenerEvent sListener )
+        {
+            Logger.Info( "SEND:C2RM_POWER_ADD >> 体力 增加" );
+            C2RM_POWER_ADD sender = new C2RM_POWER_ADD();
+            sender.uiListen = Dispatcher.addListener( sListener,null);
+            this.send( sender );
+        }
+
+        /// 体力购买
+        public void sendPwoerBuy( FunctionListenerEvent sListener )
+        {
+            Logger.Info( "体力购买" );
+            C2RM_POWER_BUY sender = new C2RM_POWER_BUY();
+            sender.uiListen = Dispatcher.addListener( sListener,null);
+            this.send( sender );
+        }
+
+        /// 购买体力回调
+        public void recvPowerBuy( ArgsEvent args )
+        {
+            RM2C_POWER_BUY recv = args.getData<RM2C_POWER_BUY>();
+            if( recv.iResult != 1 )
+            {
+                Logger.Error( this._account + " RM2C_POWER_BUY error " + recv.iResult );    
+            }
+           
+        }
+
+        /// 角色 装备穿上
+        public void sendHeroEquipChange( ulong idServerHero, int[] idCsvEquip, FunctionListenerEvent sListener )
+        {
+            C2RM_EQUIP_PET_NOTIFY sender = new C2RM_EQUIP_PET_NOTIFY();
+
+            string csvEq = "";
+            for( int i = 0; i < idCsvEquip.Length; i++ )
+            {
+                csvEq  += idCsvEquip[ i ] + " ";
+            }
+
+            Logger.Info( "SEND:C2RM_EQUIP_PET_NOTIFY >> " + "装备变更  " + idServerHero + " - " + csvEq );
+
+            uint[] idCsvEquipUnit = new uint[ idCsvEquip.Length ];
+            for( int i = 0; i < idCsvEquip.Length; i++ )
+            {
+                idCsvEquipUnit[ i ] = ( uint ) idCsvEquip[ i ];
+            }
+            sender.sPetEquip.uiPetId = idServerHero;
+            sender.sPetEquip.uiIdEquip = idCsvEquipUnit;
+            sender.uiListen = Dispatcher.addListener( sListener,null);
+            this.send( sender );
+        }
+
+        /// 角色 装备穿上
+        public void recvHeroEquipChange( ArgsEvent args )
+        {
+            RM2C_EQUIP_PET_NOTIFY recv = args.getData<RM2C_EQUIP_PET_NOTIFY>();
+            Logger.Info( "RECV:RM2C_EQUIP_PET_NOTIFY >> " + recv.iResult + "装备变更" );
+
+            if( recv.iResult == 1 )
+            {
+                /// 装备信息剖析
+                InfoHero infoHero = this.dataMode.getHero( recv.sPetEquip.uiPetId );
+                infoHero.infoEquip.clear();
+                for( int i = 0; i < recv.sPetEquip.uiIdEquip.Length; i++ )
+                {
+                    infoHero.infoEquip.setProp( i, ( int ) recv.sPetEquip.uiIdEquip[ i ] );
+                }
+                /// 更新我的背包信息
+                TypeCsvProp csvprop = null;
+                for( int i = 0; i < recv.sEquip.Length; i++ )
+                {
+                    if( recv.sEquip[ i ].uiIdCsvEquipment <= 0 )
+                    {
+                        Logger.Error( "无意义的物品" );
+                        continue;
+                    }
+                    csvprop = ManagerCsv.getProp( ( int ) recv.sEquip[ i ].uiIdCsvEquipment );
+                    if( csvprop.isPropBeast() )
+                    {
+                        //this.dataMode.myPlayer.infoPropBeastList.changeProp( ( int ) recv.sEquip[ i ].uiIdCsvEquipment, recv.sEquip[ i ].iCnt );
+                    }
+                    else
+                    {
+                        this.dataMode.myPlayer.infoPropList.changeProp( ( int ) recv.sEquip[ i ].uiIdCsvEquipment, recv.sEquip[ i ].iCnt );
+                    }
+                }
+            }
+            else
+            {
+                Logger.Error( this._account + " RM2C_EQUIP_PET_NOTIFY error " + recv.iResult );
+            }
+            Dispatcher.dispatchListener( recv.uiListen, recv );
+        }
+
+        public void recvPowerAdd( ArgsEvent args )
+        {
+            RM2C_POWER_ADD recv = args.getData<RM2C_POWER_ADD>();
+            Logger.Info( "RECV:RM2C_POWER_ADD >> " + recv.iResult + "体力 增加回复" );
+
+            if( recv.iResult == 1 )
+            {
+                /// 下一次获得体力的时间戳子
+                //this.dataMode.myPlayer.powerCD.timeTeamp = ( double ) recv.sLeadPowerInfo.uiPowerLessTime + ManagerCsv.getAttribute().powerAddTime + 1f;
+                this.dataMode.myPlayer.power = recv.sLeadPowerInfo.usPower;
+            }
+            else
+            {
+                Logger.Error( this._account + " 体力增加失败 " + recv.iResult );
+            }
             Dispatcher.dispatchListener( recv.uiListen, recv );
         }
 
