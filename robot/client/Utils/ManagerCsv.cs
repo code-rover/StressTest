@@ -165,5 +165,19 @@ namespace utils
             return result;
         }
 
+        /// 获得角色 身上进化石的属性
+        public static TypeCsvHeroUp getHeroUp( int idCsvHero )
+        {
+            //		string key = "public static TypeCsvHeroUp getHeroUp(int idCsvHero) = " + idCsvHero;
+            string key = string.Intern( new StringBuilder( "public static TypeCsvHeroUp getHeroUp(int idCsvHero) = " ).Append( idCsvHero ).ToString() );
+            if( _csvItemMemory.ContainsKey( key ) )
+                return ( TypeCsvHeroUp ) _csvItemMemory[ key ];
+            /// 返回值
+            TypeCsvHeroUp result = _csvTables[ "HeroUp" ].searchAndNew<TypeCsvHeroUp>( "id", idCsvHero );
+            /// 值存储
+            _csvItemMemory.Add( key, result );
+            /// 返回
+            return result;
+        }
     }
 }

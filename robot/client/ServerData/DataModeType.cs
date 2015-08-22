@@ -1592,7 +1592,7 @@ public class InfoHero
     /// 我的装备
     public InfoPropList infoEquip = new InfoPropList();
     /// 我的进阶石属性增加
-    //public InfoStone infoStone = new InfoStone();
+    public InfoStone infoStone = new InfoStone();
 
     /// 计算我本身的进阶石头属性
     
@@ -1639,6 +1639,40 @@ public class InfoHero
             _fastExpLv.Add( exp, resultLv );
             return resultLv;
         }
+    }
+}
+
+/// 进阶石头的镶嵌
+public class InfoStone
+{
+    /// 石头值
+    private ulong _myStone;
+    /// 那个地方有没有石头
+    public bool hasStone( int sIndex )
+    {
+        return ( ( ( ulong ) 1 << sIndex ) & _myStone ) != 0;
+    }
+    /// 设置某个索引镶嵌没镶嵌上
+    public void setStone( int sIndex, bool sValue )
+    {
+        if( !sValue )
+        {
+            _myStone = ( _myStone & ( ~( ulong ) 1 << sIndex ) );
+        }
+        if( sValue )
+        {
+            _myStone = ( _myStone | ( ( ( ulong ) 1 << sIndex ) ) );
+        }
+    }
+    /// 设置基础石
+    public void setStone( ulong sMyStone )
+    {
+        _myStone = sMyStone;
+    }
+    /// 初始化魔石效果
+    public void resetStone()
+    {
+        _myStone = 0;
     }
 }
 

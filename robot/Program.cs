@@ -31,7 +31,7 @@ namespace robot
             load_csv();  //加载csv
 
 
-            int account = 4661;    //开始帐号
+            int account = 4665;    //开始帐号
             string passwd = "123";
             string macId = "";
  
@@ -158,8 +158,11 @@ namespace robot
             //穿装备
             agent.addListenEvent( ( ushort ) E_OPCODE.EP_RM2C_EQUIP_PET_NOTIFY, agent.recvHeroEquipChange );
 
-            //agent.addListenEvent( ( ushort ) E_OPCODE.EP_RM2C_STONE_INLAY, recvPetStoneInLay );
-            //agent.addListenEvent( ( ushort ) E_OPCODE.EP_RM2C_PET_STONE_UP, recvPetStoneUp );
+            //镶钻石返回
+            agent.addListenEvent( ( ushort ) E_OPCODE.EP_RM2C_STONE_INLAY, agent.recvPetStoneInLay );
+
+            //进阶石返回
+            agent.addListenEvent( ( ushort ) E_OPCODE.EP_RM2C_PET_STONE_UP, agent.recvPetStoneUp );
 
             //agent.addListenEvent( ( ushort ) E_OPCODE.EP_RM2C_PING_PRO_TWO, recvPingTwo );
             //agent.addListenEvent( ( ushort ) E_OPCODE.EP_RM2C_BEAST_INFO, recvBeastInfo );
