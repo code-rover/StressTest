@@ -57,7 +57,8 @@ public class UtilListener
 		/// 我的全部调用
 		if(!_hashListener.ContainsKey(sEventName))
 		{
-//			UIScreenLog.LogError("No listener added " + sEventName);
+			//UIScreenLog.LogError("No listener added " + sEventName);
+            utils.Logger.Warn( "No listener added " + sEventName );
 			return;
 		}
 		
@@ -70,8 +71,8 @@ public class UtilListener
 				args.eventArgs = sArgs;
 				evt.eventListener(args);
 			}catch(System.Exception e){
-                //UtilLog.LogError(sEventName + ":" + evt.eventListener.ToString());
-                //UtilLog.LogError(e);
+                //utils.Logger.Error(sEventName + ":" + evt.eventListener.ToString());
+                utils.Logger.Error( e.ToString());
             }
 		}
 		

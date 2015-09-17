@@ -978,11 +978,42 @@ namespace net.unity3d
 		///技能点信息
 		public SLeadSkill sLeadSkill = new SLeadSkill();
     };
-	
+
+    [Serializable()]
+    public class C2RM_LUCKY_SOUL_LIST : ExFormatterBinary, IProtocal
+    {
+        public static readonly E_OPCODE OPCODE = E_OPCODE.EP_C2RM_LUCKY_SOUL_LIST;
+
+        public static IProtocal Create( ushort msg, HeaderBase h )
+        {
+            return new C2RM_LUCKY_SOUL_LIST();
+        }
+
+        public ushort Message
+        {
+            get
+            {
+                return ( ushort ) OPCODE;
+            }
+        }
+
+        public bool analysisBuffer( byte[] Buffer )
+        {
+            return false;
+        }
+
+        public byte[] getBuffer()
+        {
+            byte[] buffer = ToByteArray();
+            return buffer;
+        }
+
+        public UInt32 uiListen = new UInt32();
+    };
+
 	[Serializable()]
     public class C2RM_LUCKY_SOUL : ExFormatterBinary, IProtocal
     {
-		//补签
         public static readonly E_OPCODE OPCODE = E_OPCODE.EP_C2RM_LUCKY_SOUL;
 
         public static IProtocal Create(ushort msg, HeaderBase h)
@@ -1007,21 +1038,80 @@ namespace net.unity3d
         }
 		
 		public UInt32 uiListen = new UInt32();
+        public Int32 m_bIsTimes_10 = new Int32();  //10连抽: 1  单抽：0 
     };
-	
+
+    [Serializable()]
+    public class RM2C_LUCKY_SOUL_LIST : ExFormatterBinary, IProtocal
+    {
+        public static readonly E_OPCODE OPCODE = E_OPCODE.EP_RM2C_LUCKY_SOUL_LIST;
+
+        private void init( int len )
+        {
+            if( len >= 0 )
+            {
+                uiLuckySoulId = new UInt32[ len ];
+                for( int i = 0; i < len; i++ )
+                {
+                    uiLuckySoulId[ i ] = new UInt32();
+                }
+            }
+        }
+
+        public static IProtocal Create( ushort msg, HeaderBase h )
+        {
+            return new RM2C_LUCKY_SOUL_LIST();
+        }
+
+        public ushort Message
+        {
+            get
+            {
+                return ( ushort ) OPCODE;
+            }
+        }
+
+        public bool analysisBuffer( byte[] Buffer )
+        {
+            MemoryStream msBuff = new MemoryStream( Buffer );
+            BinaryReader br = new BinaryReader( msBuff );
+            UInt32 len = br.ReadUInt32();
+            init( ( int ) len );
+            MemoryStream realBuff = new MemoryStream( Buffer, 4, Buffer.Length - 4 );
+            ///USerialize.ConvertBytesToClass(realBuff);
+            byte[] realData = realBuff.ToArray();
+            FromByteArray( realData, this );
+            return true;
+        }
+
+        public byte[] getBuffer()
+        {
+            return null;
+        }
+
+        public UInt32 uiListen = new UInt32();
+        public int iResult = new int();
+
+        public UInt32 m_uiStartTime = new UInt32();		//活动开始时间
+        public UInt32 m_uiEndTime = new UInt32();			//活动结束时间
+        /// 英雄 id  （1个稀有英雄和2个日热点英雄）
+        public UInt32[] uiLuckySoulId;
+    };
+
 	[Serializable()]
     public class RM2C_LUCKY_SOUL : ExFormatterBinary, IProtocal
     {
         public static readonly E_OPCODE OPCODE = E_OPCODE.EP_RM2C_LUCKY_SOUL;
 
-        private void init(int len)
+        private void init( int len )
         {
-            if (len >= 0)
+            if( len >= 0 )
             {
-                uiLuckySoulId = new UInt32[len];
-                for (int i = 0; i < len; i++)
+                uiRewards = new SRewardMaterial[len];
+
+                for( int i = 0; i < len; i++ )
                 {
-                    uiLuckySoulId[i] = new UInt32();
+                    uiRewards[i] = new SRewardMaterial();
                 }
             }
         }
@@ -1036,16 +1126,16 @@ namespace net.unity3d
             get { return (ushort)OPCODE; }
         }
 
-        public bool analysisBuffer(byte[] Buffer)
+        public bool analysisBuffer( byte[] Buffer )
         {
-            MemoryStream msBuff = new MemoryStream(Buffer);
-            BinaryReader br = new BinaryReader(msBuff);
+            MemoryStream msBuff = new MemoryStream( Buffer );
+            BinaryReader br = new BinaryReader( msBuff );
             UInt32 len = br.ReadUInt32();
-            init((int)len);
-            MemoryStream realBuff = new MemoryStream(Buffer, 4, Buffer.Length - 4);
+            init( ( int ) len );
+            MemoryStream realBuff = new MemoryStream( Buffer, 4, Buffer.Length - 4 );
             ///USerialize.ConvertBytesToClass(realBuff);
             byte[] realData = realBuff.ToArray();
-            FromByteArray(realData, this);
+            FromByteArray( realData, this );
             return true;
         }
 
@@ -1056,12 +1146,14 @@ namespace net.unity3d
 
 		public UInt32 uiListen = new UInt32();
 		public int iResult = new int();
-		/// 消耗的钻石，加法
-		public SMoney sCostMoney = new SMoney();
-		/// 魂侠抽次数变化
-		public UInt32 uiLuckySoul = new UInt32();
-		/// 魂侠表 id
-		public UInt32[] uiLuckySoulId;
+
+        /// 消耗的钻石
+        public SMoney sCostMoney = new SMoney();
+		/// 魂侠抽次数
+		public UInt32 uiLuckySoulCnt = new UInt32();
+        ///物品
+        public SRewardMaterial[] uiRewards;
+        
     };
 	
 	[Serializable()]
@@ -3284,5 +3376,146 @@ namespace net.unity3d
 		/// 升级给的体力，只是用来显示
 		public UInt16 cIsInTeam = new byte();
 	};
+
+    
+    [Serializable()]
+    public class C2RM_USE_PROP_ADD_SP : ExFormatterBinary, IProtocal
+    {
+        public static readonly E_OPCODE OPCODE = E_OPCODE.EP_C2RM_USE_PROP_ADD_SP;
+
+        public static IProtocal Create(ushort msg, HeaderBase h)
+        {
+            return new C2RM_USE_PROP_ADD_SP();
+        }
+
+        public ushort Message
+        {
+            get { return (ushort)OPCODE; }
+        }
+
+        public bool analysisBuffer(byte[] Buffer)
+        {
+            return false;
+        }
+
+        public byte[] getBuffer()
+        {
+            byte[] buffer = ToByteArray();
+            return buffer;
+        }
+		
+		public UInt32 uiListen = new UInt32();
+
+        public UInt32 propId = new UInt32();
+	};
+	
+	[Serializable()]
+    public class RM2C_USE_PROP_ADD_SP : ExFormatterBinary, IProtocal
+    {
+		//补签返回
+        public static readonly E_OPCODE OPCODE = E_OPCODE.EP_RM2C_USE_PROP_ADD_SP;
+
+        public static IProtocal Create(ushort msg, HeaderBase h)
+        {
+            return new RM2C_USE_PROP_ADD_SP();
+        }
+		
+        public ushort Message
+        {
+            get { return (ushort)OPCODE; }
+        }
+
+        public bool analysisBuffer(byte[] Buffer)
+        {
+            FromByteArrayNew(Buffer, this);
+            return true;
+        }
+
+        public byte[] getBuffer()
+        {
+            return null;
+        }
+		
+		public UInt32 uiListen = new UInt32();
+		/// 结果
+		public int iResult = new int();
+
+        public UInt32 m_uiSkillPoint = new UInt32();  //玩家现在的技能点数d
+        public SCostInfo m_uiPropCnt = new SCostInfo();     
+    };
+
+
+    [Serializable()]
+    public class C2RM_USE_TEMP_VIP : ExFormatterBinary, IProtocal
+    {
+        public static readonly E_OPCODE OPCODE = E_OPCODE.EP_C2RM_USE_TEMP_VIP;
+
+        public static IProtocal Create( ushort msg, HeaderBase h )
+        {
+            return new C2RM_USE_TEMP_VIP();
+        }
+
+        public ushort Message
+        {
+            get
+            {
+                return ( ushort ) OPCODE;
+            }
+        }
+
+        public bool analysisBuffer( byte[] Buffer )
+        {
+            return false;
+        }
+
+        public byte[] getBuffer()
+        {
+            byte[] buffer = ToByteArray();
+            return buffer;
+        }
+
+        public UInt32 uiListen = new UInt32();
+
+        public UInt32 propId = new UInt32();
+    };
+
+    [Serializable()]
+    public class RM2C_USE_TEMP_VIP : ExFormatterBinary, IProtocal
+    {
+        //补签返回
+        public static readonly E_OPCODE OPCODE = E_OPCODE.EP_RM2C_USE_TEMP_VIP;
+
+        public static IProtocal Create( ushort msg, HeaderBase h )
+        {
+            return new RM2C_USE_TEMP_VIP();
+        }
+
+        public ushort Message
+        {
+            get
+            {
+                return ( ushort ) OPCODE;
+            }
+        }
+
+        public bool analysisBuffer( byte[] Buffer )
+        {
+            FromByteArrayNew( Buffer, this );
+            return true;
+        }
+
+        public byte[] getBuffer()
+        {
+            return null;
+        }
+
+        public UInt32 uiListen = new UInt32();
+        /// 结果
+        public int iResult = new int();
+
+        public UInt32 vipLv = new UInt32();                          //当前vip等级
+        public UInt32 endTime = new UInt32();   //vip体验结束时间戳
+        public SCostInfo costInfo = new SCostInfo();  //vip体验卡信息
+    };
 
 }

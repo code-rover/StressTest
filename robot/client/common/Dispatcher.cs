@@ -12,7 +12,7 @@ namespace robot.client.common
         {
             get
             {
-                return _IDSign++;
+                return _IDSign++;   //Safe?
             }
         }
 
@@ -22,6 +22,7 @@ namespace robot.client.common
                 return 0;
 
             uint listenerId = ( uint ) Dispatcher.IDSign;
+            Console.WriteLine( "listenerId: " + listenerId );
             string eventListener = "DataModeServerListener_" + listenerId;
             UtilListener.addEventListener( eventListener, sFunction, sTarget );
             return listenerId;

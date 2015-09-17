@@ -290,7 +290,9 @@ namespace net.unity3d
         /// <param name="ar"></param>
         void OnRead(IAsyncResult ar)
         {
-			
+            long a = ( DateTime.UtcNow.Ticks - new DateTime( 1970, 1, 1 ).Ticks ) / 10000000; //注意这里有时区问题，用now就要减掉8个小时
+
+            Logger.Info( "OnRead.................." + a );
 			if(!_net_stream.CanRead)
 			{
 				ReadState read = new ReadState(_package);
@@ -362,6 +364,7 @@ namespace net.unity3d
 							qn.msg = msg;
 							qn.args = args;
 
+                            Logger.Info( "<======" + "  " + DateTime.Now.Millisecond);
                             this.agentNet.lNetWorker.AddQueue( qn );
 						}
 	                }

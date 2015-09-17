@@ -877,7 +877,7 @@ public class InfoPlayer
 	{
 		get
 		{
-            /**
+            
 			TypeCsvNobility csvNobility = ManagerCsv.getNobility(infoNobility.lv);
 			ushort result = 0;
 			if(null != csvNobility)
@@ -886,10 +886,9 @@ public class InfoPlayer
 			if(null != csvHeroLv)
 				result += (ushort)csvHeroLv.powerMax;
 			return result;
-             **/
-            return 0;
 		}
 	}
+
 	/// 领取体力次数
 	public int powerFriendCnt;
 	public int powerBuyCnt;	
@@ -990,14 +989,11 @@ public class InfoPlayer
 	//金币商店
 	public InfoShop infoMoneyShop = new InfoShop();
 
-    /**
+  
 	/// 引导的系统 
 	public string guide = "";
-	//设置最大体力上限
-//	public void setPowerMax()
-//	{
-//		powerMax = (ushort)(lv + infoNobility.lv);
-//	}
+
+    /*
 	//最大好友上限
 	public int getMaxFriendList()
 	{
@@ -1101,7 +1097,7 @@ public class InfoPlayer
 	public ulong exp;	
 	
 	/// 这个人的军衔信息
-	//public InfoNobility infoNobility = new InfoNobility();
+	public InfoNobility infoNobility = new InfoNobility();
 	/// 这个人的竞技信息
 	public InfoPK infoPK = new InfoPK();
 	/// 邮件数量
@@ -1159,7 +1155,7 @@ public class InfoPlayer
 	
 	private long _money_game;
 	
-    /**
+   
 	/// 金钱减少播放音效
 	private void moneyChange()
 	{
@@ -1206,7 +1202,7 @@ public class InfoPlayer
 		}
 	}
 	
-	
+	/**
 	/// 我的位置类型
 	public byte inType;
 	public int inIDCsv;
@@ -1507,6 +1503,12 @@ public class InfoPlayer
      
 }
 
+/// 军衔信息
+public class InfoNobility
+{
+    public int lv;
+    public bool isReward;
+}
 
 /// 商店
 public class InfoShop
@@ -1588,7 +1590,7 @@ public class InfoHero
 
 
     /// 我会的技能
-    //public InfoSkillList infoSkill = new InfoSkillList();
+    public InfoSkillList infoSkill = new InfoSkillList();
     /// 我的装备
     public InfoPropList infoEquip = new InfoPropList();
     /// 我的进阶石属性增加
@@ -1684,9 +1686,11 @@ public class InfoHeroList
     private List<ulong> _heros = new List<ulong>();
 
     /// 获得所有的角色列表
+    /*
     public List<InfoHero> getHeros()
     {
         List<InfoHero> result = new List<InfoHero>();
+
         /// 寻找相同团队的
         //for( int index = 0; index < _heros.Count; index++ )
         //{
@@ -1694,7 +1698,7 @@ public class InfoHeroList
         //}
         return result;
     }
-
+    */
     public List<ulong> getHeroList()
     {
         return _heros;
@@ -1873,4 +1877,154 @@ public class InfoPropList
     }
 
     //....
+}
+
+/// 我的技能树
+public class InfoSkillList
+{
+    /// 我的道具
+    private Dictionary<int, InfoSkill> _skills = new Dictionary<int, InfoSkill>();
+    public List<int> skillSort = new List<int>();
+    private int _idCsvSkillRelease;
+    /// 数据清空
+    public void clear()
+    {
+        _skills.Clear();
+        skillSort.Clear();
+        _idCsvSkillRelease = 0;
+    }
+    /// 设置我主动释放的技能
+    public void setSkillRelease( int idCsvSkill )
+    {
+        _idCsvSkillRelease = idCsvSkill;
+    }
+    /// 修改技能
+    public void setSkillChange( int sIDCsvOld, int sIDCsvNew )
+    {
+        if( !_skills.ContainsKey( sIDCsvOld ) )
+        {
+            Logger.Error( "技能id在表中无法查询" );
+            return;
+        }
+        InfoSkill changeSkill = _skills[ sIDCsvOld ];
+        _skills.Remove( sIDCsvOld );
+        _skills.Add( sIDCsvNew, changeSkill );
+
+        /// 排序
+        for( int index = 0; index < skillSort.Count; index++ )
+        {
+            if( skillSort[ index ] == sIDCsvOld )
+            {
+                skillSort[ index ] = sIDCsvNew;
+            }
+        }
+
+        changeSkill.idCsv = sIDCsvNew;
+        changeSkill.isActive = true;
+    }
+
+    /// 移除某个技能
+    public void removeSkill( int idCsvSkill )
+    {
+        if( _skills.ContainsKey( idCsvSkill ) )
+            _skills.Remove( idCsvSkill );
+    }
+    /// 获得所有技能
+    public List<InfoSkill> getSkillAll()
+    {
+        List<InfoSkill> result = new List<InfoSkill>();
+        foreach( int idCsvSkill in _skills.Keys )
+        {
+            /// 添加到数组
+            result.Add( _skills[ idCsvSkill ] );
+        }
+        return result;
+    }
+    /// 获得普通攻击
+    public InfoSkill getSkillRelease()
+    {
+        /// 有这个技能
+        if( !_skills.ContainsKey( _idCsvSkillRelease ) )
+            return null;
+        /// 释放
+        if( !_skills[ _idCsvSkillRelease ].isActive )
+            return null;
+        /// 返回技能
+        return _skills[ _idCsvSkillRelease ];
+    }
+    /// 获得自动释放的技能
+    public List<InfoSkill> getSkillAuto()
+    {
+        List<InfoSkill> result = new List<InfoSkill>();
+        foreach( int idCsvSkill in _skills.Keys )
+        {
+            /// 是主动释放的返回
+            if( idCsvSkill == _idCsvSkillRelease )
+                continue;
+            /// 不是被激活的返回
+            if( !_skills[ idCsvSkill ].isActive )
+                continue;
+            /// 添加到数组
+            result.Add( _skills[ idCsvSkill ] );
+        }
+        return result;
+    }
+    /// 设置我的技能信息
+    public void setInfoSkill( InfoSkill infoSkill )
+    {
+        if( !_skills.ContainsKey( infoSkill.idCsv ) )
+            _skills.Add( infoSkill.idCsv, infoSkill );
+        _skills[ infoSkill.idCsv ].idCsv = infoSkill.idCsv;
+        _skills[ infoSkill.idCsv ].isActive = infoSkill.isActive;
+    }
+
+    /**
+    /// 计算属性倍率(是否计算单体)
+    public void mathAttribute( DataAttCount result, bool isMathSign )
+    {
+        /// 暂时设定没有群体加属性的技能
+        if( !isMathSign )
+            return;
+        foreach( InfoSkill skill in _skills.Values )
+        {
+            if( !skill.isActive )
+                continue;
+            TypeCsvHeroSkillBase skillBase = ManagerCsv.getHeroSkillBase( skill.idCsv );
+            if( skillBase.skillType == 0 )
+                continue;
+            TypeCsvHeroSkillAttribute skillAttribute = ManagerCsv.getHeroSkillAttribute( skill.idCsv );
+
+            result.atk = result.atk + skillAttribute.atk;
+            result.atkDef = result.atkDef + skillAttribute.atkDef;
+            result.atkThrough = result.atkThrough + skillAttribute.atkThrough;
+            result.crit = result.crit + skillAttribute.crit;
+            result.critDef = result.critDef + skillAttribute.critDef;
+            result.duck = result.duck + skillAttribute.duck;
+            result.hp = result.hp + skillAttribute.hp;
+            result.magic = result.magic + skillAttribute.magic;
+            result.magicDef = result.magicDef + skillAttribute.magicDef;
+            result.magicThrough = result.magicThrough + skillAttribute.magicThrough;
+        }
+    }
+     */
+}
+
+/// 技能的serverID
+public class InfoSkill
+{
+    public bool isActive;
+    public int idCsv;
+
+    // add by ssy
+    public InfoSkill( bool is_active, int id_csv )
+    {
+        isActive = is_active;
+        idCsv = id_csv;
+    }
+
+    public InfoSkill()
+    {
+        ;
+    }
+    // add end
 }

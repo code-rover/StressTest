@@ -218,8 +218,9 @@ namespace net.unity3d
 		EP_C2RM_FRIEND_ASK_LIST = 291,						
 		///购买爬塔商店物品
 		EP_C2RM_BUY_TOWER_SHOP = 292,
-		///起名字
-		EP_C2RM_ROLE_NAME = 293,								
+		///改名字
+        EP_C2RM_ROLE_RENAME = 1500,
+						
 		///爬塔时间
 		EP_C2RM_GET_TOWER_TIME = 294,							
 		///设置个人签名
@@ -536,8 +537,19 @@ namespace net.unity3d
 		EP_C2RM_OPEN_SET_GAME_UNION = 1092,			///打开公会管理界面
 		EP_C2RM_SET_GU_ANNOUNCEMENT = 1093,			///修改公会公告
 
+        EP_C2RM_GET_NOBILITY_SHOP = 1501,		    ///获取爵位商店
+        EP_C2RM_NOBILITY_SHOP_BUY = 1502,           ///购买爵位商店
+        EP_C2RM_REFRESH_NOBILITY_SHOP = 1503,       ///爵位商店刷新
+                                                    ///
+        EP_C2RM_LUCKY_SOUL_LIST = 1505,             ///魂侠ui请求 
+                                                    ///
+        EP_C2RM_USE_PROP_ADD_SP = 1506,             ///使用道具增加技能点
+        EP_C2RM_USE_TEMP_VIP  = 1508,               ///使用vip体验卡
 		/////////realm to client//////////////////////////////////
 
+
+        EP_RM2C_USE_TEMP_VIP = 2705,               ///使用vip体验卡回应
+        EP_RM2C_USE_PROP_ADD_SP = 2704,             ///使用道具增加技能点回应
 		//公会相关协议	
 		EP_RM2C_SET_GU_ANNOUNCEMENT = 2595,	///修改公会公告
 		EP_RM2C_OPEN_SET_GAME_UNION = 2594,	///打开公会管理界面
@@ -709,7 +721,9 @@ namespace net.unity3d
 		///好友出战历史记录
 		EP_RM2C_FRIEND_FIGHT_HISTORY = 2197,					
 		///返回出售卡牌碎片
-		EP_RM2C_PET_PIECE_SELL = 2195,							
+		EP_RM2C_PET_PIECE_SELL = 2195,
+		
+		EP_RM2C_LUCKY_SOUL_LIST = 2194,			
 		///魂侠抽奖
 		EP_RM2C_LUCKY_SOUL = 2193,	
 		///卡牌合成
@@ -851,7 +865,7 @@ namespace net.unity3d
 		///进入活动回复;
 		EP_RM2C_GO_TO_ACTIV_EVENT = 2114,						
 		///返回起名字
-		EP_RM2C_ROLE_NAME = 2113,		
+        EP_RM2C_ROLE_RENAME = 2700,		
 		///增加活动次数回复
 		EP_RM2C_ADD_ACTIV_EVENT_CNT = 2112,						
 		///返回申请好友列表
@@ -1073,8 +1087,14 @@ namespace net.unity3d
 		///沙箱回复
 		EP_RM2C_SOCK_POL = 2001,					
 		///返回登陆
-		EP_RM2C_LOGIN = 2000,	
-		
+		EP_RM2C_LOGIN = 2000,
+
+        EP_RM2C_GET_NOBILITY_SHOP = 2701,			///爵位商店回应
+        EP_RM2C_NOBILITY_SHOP_BUY = 2703,           ///购买爵位商店
+        EP_RM2C_REFRESH_NOBILITY_SHOP = 2702,       ///爵位商店刷新
+
+        
+
 		/// c2ac
 		
 		///验证密码，并获取account对应信息

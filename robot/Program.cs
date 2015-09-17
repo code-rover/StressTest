@@ -8,7 +8,7 @@ namespace robot
 {
     class Program
     {
-        public static int COUNT = 1;
+        public static int COUNT = 2000;
 
         public static string ACCOUNT_IP = "192.168.1.2";
         public static short  ACCOUNT_PORT = 11111;
@@ -31,7 +31,7 @@ namespace robot
             load_csv();  //加载csv
 
 
-            int account = 4665;    //开始帐号
+            int account = 3000;    //开始帐号
             string passwd = "123";
             string macId = "";
  
@@ -54,6 +54,7 @@ namespace robot
                 {
                     agent.tick();
                 }
+                ///Logger.Debug( "----------------------------- " + DateTime.Now.Ticks );
             }
             
             Console.ReadKey( true );
@@ -96,7 +97,7 @@ namespace robot
             agent.addListenEvent( ( ushort ) E_OPCODE.EP_RM2C_MASTER_BASE_INFO, agent.recvMaster );
 
             ///改名返回消息
-            agent.addListenEvent( ( ushort ) E_OPCODE.EP_RM2C_ROLE_NAME, agent.recvChangeName );
+            agent.addListenEvent( ( ushort ) E_OPCODE.EP_RM2C_ROLE_RENAME, agent.recvChangeName );
 
             ///返回web email
             agent.addListenEvent( ( ushort ) E_OPCODE.EP_RM2C_WEB_EMAIL, agent.recvWebEmail );
@@ -164,6 +165,32 @@ namespace robot
             //进阶石返回
             agent.addListenEvent( ( ushort ) E_OPCODE.EP_RM2C_PET_STONE_UP, agent.recvPetStoneUp );
 
+            //装备强化回应
+            agent.addListenEvent( ( ushort ) E_OPCODE.EP_RM2C_EQUIP_UP, agent.recvEquipUp );
+
+            //装备一键强化回应
+            agent.addListenEvent( ( ushort ) E_OPCODE.EP_RM2C_EQUIP_UP_ONE_KEY, agent.recvEquipUpAll );
+
+            //装备合成回应
+            agent.addListenEvent( ( ushort ) E_OPCODE.EP_RM2C_EQUIP_COM, agent.recvEquipCreat );
+
+            //技能升级回应
+            agent.addListenEvent( ( ushort ) E_OPCODE.EP_RM2C_SKILL_UP_NEW, agent.recvSkillUp_New );
+
+
+            /////爵位商店//////////////////////////////
+            agent.addListenEvent( ( ushort ) E_OPCODE.EP_RM2C_GET_NOBILITY_SHOP, agent.recvGetNobilityShop );
+            agent.addListenEvent( ( ushort ) E_OPCODE.EP_RM2C_REFRESH_NOBILITY_SHOP, agent.recvNobilityShopReset );
+            agent.addListenEvent( ( ushort ) E_OPCODE.EP_RM2C_NOBILITY_SHOP_BUY, agent.recvNobilityShopBuy );
+
+            //魂侠抽回应
+            agent.addListenEvent( ( ushort ) E_OPCODE.EP_RM2C_LUCKY_SOUL, agent.recvLuckySoul );
+            agent.addListenEvent( ( ushort ) E_OPCODE.EP_RM2C_LUCKY_SOUL_LIST, agent.recvLuckySoulList );
+
+            agent.addListenEvent( ( ushort ) E_OPCODE.EP_RM2C_USE_PROP_ADD_SP, agent.recvPropAddSP );
+
+            agent.addListenEvent( ( ushort ) E_OPCODE.EP_RM2C_USE_TEMP_VIP, agent.recvTempVip );
+
             //agent.addListenEvent( ( ushort ) E_OPCODE.EP_RM2C_PING_PRO_TWO, recvPingTwo );
             //agent.addListenEvent( ( ushort ) E_OPCODE.EP_RM2C_BEAST_INFO, recvBeastInfo );
             //agent.addListenEvent( ( ushort ) E_OPCODE.EP_RM2C_BEAST_LV_UP, recvBeastLvUp );
@@ -207,7 +234,7 @@ namespace robot
 
             agent.addListenEvent( ( ushort ) E_OPCODE.EP_RM2C_EQUIP_UP, recvEquipUp );
 
-            agent.addListenEvent( ( ushort ) E_OPCODE.EP_RM2C_EQUIP_COM, recvEquipCreat );
+            
 
             agent.addListenEvent( ( ushort ) E_OPCODE.EP_RM2C_EQUIP_UP_ONE_KEY, recvEquipUpAll );
 

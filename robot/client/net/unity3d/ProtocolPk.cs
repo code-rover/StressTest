@@ -1357,4 +1357,241 @@ namespace net.unity3d
 		///商店物品信息 csvId对应的是Shop表里面的id
 		public STowerShopGood[] m_vctShopGoodsp = new STowerShopGood[8];
     };
+
+    [Serializable()]
+    public class C2RM_GET_NOBILITY_SHOP : ExFormatterBinary, IProtocal
+    {
+        public static readonly E_OPCODE OPCODE = E_OPCODE.EP_C2RM_GET_NOBILITY_SHOP;
+
+        public static IProtocal Create(ushort msg, HeaderBase h)
+        {
+            return new C2RM_GET_NOBILITY_SHOP();
+        }
+
+        public ushort Message
+        {
+            get { return (ushort)OPCODE; }
+        }
+
+        public bool analysisBuffer(byte[] Buffer)
+        {
+            return false;
+        }
+
+        public byte[] getBuffer()
+        {
+            byte[] buffer = ToByteArray();
+            return buffer;
+        }
+		
+        public UInt32 uiListen = new UInt32();
+    };
+
+    public class RM2C_GET_NOBILITY_SHOP : ExFormatterBinary, IProtocal
+    {
+        public static readonly E_OPCODE OPCODE = E_OPCODE.EP_RM2C_GET_NOBILITY_SHOP;
+
+        public RM2C_GET_NOBILITY_SHOP()
+        {
+            for( int i = 0; i < 8; ++i )
+            {
+                m_vctShopGoodsp[ i ] = new STowerShopGood();
+            }
+        }
+
+        public static IProtocal Create( ushort msg, HeaderBase h )
+        {
+            return new RM2C_GET_NOBILITY_SHOP();
+        }
+
+        public ushort Message
+        {
+            get
+            {
+                return ( ushort ) OPCODE;
+            }
+        }
+
+        public bool analysisBuffer( byte[] Buffer )
+        {
+            FromByteArrayNew( Buffer, this );
+            return true;
+        }
+
+        public byte[] getBuffer()
+        {
+            return null;
+        }
+
+        public UInt32 uiListen = new UInt32();
+        public int iResult = new int();
+        ///下次刷新时间
+        public UInt32 uiRefreshTime = new UInt32();
+        ///服务器当前时间
+        public UInt32 uiServerTime = new UInt32();
+        ///今天已经刷新次数
+        public int iCntRefresh = new int();
+        ///商店物品信息 csvId对应的是Shop表里面的id
+        public STowerShopGood[] m_vctShopGoodsp = new STowerShopGood[ 8 ];
+    };
+
+    [Serializable()]
+    public class C2RM_REFRESH_NOBILITY_SHOP : ExFormatterBinary, IProtocal
+    {
+        public static readonly E_OPCODE OPCODE = E_OPCODE.EP_C2RM_REFRESH_NOBILITY_SHOP;
+
+        public static IProtocal Create( ushort msg, HeaderBase h )
+        {
+            return new C2RM_REFRESH_NOBILITY_SHOP();
+        }
+
+        public ushort Message
+        {
+            get
+            {
+                return ( ushort ) OPCODE;
+            }
+        }
+
+        public bool analysisBuffer( byte[] Buffer )
+        {
+            return false;
+        }
+
+        public byte[] getBuffer()
+        {
+            byte[] buffer = ToByteArray();
+            return buffer;
+        }
+
+        public UInt32 uiListen = new UInt32();
+        ///刷新类型0系统定时自动刷新，1竞技积分刷新
+        public byte cType = new byte();
+    };
+
+    public class RM2C_REFRESH_NOBILITY_SHOP : ExFormatterBinary, IProtocal
+    {
+        public static readonly E_OPCODE OPCODE = E_OPCODE.EP_RM2C_REFRESH_NOBILITY_SHOP;
+
+        public RM2C_REFRESH_NOBILITY_SHOP()
+        {
+            for( int i = 0; i < 8; ++i )
+            {
+                m_vctShopGoodsp[ i ] = new STowerShopGood();
+            }
+        }
+
+        public static IProtocal Create( ushort msg, HeaderBase h )
+        {
+            return new RM2C_REFRESH_NOBILITY_SHOP();
+        }
+
+        public ushort Message
+        {
+            get
+            {
+                return ( ushort ) OPCODE;
+            }
+        }
+
+        public bool analysisBuffer( byte[] Buffer )
+        {
+            FromByteArrayNew( Buffer, this );
+            return true;
+        }
+
+        public byte[] getBuffer()
+        {
+            return null;
+        }
+
+        public UInt32 uiListen = new UInt32();
+        public int iResult = new int();
+        ///下次刷新时间
+        public UInt32 uiRefreshTime = new UInt32();
+        ///服务器当前时间
+        public UInt32 uiServerTime = new UInt32();
+        ///消耗钻石
+        public int m_iCostQMoney = new int();
+        ///今天已经刷新次数
+        public int iCntRefresh = new int();
+        ///商店物品信息
+        public STowerShopGood[] m_vctShopGoodsp = new STowerShopGood[ 8 ];
+    };
+
+    [Serializable()]
+    public class C2RM_NOBILITY_SHOP_BUY : ExFormatterBinary, IProtocal
+    {
+        public static readonly E_OPCODE OPCODE = E_OPCODE.EP_C2RM_NOBILITY_SHOP_BUY;
+
+        public static IProtocal Create( ushort msg, HeaderBase h )
+        {
+            return new C2RM_NOBILITY_SHOP_BUY();
+        }
+
+        public ushort Message
+        {
+            get
+            {
+                return ( ushort ) OPCODE;
+            }
+        }
+
+        public bool analysisBuffer( byte[] Buffer )
+        {
+            return false;
+        }
+
+        public byte[] getBuffer()
+        {
+            byte[] buffer = ToByteArray();
+            return buffer;
+        }
+
+        public UInt32 uiListen = new UInt32();
+        ///商店物品位置
+        public int iLoc = new int();
+    };
+
+    public class RM2C_NOBILITY_SHOP_BUY : ExFormatterBinary, IProtocal
+    {
+        public static readonly E_OPCODE OPCODE = E_OPCODE.EP_RM2C_NOBILITY_SHOP_BUY;
+
+        public static IProtocal Create( ushort msg, HeaderBase h )
+        {
+            return new RM2C_NOBILITY_SHOP_BUY();
+        }
+
+        public ushort Message
+        {
+            get
+            {
+                return ( ushort ) OPCODE;
+            }
+        }
+
+        public bool analysisBuffer( byte[] Buffer )
+        {
+            FromByteArrayNew( Buffer, this );
+            return true;
+        }
+
+        public byte[] getBuffer()
+        {
+            return null;
+        }
+
+        public UInt32 uiListen = new UInt32();
+        public int iResult = new int();
+        ///商店物品位置
+        public int iLoc = new int();
+        ///钻石花费
+        public int m_iQMoney = new int();
+        ///新买的物品数量更新
+        public SEquipment SEquip = new SEquipment();
+        ///新买的碎片数量更新
+        public SPiece SPiece = new SPiece();
+        ///购买的整卡
+        public SPetInfo SPet = new SPetInfo();
+    };
 }

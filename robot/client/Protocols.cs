@@ -186,7 +186,7 @@ namespace robot.client
             Session.addFactoryMethod( ( ushort ) RM2C_POWER_BUY.OPCODE, RM2C_POWER_BUY.Create );
 
             ///2014-04-18
-            Session.addFactoryMethod( ( ushort ) RM2C_ROLE_NAME.OPCODE, RM2C_ROLE_NAME.Create );
+            Session.addFactoryMethod( ( ushort ) RM2C_ROLE_RENAME.OPCODE, RM2C_ROLE_RENAME.Create );
             Session.addFactoryMethod( ( ushort ) RM2C_FRIEND_NICK_NAME.OPCODE, RM2C_FRIEND_NICK_NAME.Create );
             Session.addFactoryMethod( ( ushort ) RM2C_TICK_BY_OTHER.OPCODE, RM2C_TICK_BY_OTHER.Create );
 
@@ -267,6 +267,7 @@ namespace robot.client
 
             ///2014-08-30
             Session.addFactoryMethod( ( ushort ) RM2C_LUCKY_SOUL.OPCODE, RM2C_LUCKY_SOUL.Create );
+            Session.addFactoryMethod( ( ushort ) RM2C_LUCKY_SOUL_LIST.OPCODE, RM2C_LUCKY_SOUL_LIST.Create );
             Session.addFactoryMethod( ( ushort ) RM2C_PET_PIECE_TO_PET.OPCODE, RM2C_PET_PIECE_TO_PET.Create );
 
             ///2014-09-02
@@ -453,6 +454,17 @@ namespace robot.client
             ///2015-08-06
             Session.addFactoryMethod( ( ushort ) RM2C_STOP_INFO.OPCODE, RM2C_STOP_INFO.Create );
 
+
+            Session.addFactoryMethod( ( ushort ) RM2C_GET_NOBILITY_SHOP.OPCODE, RM2C_GET_NOBILITY_SHOP.Create );
+            Session.addFactoryMethod( ( ushort ) RM2C_NOBILITY_SHOP_BUY.OPCODE, RM2C_NOBILITY_SHOP_BUY.Create );
+            Session.addFactoryMethod( ( ushort ) RM2C_REFRESH_NOBILITY_SHOP.OPCODE, RM2C_REFRESH_NOBILITY_SHOP.Create );
+
+
+            Session.addFactoryMethod( ( ushort ) RM2C_USE_PROP_ADD_SP.OPCODE, RM2C_USE_PROP_ADD_SP.Create );
+            Session.addFactoryMethod( ( ushort ) RM2C_USE_TEMP_VIP.OPCODE, RM2C_USE_TEMP_VIP.Create );
+        
+            
+        
         }
     }
 }

@@ -5351,13 +5351,13 @@ namespace net.unity3d
     };
 	
 	[Serializable()]
-    public class C2RM_ROLE_NAME : ExFormatterBinary, IProtocal
+    public class C2RM_ROLE_RENAME : ExFormatterBinary, IProtocal
     {
-        public static readonly E_OPCODE OPCODE = E_OPCODE.EP_C2RM_ROLE_NAME;
+        public static readonly E_OPCODE OPCODE = E_OPCODE.EP_C2RM_ROLE_RENAME;
 
         public static IProtocal Create(ushort msg, HeaderBase h)
         {
-			return new C2RM_ROLE_NAME();
+            return new C2RM_ROLE_RENAME();
         }
 
         public ushort Message
@@ -5391,13 +5391,13 @@ namespace net.unity3d
     };
 	
 	[Serializable()]
-    public class RM2C_ROLE_NAME : ExFormatterBinary, IProtocal
+    public class RM2C_ROLE_RENAME : ExFormatterBinary, IProtocal
     {
-        public static readonly E_OPCODE OPCODE = E_OPCODE.EP_RM2C_ROLE_NAME;
+        public static readonly E_OPCODE OPCODE = E_OPCODE.EP_RM2C_ROLE_RENAME;
 
         public static IProtocal Create(ushort msg, HeaderBase h)
         {
-            return new RM2C_ROLE_NAME();
+            return new RM2C_ROLE_RENAME();
         }
 
         public ushort Message
