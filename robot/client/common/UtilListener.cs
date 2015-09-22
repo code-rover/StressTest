@@ -1,5 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System.Threading;
+using utils;
 
 /// 函数定义
 public delegate void Function();
@@ -32,19 +34,38 @@ public class UtilListener
 	{
 		get{return "public class UtilListener.CALL_TIME_HD" + (_signID++);}
 	}
-	
+
+    private static System.Object lockThis = new System.Object();
+
+    //private static int curThread = 0;
+
 	/// 注册侦听函数(注册两次调用两次,需要注意)
 	public static void addEventListener(string sEventName, FunctionListenerEvent sEvent, object sTarget)
 	{
-		UtilListenerEvent listenerObj = new UtilListenerEvent();
-		listenerObj.eventName = sEventName;
-		listenerObj.eventTarget = sTarget;
-		listenerObj.eventListener = sEvent;
-		/// 放入缓存
-		if(!_hashListener.ContainsKey(sEventName))
-			_hashListener.Add(sEventName, new List<UtilListenerEvent>());
-		/// 添加进去
-		_hashListener[sEventName].Add(listenerObj);
+        //if(curThread == 0)
+        //    curThread = Thread.CurrentThread.GetHashCode();
+
+        Logger.Info( "current thread: " + Thread.CurrentThread.GetHashCode() );
+
+        //if( curThread != Thread.CurrentThread.GetHashCode() )
+        //{
+            //Logger.Info( "thread error  ffffffffffffffffffffffffffffff" );
+        //}
+        
+        UtilListenerEvent listenerObj = new UtilListenerEvent();
+        listenerObj.eventName = sEventName;
+        listenerObj.eventTarget = sTarget;
+        listenerObj.eventListener = sEvent;
+
+        lock(lockThis)
+        {
+            /// 放入缓存
+            if( !_hashListener.ContainsKey( sEventName ) )
+                _hashListener.Add( sEventName, new List<UtilListenerEvent>() );
+
+            /// 添加进去
+            _hashListener[ sEventName ].Add( listenerObj );
+        }
 	}
 	/// 注册侦听简写
 	public static void addEventListener(string sEventName, FunctionListenerEvent sEvent)
@@ -112,7 +133,10 @@ public class UtilListener
 			/// 移除制定函数的侦听
 			if(listener.eventListener == sEvent)
 			{
-				_hashListener[sEventName].Remove(listener);
+                lock( lockThis )
+                {
+                    _hashListener[ sEventName ].Remove( listener );
+                }
 			}
 		}
 	}
@@ -121,7 +145,12 @@ public class UtilListener
 	{
 		if(!_hashListener.ContainsKey(sEventName))
 			return;
-		_hashListener.Remove(sEventName);
+
+        lock( lockThis )
+        {
+            _hashListener.Remove( sEventName );
+        }
+
 	}
 	/// 是否含有侦听
 	public static bool hasListener(string sEventName)

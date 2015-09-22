@@ -8,7 +8,7 @@ namespace robot
 {
     class Program
     {
-        public static int COUNT = 2000;
+        public static int COUNT = 4000;
 
         public static string ACCOUNT_IP = "192.168.1.2";
         public static short  ACCOUNT_PORT = 11111;
@@ -27,11 +27,9 @@ namespace robot
             Logger.Info( "===========================================================" );
             Logger.Info("");
 
-
             load_csv();  //加载csv
 
-
-            int account = 3000;    //开始帐号
+            int account = 1000;    //开始帐号
             string passwd = "123";
             string macId = "";
  

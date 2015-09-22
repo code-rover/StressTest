@@ -309,16 +309,12 @@ namespace net.unity3d
 				ReadState rs = (ReadState)ar.AsyncState;
 
 				if(!rs.Pkg.StreamNet.CanRead)
-				{
 					return;
-				}
 				
 				int len = 0;
 				try
 				{
-					
 					len =  rs.Pkg.StreamNet.EndRead(ar);
-				
 				}
 				catch(Exception ex)
 				{

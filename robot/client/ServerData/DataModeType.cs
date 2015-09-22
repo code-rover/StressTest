@@ -1154,8 +1154,21 @@ public class InfoPlayer
 	}
 	
 	private long _money_game;
-	
-   
+
+
+    public long nmoney
+    {
+        get
+        {
+            return _nmoney;
+        }
+        set
+        {
+            _nmoney = value;
+        }
+    }
+    private long _nmoney;
+
 	/// 金钱减少播放音效
 	private void moneyChange()
 	{

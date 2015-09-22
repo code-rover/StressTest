@@ -26,6 +26,8 @@ namespace net.unity3d
         public UInt32 luiQMoney = new UInt32();
 		///游戏币
         public UInt64 luiSMoney = new UInt64();
+        ///爵位币
+        public UInt32 luiNMoney = new UInt32();
 		///正义徽章
         public UInt32 uiBadge = new UInt32();
 		///总dkp

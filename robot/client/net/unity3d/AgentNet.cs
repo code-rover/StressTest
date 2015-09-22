@@ -290,7 +290,7 @@ namespace net.unity3d
 		
 		public bool send(IProtocal pro)
         {
-            Logger.Info( "======> " + this._accountId + "  " + pro.Message + " time: " + DateTime.Now.Millisecond );
+            Logger.Info( "======> " + this._account + "  " + pro.Message + " time: " + DateTime.Now.Millisecond );
 
             if (pro.Message >= 200 && pro.Message <= 1999)
             {
@@ -463,7 +463,7 @@ namespace net.unity3d
             {
                 //ManagerServer.getInstance().lastLoginServerIndex = ( int ) recv.sAccountAC2C.uiServer[ 0 ];
             }
-            Logger.Info( "RECV SERVER ACCOUNT = " + recv.sAccountAC2C.getAccountIdStr() );
+            Logger.Info(this._account + "RECV SERVER ACCOUNT = " + recv.sAccountAC2C.getAccountIdStr() );
         }
 
         /// login返回
@@ -471,18 +471,18 @@ namespace net.unity3d
         {
             LS2C_LOGIN_RESPONSE recv = args.getData<LS2C_LOGIN_RESPONSE>();
 
-            Logger.Info( "LS2C_LOGIN_RESPONSE >> " + recv.iResult.ToString() );
+            Logger.Info(this._account + " LS2C_LOGIN_RESPONSE >> " + recv.iResult.ToString() );
             if( recv.iResult == 1 )
             {
-                Logger.Info( "Login Authentication Success" );
-                Logger.Info( "realm server info: " + recv.getIp() + ":" + recv.port );
+                Logger.Info(this._account + " Login Authentication Success" );
+                Logger.Info(this._account + " realm server info: " + recv.getIp() + ":" + recv.port );
 
                 this.initLogic( recv.getIp(), ( short ) recv.port, ( int ) recv.timeOut );
                 this.connectRealmServer();
             }
             else
             {
-                Logger.Info( " recvLoginServer error, iresult = " + recv.iResult );
+                Logger.Info(this._account + " recvLoginServer error, iresult = " + recv.iResult );
             }
         }
 
@@ -491,17 +491,17 @@ namespace net.unity3d
         {
             RM2C_LOGIN recv = args.getData<RM2C_LOGIN>();
 
-            Logger.Info( "connect Realm Result: " + recv.iResult );
+            Logger.Info(this._account + " connect Realm Result: " + recv.iResult );
 
             if( recv.iResult == ( int ) EM_CLIENT_ERRORCODE.EE_M2C_NEED_CREATE_ROLE )
             {
-                Logger.Info( "需要创建角色" );
+                Logger.Info(this._account + " 需要创建角色" );
                 this.sendCreatRole( 61, null );
 
             }
             else if( recv.iResult == ( int ) EM_CLIENT_ERRORCODE.EE_ACCOUNT_NOT_EXIST )
             {
-                Logger.Info( "Realm msg: 帐号不存在" );
+                Logger.Info(this._account + " Realm msg: 帐号不存在" );
             }
         }
 
@@ -564,6 +564,9 @@ namespace net.unity3d
             player.money_game = ( long ) recv.SPlayerInfo.sPlayerBaseInfo.luiSMoney;
             //人民币
             player.money = ( long ) recv.SPlayerInfo.sPlayerBaseInfo.luiQMoney;
+            //爵位币
+            player.nmoney = ( UInt32 ) recv.SPlayerInfo.sPlayerBaseInfo.luiNMoney;
+            
             ///正义徽章
             //player.infoPoint.badge = ( int ) recv.SPlayerInfo.sPlayerBaseInfo.uiBadge;
             //TODO ...
@@ -573,7 +576,7 @@ namespace net.unity3d
 
             //for test
             //this.sendGetNobilityShop(null);
-            //this.NobilityShopStart();
+            this.NobilityShopStart();
             
             /*
             this.sendLuckySoulList( ( UtilListenerEvent evt ) =>
@@ -611,7 +614,7 @@ namespace net.unity3d
             } );
             */
 
-            
+            /*
             if( player.name == null )
             {
                 //发送更名请求
@@ -624,17 +627,13 @@ namespace net.unity3d
             {
                 this.OpenMailStart();        
             }
-             
+            */ 
         }
 
         //领取邮件奖励
         private void OpenMailStart() {
-            System.Timers.Timer timer = new System.Timers.Timer();
-
             FunctionListenerEvent func = ( UtilListenerEvent evt ) =>
             {
-                timer.Enabled = false;  //取消收邮件定时器
-
                 Logger.Info( this._account + " 收到邮件总数:" + dataMode._emailInfo.Count );
 
                 this.open_mail_queue.Clear();
@@ -653,7 +652,7 @@ namespace net.unity3d
                         {
                             sendOpenEmail( emailId, ( UtilListenerEvent evt2 ) =>
                             {
-                                Logger.Info( "打开邮件 " + emailId );
+                                Logger.Info(this._account + " 打开邮件 " + emailId );
 
                                 Action next = this.open_mail_queue.Dequeue();
                                 next();
@@ -688,13 +687,7 @@ namespace net.unity3d
             //发送获取邮件请求
             this.sendWebEmail( null );   //如果没有邮件的话，服务器不会回应,超3秒后，由定时器触发
             
-            timer.Interval = 2000;
-            timer.AutoReset = false; //once
-            timer.Enabled = true;
-            timer.Elapsed += new ElapsedEventHandler( ( object source, System.Timers.ElapsedEventArgs e ) =>
-            {
-                func(null);
-            } );
+            func(null);
         }
 
         /// 创建角色
@@ -702,7 +695,7 @@ namespace net.unity3d
         {
             C2RM_CREAT_ROLE sender = new C2RM_CREAT_ROLE();
             sender.uiPetCsvId = ( uint ) roleCsvId;
-            Logger.Info( "创建角色 id: " + roleCsvId);
+            Logger.Info(this._account + " 创建角色 id: " + roleCsvId);
             this.send( sender );
         }
 
@@ -840,7 +833,7 @@ namespace net.unity3d
                 {
                     if( recv.vctSEquip[ i ].uiIdCsvEquipment > 0 )
                     {
-                        csvprop = ManagerCsv.getProp( ( int ) recv.vctSEquip[ i ].uiIdCsvEquipment );
+                        //csvprop = ManagerCsv.getProp( ( int ) recv.vctSEquip[ i ].uiIdCsvEquipment );
                         //...
                     }
                 }
@@ -940,14 +933,7 @@ namespace net.unity3d
                             Action action = this.buy_fb_queue.Dequeue();
                             Debug.Assert( action != null);
 
-                            System.Timers.Timer timer = new System.Timers.Timer();
-                            timer.Interval = 50;
-                            timer.AutoReset = false; //once
-                            timer.Enabled = true;
-                            timer.Elapsed += new ElapsedEventHandler((object source, System.Timers.ElapsedEventArgs e) =>
-                            {
-                                action();            
-                            } );
+                            action();            
                         } );
 
                     };
@@ -987,7 +973,7 @@ namespace net.unity3d
                 int csvFb = item.Value.idCsvFB;
                 Action func = () =>
                 {
-                    Logger.Info( "开始发送扫荡命令 " + csvFb );
+                    Logger.Info(this._account + " 开始发送扫荡命令 " + csvFb );
 
                     sendFBSweep( ( uint ) csvFb, ( UtilListenerEvent evt ) =>
                     {
@@ -995,14 +981,7 @@ namespace net.unity3d
                         Action action = this.sweep_queue.Dequeue();
                         Debug.Assert( action != null );
 
-                        System.Timers.Timer timer = new System.Timers.Timer();
-                        timer.Interval = 50;
-                        timer.AutoReset = false; //once
-                        timer.Enabled = true;
-                        timer.Elapsed += new ElapsedEventHandler( ( object source, System.Timers.ElapsedEventArgs e ) =>
-                        {
-                            action();
-                        } );
+                        action();
                     } );
 
                 };
@@ -1033,7 +1012,7 @@ namespace net.unity3d
             {
                 RM2C_GET_SMONEY_SHOP res = (RM2C_GET_SMONEY_SHOP)evt.eventArgs;
 
-                Logger.Info( "商店列表返回: " + res.iResult );
+                Logger.Info(this._account + " 商店列表返回: " + res.iResult );
 
                 if( res.iResult != 1 )
                 {
@@ -1047,7 +1026,7 @@ namespace net.unity3d
                     {
                         Logger.Error( this._account + " 刷新金币商店返回失败 " + re.iResult );
                     }
-                    Logger.Info( "刷新商店返回" );
+                    Logger.Info(this._account + " 刷新商店返回" );
                     Debug.Assert( this.dataMode.myPlayer.infoMoneyShop.sells.Count == 8 );
 
 
@@ -1070,7 +1049,7 @@ namespace net.unity3d
                                 {
                                     Logger.Error( this._account + " 商店购买返回失败 " + buy.iResult );
                                 }
-                                Logger.Info( "商店购买返回  " + buy.iLoc );
+                                Logger.Info(this._account + " 商店购买返回  " + buy.iLoc );
 
                                 Action task = this.buy_goods_queue.Dequeue();
 
@@ -1085,7 +1064,7 @@ namespace net.unity3d
                     //购买完成任务
                     Action end = () =>
                     {
-                        Logger.Info( "购买商品完成!" );
+                        Logger.Info(this._account + " 购买商品完成!" );
 
                         this.PKShopStart();
                     };
@@ -1218,7 +1197,7 @@ namespace net.unity3d
         //刷新金币商店
         public void sendRefreshMoneyShop( int type, FunctionListenerEvent listener )
         {
-            Logger.Info( "SEND:C2RM_REFRESH_SMONEY_SHOP >> " + "刷新金币商店 >> " );
+            Logger.Info(this._account + " SEND:C2RM_REFRESH_SMONEY_SHOP >> " + "刷新金币商店 >> " );
             C2RM_REFRESH_SMONEY_SHOP sender = new C2RM_REFRESH_SMONEY_SHOP();
             sender.cType = ( byte ) type;
             sender.uiListen = Dispatcher.addListener( listener,null);
@@ -1228,7 +1207,7 @@ namespace net.unity3d
         ///金币商店购买
         public void sendBuyMoneyShop( int index, FunctionListenerEvent listener )
         {
-            Logger.Info( "SEND:C2RM_SMONEY_SHOP_BUY >> " + "购买金币商店 >> " + index );
+            Logger.Info(this._account + " SEND:C2RM_SMONEY_SHOP_BUY >> " + "购买金币商店 >> " + index );
             C2RM_SMONEY_SHOP_BUY sender = new C2RM_SMONEY_SHOP_BUY();
             sender.iLoc = index;
             sender.uiListen = Dispatcher.addListener( listener, null);
@@ -1336,15 +1315,7 @@ namespace net.unity3d
                                 RM2C_PK_SHOP_BUY buy = ( RM2C_PK_SHOP_BUY ) e.eventArgs;
 
                                 Action next = this.buy_pk_queue.Dequeue();
-
-                                System.Timers.Timer timer = new System.Timers.Timer();
-                                timer.Interval = 50;
-                                timer.AutoReset = false; //once
-                                timer.Enabled = true;
-                                timer.Elapsed += new ElapsedEventHandler( ( object source, System.Timers.ElapsedEventArgs e2 ) =>
-                                {
-                                    next();   //execute next task in queue
-                                } );
+                                next();   //execute next task in queue
                             } );
                         };
                         this.buy_pk_queue.Enqueue( action );
@@ -1369,12 +1340,10 @@ namespace net.unity3d
         //开始爵位商店相关操作
         private void NobilityShopStart()
         {
-            //get pkshop list
+            //get shop list
             this.sendGetNobilityShop( ( UtilListenerEvent evt ) =>
             {
                 RM2C_GET_NOBILITY_SHOP rec = ( RM2C_GET_NOBILITY_SHOP ) evt.eventArgs;
-
-
 
                 //得到爵位商店列表后，重置
                 this.sendNobilityShopReset( 1, ( UtilListenerEvent ev ) =>
@@ -1385,7 +1354,7 @@ namespace net.unity3d
 
                     if( recv.iResult != 1 )
                     {
-                        Logger.Error( "爵位商店重置失败！" );
+                        Logger.Error(this._account + " 爵位商店重置失败！" );
                     }
                     this.buy_nobility_queue.Clear();
 
@@ -1405,15 +1374,7 @@ namespace net.unity3d
                                 RM2C_NOBILITY_SHOP_BUY buy = ( RM2C_NOBILITY_SHOP_BUY ) e.eventArgs;
 
                                 Action next = this.buy_nobility_queue.Dequeue();
-
-                                System.Timers.Timer timer = new System.Timers.Timer();
-                                timer.Interval = 1000;
-                                timer.AutoReset = false; //once
-                                timer.Enabled = true;
-                                timer.Elapsed += new ElapsedEventHandler( ( object source, System.Timers.ElapsedEventArgs e2 ) =>
-                                {
-                                    next();   //execute next task in queue
-                                } );
+                                next();   //execute next task in queue
                             } );
                         };
                         this.buy_nobility_queue.Enqueue( action );
@@ -1426,6 +1387,7 @@ namespace net.unity3d
                     {
                         Logger.Info( this._account + " ======================= 购买爵位商品完成!" );
 
+                        this.NobilityShopStart();  //restart for loop
                     };
                     this.buy_nobility_queue.Enqueue( end );
 
@@ -1472,15 +1434,7 @@ namespace net.unity3d
                                 Logger.Info(this._account + " 远征商店购买返回  " + buy.iLoc );
 
                                 Action next = this.buy_mot_queue.Dequeue();
-
-                                System.Timers.Timer timer = new System.Timers.Timer();
-                                timer.Interval = 50;
-                                timer.AutoReset = false; //once
-                                timer.Enabled = true;
-                                timer.Elapsed += new ElapsedEventHandler( ( object source, System.Timers.ElapsedEventArgs e2 ) =>
-                                {
-                                    next();   //execute next task in queue
-                                } );
+                                next();   //execute next task in queue
                             } );
                         };
                         this.buy_mot_queue.Enqueue( action );
@@ -1525,15 +1479,7 @@ namespace net.unity3d
                             Logger.Info( this._account + " 碎片合成返回 " + p2p.sPiece.luiIdPiece );
 
                             Action next = this.piece_to_pet_queue.Dequeue();
-
-                            System.Timers.Timer timer = new System.Timers.Timer();
-                            timer.Interval = 100;
-                            timer.AutoReset = false; //once
-                            timer.Enabled = true;
-                            timer.Elapsed += new ElapsedEventHandler( ( object source, System.Timers.ElapsedEventArgs e ) =>
-                            {
-                                next();   //execute next task in queue
-                            } );
+                            next();   //execute next task in queue
                         } );   
                     };
                     this.piece_to_pet_queue.Enqueue( action );
@@ -1566,7 +1512,9 @@ namespace net.unity3d
                 {
                     ulong serverId = hid;
                     InfoHero heroInfo = this.dataMode.getHero( serverId );
-                    Debug.Assert( heroInfo != null, "heroInfo is null" );
+                    //Debug.Assert( heroInfo != null, "heroInfo is null" );
+                    if( heroInfo == null )
+                        continue;
 
                     if( heroInfo.star == 10 )
                         continue;
@@ -1580,16 +1528,7 @@ namespace net.unity3d
                             Logger.Info( this._account + " 卡牌升级返回  star: " + starup.sPetStarInfo.uiStar );
 
                             Action next = this.star_up_queue.Dequeue();
-
-                            System.Timers.Timer timer = new System.Timers.Timer();
-                            timer.Interval = 80;
-                            timer.AutoReset = false; //once
-                            timer.Enabled = true;
-                            timer.Elapsed += new ElapsedEventHandler( ( object source, System.Timers.ElapsedEventArgs e ) =>
-                            {
-                                next();   //execute next task in queue
-                            } );
-                            
+                            next();   //execute next task in queue
                         } );    
                     };
 
@@ -1598,7 +1537,7 @@ namespace net.unity3d
 
                 Action end = () =>
                 {
-                    Logger.Info("英雄升级己完成");
+                    Logger.Info(this._account + " 英雄升级己完成");
 
                     this.petLvUpStart();
                 };
@@ -1623,7 +1562,9 @@ namespace net.unity3d
                 {
                     ulong serverId = hid;
                     InfoHero heroInfo = this.dataMode.getHero( serverId );
-                    Debug.Assert( heroInfo != null, "heroInfo is null-" );
+                    //Debug.Assert( heroInfo != null, "heroInfo is null-" );
+                    if( heroInfo == null )
+                        continue;
 
                     if( heroInfo.lv >= 60 )  //己达到60级，无需再升
                         continue;
@@ -1686,15 +1627,7 @@ namespace net.unity3d
                                 Logger.Info( this._account + " 卡牌吃经验药升级返回 : " + ret.sPetEat.uiExp );
 
                             Action next = this.pet_lvup_queue.Dequeue();
-
-                            System.Timers.Timer timer = new System.Timers.Timer();
-                            timer.Interval = 80;
-                            timer.AutoReset = false; //once
-                            timer.Enabled = true;
-                            timer.Elapsed += new ElapsedEventHandler( ( object source, System.Timers.ElapsedEventArgs e ) =>
-                            {
-                                next();   //execute next task in queue
-                            } );
+                            next();   //execute next task in queue
                         } );
                     };
 
@@ -1703,7 +1636,7 @@ namespace net.unity3d
 
                 Action end = () =>
                 {
-                    Logger.Info( "Pet Lv up 完成" );
+                    Logger.Info(this._account +  "Pet Lv up 完成" );
 
                     this.EquipStart(true);  //升级完成，开始进行装备相关操作
 
@@ -1778,16 +1711,7 @@ namespace net.unity3d
                         this.sendHeroEquipChange( idServer, equips, ( UtilListenerEvent evt3 ) =>
                         {
                             Action next = this.equip_puton_queue.Dequeue();
-
-                            System.Timers.Timer timer = new System.Timers.Timer();
-                            timer.Interval = 80;
-                            timer.AutoReset = false; //once
-                            timer.Enabled = true;
-                            timer.Elapsed += new ElapsedEventHandler( ( object source, System.Timers.ElapsedEventArgs e ) =>
-                            {
-                                next();   //execute next task in queue
-                            } );
-
+                            next();   //execute next task in queue
                         } );
                     };
 
@@ -1797,7 +1721,7 @@ namespace net.unity3d
 
                 Action end = () =>
                 {
-                    Logger.Info( "穿装备己完成" );
+                    Logger.Info(this._account + " 穿装备己完成" );
 
                     if( isDoNext )
                         this.StoneStart();
@@ -1828,7 +1752,8 @@ namespace net.unity3d
                     {
                         ulong serverId = hid;
                         InfoHero heroInfo = this.dataMode.getHero( serverId );
-                        Debug.Assert( heroInfo != null, "heroInfo is null!" );
+                        if( heroInfo == null )
+                            continue;
 
                         TypeCsvHero csvHero = ManagerCsv.getHero( heroInfo.idCsv );
                         //if( csvHero.grade == csvHero.gradeMax && csvHero.gradeLv == 3 )    //如果已经到顶级,不能再升
@@ -1888,29 +1813,14 @@ namespace net.unity3d
 
                                                     heroInfo = this.dataMode.getHero( recv2.luiIdPet );
 
-                                                    Action nextStoneUp = this.stone_up_queue.Dequeue();
-
-                                                    System.Timers.Timer timer1 = new System.Timers.Timer();
-                                                    timer1.Interval = 80;
-                                                    timer1.AutoReset = false; //once
-                                                    timer1.Enabled = true;
-                                                    timer1.Elapsed += new ElapsedEventHandler( ( object source, System.Timers.ElapsedEventArgs e ) =>
-                                                    {
-                                                        nextStoneUp();   //execute next task in queue
-                                                    } );
+                                                    Action next = this.stone_up_queue.Dequeue();
+                                                    next();   //execute next task in queue
                                                 } );
                                                 return;
                                             }
                                         }
-                                        System.Timers.Timer timer = new System.Timers.Timer();
-                                        timer.Interval = 100;
-                                        timer.AutoReset = false; //once
-                                        timer.Enabled = true;
-                                        timer.Elapsed += new ElapsedEventHandler( ( object source, System.Timers.ElapsedEventArgs e ) =>
-                                        {
-                                            Action next = this.stone_up_queue.Dequeue();
-                                            next();   //execute next task in queue
-                                        } );
+                                            Action next1 = this.stone_up_queue.Dequeue();
+                                            next1();   //execute next task in queue
                                     } );
                                 };
 
@@ -1947,8 +1857,8 @@ namespace net.unity3d
                 }
                 Action end = () =>
                 {
-                    Logger.Info( "英雄进阶全部完毕" );
-                    Logger.Info( "重新尝试是否有可穿装备..." );
+                    Logger.Info(this._account + " 英雄进阶全部完毕" );
+                    Logger.Info(this._account + " 重新尝试是否有可穿装备..." );
 
                     this.EquipStart(false);
 
@@ -1998,15 +1908,8 @@ namespace net.unity3d
                             //装备强化
                             this.sendEquipUp( mqu.local, hero.idServer, ( UtilListenerEvent evt3 ) =>
                             {
-                                System.Timers.Timer timer = new System.Timers.Timer();
-                                timer.Interval = 100;
-                                timer.AutoReset = false; //once
-                                timer.Enabled = true;
-                                timer.Elapsed += new ElapsedEventHandler( ( object source, System.Timers.ElapsedEventArgs e ) =>
-                                {
-                                    Action next = this.equip_up_queue.Dequeue();
-                                    next();   //execute next task in queue
-                                } );
+                                Action next = this.equip_up_queue.Dequeue();
+                                next();   //execute next task in queue
                             } );
                         };
 
@@ -2077,15 +1980,8 @@ namespace net.unity3d
                         //装备合成
                         this.sendEquipCreat( ( uint ) csvProp, ( UtilListenerEvent evt2 ) =>
                         {
-                            System.Timers.Timer timer = new System.Timers.Timer();
-                            timer.Interval = 80;
-                            timer.AutoReset = false; //once
-                            timer.Enabled = true;
-                            timer.Elapsed += new ElapsedEventHandler( ( object source, System.Timers.ElapsedEventArgs e ) =>
-                            {
-                                Action next = this.equip_com_queue.Dequeue();
-                                next();   //execute next task in queue
-                            } );        
+                            Action next = this.equip_com_queue.Dequeue();
+                            next();   //execute next task in queue
                         }); 
                     };
                     this.equip_com_queue.Enqueue( action );      
@@ -2172,7 +2068,7 @@ namespace net.unity3d
         /// 竞技 商店 更新
         public void sendPKShopUpdate( FunctionListenerEvent sListener )
         {
-            Logger.Info( "SEND:C2RM_GET_PK_SHOP >> 竞技 商店 更新" );
+            Logger.Info(this._account + " SEND:C2RM_GET_PK_SHOP >> 竞技 商店 更新" );
             C2RM_GET_PK_SHOP sender = new C2RM_GET_PK_SHOP();
             sender.uiListen = Dispatcher.addListener( sListener, null);
             this.send( sender );
@@ -2278,7 +2174,7 @@ namespace net.unity3d
         }
 
 
-        /// 爵位商店 刷新 0系统定时自动刷新，1竞技积分刷新
+        /// 爵位商店 刷新 0系统定时自动刷新，1爵位币刷新
         public void sendNobilityShopReset( byte sType, FunctionListenerEvent sListener )
         {
             Logger.Info( this._account + " 爵位商店刷新" );
@@ -2544,7 +2440,7 @@ namespace net.unity3d
             }
             else
             {
-                Logger.Error( "RM2C_PET_INFO_BAG error " + recv.iResult );
+                Logger.Error(this._account + " RM2C_PET_INFO_BAG error " + recv.iResult );
             }
 
             if( recv.cIsOver == 1 )  //本命令完成
@@ -2589,7 +2485,7 @@ namespace net.unity3d
         public void sendHeroChipUpdate( FunctionListenerEvent sListener )
         {
             C2RM_PIECE sender = new C2RM_PIECE();
-            Logger.Info( "SEND:C2RM_PIECE >> " + "碎片 信息更新" );
+            Logger.Info(this._account + " SEND:C2RM_PIECE >> " + "碎片 信息更新" );
             sender.uiListen = Dispatcher.addListener( sListener, null);
             this.send( sender );
         }
@@ -2720,7 +2616,7 @@ namespace net.unity3d
                 {
                     if( recv.vctSEquipment[ i ].uiIdCsvEquipment <= 0 )
                     {
-                        Logger.Error( "无意义的物品" );
+                        Logger.Error(this._account + " 无意义的物品" );
                         continue;
                     }
                     csvprop = ManagerCsv.getProp( ( int ) recv.vctSEquipment[ i ].uiIdCsvEquipment );
@@ -2751,7 +2647,7 @@ namespace net.unity3d
         /// 升级卡牌 吃药
         public void sendPetLvUp( ulong serverId, int csvPropId, int propCnt, FunctionListenerEvent sListener )
         {
-            Logger.Info( "SEND : C2RM_PET_LV_UP >> " + serverId );
+            Logger.Info(this._account + " SEND : C2RM_PET_LV_UP >> " + serverId );
             C2RM_PET_LV_UP sender = new C2RM_PET_LV_UP();
             sender.uiPetId = serverId;
             sender.uiPropCsvId = ( uint ) csvPropId;
@@ -2921,7 +2817,7 @@ namespace net.unity3d
         /// 镶嵌
         public void sendStoneInLay( ulong petServerId, int index, FunctionListenerEvent sListener )
         {
-            Logger.Info( "SEND : C2RM_STONE_INLAY >>  petServerId: " + petServerId + " index: " + index);
+            Logger.Info(this._account + " SEND : C2RM_STONE_INLAY >>  petServerId: " + petServerId + " index: " + index);
             C2RM_STONE_INLAY sender = new C2RM_STONE_INLAY();
             sender.luiIdPet = petServerId;
             sender.usLoc = ( ushort ) index;
@@ -2932,7 +2828,7 @@ namespace net.unity3d
         /// 进阶
         public void sendPetStoneUp( ulong petServerId, FunctionListenerEvent sListener )
         {
-            Logger.Info( "SEND : C2RM_PET_STONE_UP >> petServerId:" + petServerId );
+            Logger.Info(this._account + " SEND : C2RM_PET_STONE_UP >> petServerId:" + petServerId );
             C2RM_PET_STONE_UP sender = new C2RM_PET_STONE_UP();
             sender.luiIdPet = petServerId;
             sender.uiListen = Dispatcher.addListener( sListener,null);
@@ -3216,7 +3112,7 @@ namespace net.unity3d
         /// 爵位 商店
         public void sendGetNobilityShop( FunctionListenerEvent sListener )
         {
-            Logger.Info( "SEND:C2RM_GET_NOBILITY_SHOP >> 爵位 商店获取" );
+            Logger.Info(this._account + " SEND:C2RM_GET_NOBILITY_SHOP >> 爵位 商店获取" );
             C2RM_GET_NOBILITY_SHOP sender = new C2RM_GET_NOBILITY_SHOP();
             sender.uiListen = Dispatcher.addListener( sListener, null );
             this.send( sender );
@@ -3254,7 +3150,7 @@ namespace net.unity3d
         ///魂侠抽UI
         public void sendLuckySoulList( FunctionListenerEvent sListener )
         {
-            Logger.Info( "SEND:C2RM_LUCKY_SOUL_LIST >> 魂侠抽UI" );
+            Logger.Info(this._account + " SEND:C2RM_LUCKY_SOUL_LIST >> 魂侠抽UI" );
             C2RM_LUCKY_SOUL_LIST sender = new C2RM_LUCKY_SOUL_LIST();
             sender.uiListen = Dispatcher.addListener( sListener, null );
             this.send( sender );
@@ -3283,7 +3179,7 @@ namespace net.unity3d
         {
             this.lucky_soul_queue.Clear();
 
-            Dictionary<UInt32,UInt32> lucky_stat = new Dictionary<UInt32, UInt32>();
+            //Dictionary<UInt32,UInt32> lucky_stat = new Dictionary<UInt32, UInt32>();
 
             for( int i = 0; i < times; i++ )
             {
@@ -3295,26 +3191,18 @@ namespace net.unity3d
 
                         Debug.Assert( recv.uiRewards.Length == 1, "" );
 
-                        Logger.Info( "魂侠抽次数：" + recv.uiLuckySoulCnt );
-                        Logger.Info( "魂侠物品 csvid: " + recv.uiRewards[0].uiIdCsv + " 类型：" + recv.uiRewards[ 0 ].cType );
+                        Logger.Info(this._account + " 魂侠抽次数：" + recv.uiLuckySoulCnt );
+                        Logger.Info(this._account + " 魂侠物品 csvid: " + recv.uiRewards[0].uiIdCsv + " 类型：" + recv.uiRewards[ 0 ].cType );
 
                         UInt32 csvId = recv.uiRewards[0].uiIdCsv;
-                        if(!lucky_stat.ContainsKey(csvId)) {
-                            lucky_stat.Add( csvId, 0 );
-                        }
+                        //if(!lucky_stat.ContainsKey(csvId)) {
+                        //    lucky_stat.Add( csvId, 0 );
+                        //}
 
-                        lucky_stat[ csvId ]++;
+                        //lucky_stat[ csvId ]++;
 
                         Action next = this.lucky_soul_queue.Dequeue();
-
-                        System.Timers.Timer timer = new System.Timers.Timer();
-                        timer.Interval = 50;
-                        timer.AutoReset = false; //once
-                        timer.Enabled = true;
-                        timer.Elapsed += new ElapsedEventHandler( ( object source, System.Timers.ElapsedEventArgs e2 ) =>
-                        {
-                            next();   //execute next task in queue
-                        } );
+                        next();   //execute next task in queue
                     } );
                 };
 
@@ -3326,11 +3214,11 @@ namespace net.unity3d
             {
                 Logger.Info( this._account + " ======================= 魂侠抽完成!" );
 
-                Logger.Info( "概述统计结果： " );
-                foreach(KeyValuePair<UInt32,UInt32> v in lucky_stat)
-                {
-                    Logger.Info( "lucky_stat: " + v.Key + " 次数：" + v.Value );
-                }
+                Logger.Info(this._account + " 概述统计结果： " );
+                //foreach(KeyValuePair<UInt32,UInt32> v in lucky_stat)
+                //{
+                //    Logger.Info( "lucky_stat: " + v.Key + " 次数：" + v.Value );
+                //}
 
                 if( sListener != null )
                     sListener(null);
