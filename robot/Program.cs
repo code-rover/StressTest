@@ -29,6 +29,8 @@ namespace robot
 
             load_csv();  //加载csv
 
+            Console.WriteLine( "StartTime: " + GUtil.getTimeMs() );
+
             int account = 1000;    //开始帐号
             string passwd = "123";
             string macId = "";
@@ -52,7 +54,7 @@ namespace robot
                 {
                     agent.tick();
                 }
-                ///Logger.Debug( "----------------------------- " + DateTime.Now.Ticks );
+                ///Logger.Debug( "----------------------------- " + GUtil.getTimeMs());
             }
             
             Console.ReadKey( true );

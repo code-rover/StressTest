@@ -365,4 +365,15 @@ public class GUtil
         //返回
         return result;
     }
+
+    public static long getEpoch()
+    {
+        return ( DateTime.UtcNow.Ticks - new DateTime( 1970, 1, 1 ).Ticks ) / 10000; //注意这里有时区问题，用now就要减掉8个小时
+    }
+
+    //
+    public static string getTimeMs()
+    {
+        return System.DateTime.Now + "." + DateTime.Now.Millisecond;         
+    }
 }

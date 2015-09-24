@@ -45,7 +45,7 @@ public class UtilListener
         //if(curThread == 0)
         //    curThread = Thread.CurrentThread.GetHashCode();
 
-        Logger.Info( "current thread: " + Thread.CurrentThread.GetHashCode() );
+        //Logger.Info( "current thread: " + Thread.CurrentThread.GetHashCode() );
 
         //if( curThread != Thread.CurrentThread.GetHashCode() )
         //{

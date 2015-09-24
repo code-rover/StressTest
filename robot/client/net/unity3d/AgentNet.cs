@@ -18,8 +18,7 @@ namespace net.unity3d
 
 		public AgentNet()
         {
-			ARequestOverTime = DateTime.Now; //现在时间
-			ARequestTime = DateTime.Now; //现在时间
+
         }
 		
 		public void initClientNoetNew(List<NoteServer> ListNote)
@@ -176,8 +175,6 @@ namespace net.unity3d
 			sendAccount(0, _account, _password, _macId, _serverType, _webSession, _channelId, _accountId);
 		}
 		
-		
-		
 		public void getMacId()
 		{
 			C2AC_MAC_ID sender = new C2AC_MAC_ID();
@@ -290,7 +287,7 @@ namespace net.unity3d
 		
 		public bool send(IProtocal pro)
         {
-            Logger.Info( "======> " + this._account + "  " + pro.Message + " time: " + DateTime.Now.Millisecond );
+            Logger.Info( "======> " + this._account + "  " + pro.Message + " time: " + GUtil.getTimeMs() );
 
             if (pro.Message >= 200 && pro.Message <= 1999)
             {
@@ -298,9 +295,7 @@ namespace net.unity3d
 				{
 					//set_is_ping_back(false);
 				}
-				ARequestTime = DateTime.Now; //现在时间
 				
-				//Logger.Info("ping request time = " + ARequestTime);
 				if(_XmanLogic != null)
 				{
 					return _XmanLogic.send(pro, false);
@@ -383,9 +378,6 @@ namespace net.unity3d
 			m_LogicNote._timeOut = timeout;
 		}
 		
-		private System.DateTime ARequestTime =new System.DateTime();
-		private System.DateTime ARequestOverTime =new System.DateTime();
-		
 		private NoteServer m_LogicNote;
 
 		private UConnection _AccountSer = null;
@@ -456,9 +448,7 @@ namespace net.unity3d
         public void recvAccountServer( ArgsEvent args )
         {
             AC2C_ACCOUNT_INFO recv = args.getData<AC2C_ACCOUNT_INFO>();
-
             this.connectLoginServer( recv.sAccountAC2C.getChannelIdStr(), recv.sAccountAC2C.getAccountIdStr() ); //getRelamInfo("2002");
-
             if( recv.iResult == 1 )
             {
                 //ManagerServer.getInstance().lastLoginServerIndex = ( int ) recv.sAccountAC2C.uiServer[ 0 ];
@@ -490,14 +480,11 @@ namespace net.unity3d
         public void recvLogin( ArgsEvent args )
         {
             RM2C_LOGIN recv = args.getData<RM2C_LOGIN>();
-
             Logger.Info(this._account + " connect Realm Result: " + recv.iResult );
-
             if( recv.iResult == ( int ) EM_CLIENT_ERRORCODE.EE_M2C_NEED_CREATE_ROLE )
             {
                 Logger.Info(this._account + " 需要创建角色" );
                 this.sendCreatRole( 61, null );
-
             }
             else if( recv.iResult == ( int ) EM_CLIENT_ERRORCODE.EE_ACCOUNT_NOT_EXIST )
             {
@@ -505,15 +492,12 @@ namespace net.unity3d
             }
         }
 
-
         ///用户基本信息
         public void recvMaster( ArgsEvent args )
         {
             RM2C_MASTER_BASE_INFO recv = args.getData<RM2C_MASTER_BASE_INFO>();
             Logger.Info( "RECV:RM2C_MASTER_BASE_INFO >> " + recv.SPlayerInfo.sPlayerBaseInfo.uiIdMaster );
-
             SPlayerInfo playerInfo = recv.SPlayerInfo;
-
             Logger.Info( "玩家基本信息： " );
             Logger.Info( "=========================================" );
             //Logger.Info( "player IdLead: " + playerInfo. sPlayerBaseInfo.uiIdLead );
@@ -523,7 +507,6 @@ namespace net.unity3d
             Logger.Info( "player exp: " + playerInfo.sPlayerBaseInfo.luiExp );
             Logger.Info( "player power: " + playerInfo.sLeadPowerInfo.usPower );
             Logger.Info( "=========================================" );
-
 
             /// 创建主角
             //ManagerServer.getInstance().isBinded = recv.SPlayerInfo.sPlayerBaseInfo.cIsBind == 0 ? false : true;
@@ -535,7 +518,6 @@ namespace net.unity3d
 
             /// 0点清0时间戳WILL DONE
             player.timeTeampUpdate = ( double ) recv.SPlayerInfo.sPlayerBaseInfo.uiUpdateTime;
-            //ManagerUpdate.lockPlayUpdate = false;
 
             //名字
             player.name = recv.SPlayerInfo.sPlayerBaseInfo.getMasterName();
@@ -558,8 +540,6 @@ namespace net.unity3d
             player.maxHeroList = ( int ) recv.SPlayerInfo.sLeadBagInfo.usCntBag;
             player.maxEquipBagList = ( int ) recv.SPlayerInfo.sLeadBagInfo.usCntEquipBag;
 
-            //DataMode.ddnSeverFlag.DDNFlag = recv.SPlayerInfo.sPlayerBaseInfo.uiGuideDDN;
-
             //游戏币
             player.money_game = ( long ) recv.SPlayerInfo.sPlayerBaseInfo.luiSMoney;
             //人民币
@@ -576,7 +556,7 @@ namespace net.unity3d
 
             //for test
             //this.sendGetNobilityShop(null);
-            this.NobilityShopStart();
+            //this.NobilityShopStart();
             
             /*
             this.sendLuckySoulList( ( UtilListenerEvent evt ) =>
@@ -614,7 +594,7 @@ namespace net.unity3d
             } );
             */
 
-            /*
+            
             if( player.name == null )
             {
                 //发送更名请求
@@ -627,7 +607,7 @@ namespace net.unity3d
             {
                 this.OpenMailStart();        
             }
-            */ 
+             
         }
 
         //领取邮件奖励
@@ -671,7 +651,7 @@ namespace net.unity3d
                     this.sendPwoerBuy( null );   //购买体力
 
                     //魂侠抽
-                    this.LuckySoulStart(10000, ( UtilListenerEvent ee ) =>
+                    this.LuckySoulStart(5, ( UtilListenerEvent ee ) =>
                     {
                         this.sendFBUpdate( null );  //打开副本后，获取副本列表    
                     } );
@@ -1344,17 +1324,15 @@ namespace net.unity3d
             this.sendGetNobilityShop( ( UtilListenerEvent evt ) =>
             {
                 RM2C_GET_NOBILITY_SHOP rec = ( RM2C_GET_NOBILITY_SHOP ) evt.eventArgs;
-
                 //得到爵位商店列表后，重置
                 this.sendNobilityShopReset( 1, ( UtilListenerEvent ev ) =>
                 {
                     Logger.Info( this._account + " 刷新爵位商店返回" );
 
                     RM2C_REFRESH_NOBILITY_SHOP recv = ( RM2C_REFRESH_NOBILITY_SHOP ) ev.eventArgs;
-
                     if( recv.iResult != 1 )
                     {
-                        Logger.Error(this._account + " 爵位商店重置失败！" );
+                        Logger.Error(this._account + " 爵位商店重置失败！" + recv.iResult);
                     }
                     this.buy_nobility_queue.Clear();
 
@@ -1378,7 +1356,6 @@ namespace net.unity3d
                             } );
                         };
                         this.buy_nobility_queue.Enqueue( action );
-
                         index++;
                     }
 
@@ -1386,7 +1363,6 @@ namespace net.unity3d
                     Action end = () =>
                     {
                         Logger.Info( this._account + " ======================= 购买爵位商品完成!" );
-
                         this.NobilityShopStart();  //restart for loop
                     };
                     this.buy_nobility_queue.Enqueue( end );
@@ -1612,7 +1588,7 @@ namespace net.unity3d
                     if( expType == 0 )
                     {
                         Logger.Error( this._account + " 经验药不足x" );
-                        return;
+                        //return;
                     }
 
                     Action action = () =>
@@ -1638,7 +1614,7 @@ namespace net.unity3d
                 {
                     Logger.Info(this._account +  "Pet Lv up 完成" );
 
-                    this.EquipStart(true);  //升级完成，开始进行装备相关操作
+                    this.EquipStart(false);  //升级完成，开始进行装备相关操作
 
                 };
                 this.pet_lvup_queue.Enqueue( end );
@@ -1725,6 +1701,13 @@ namespace net.unity3d
 
                     if( isDoNext )
                         this.StoneStart();
+
+                    //for loop
+                    this.LuckySoulStart( 5, ( UtilListenerEvent ee ) =>
+                    {
+                        this.sendFBUpdate( null );  //打开副本后，获取副本列表    
+                    } );
+
                 };
                 this.equip_puton_queue.Enqueue( end );
 
@@ -2006,7 +1989,7 @@ namespace net.unity3d
         //技能相关操作
         private void SkillStart()
         {
-            /**
+            
             this.skill_up_queue.Clear();
             Logger.Info( this._account + " 开始技能操作" );
             //获取英雄列表
@@ -2024,7 +2007,7 @@ namespace net.unity3d
 
                     foreach( InfoSkill skill in skills )
                     {
-                        if(ManagerCsv.getHeroSkillBase(skill.idCsv).grade < )
+                        //if(ManagerCsv.getHeroSkillBase(skill.idCsv).grade < )
                         InfoSkill _skill = skill;
                         Action action = () =>
                         {
@@ -2051,6 +2034,8 @@ namespace net.unity3d
                 Action end = () =>
                 {
                     Logger.Info( "技能升级己完成!" );
+
+
                     
                 };
                 this.skill_up_queue.Enqueue( end );
@@ -2058,7 +2043,7 @@ namespace net.unity3d
                 Action firstAction = this.skill_up_queue.Dequeue();
                 firstAction();
             } );
-             */
+            
         }
 
 
