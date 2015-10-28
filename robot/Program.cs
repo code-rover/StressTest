@@ -8,7 +8,7 @@ namespace robot
 {
     class Program
     {
-        public static int COUNT = 4000;
+        public static int COUNT = 1;
 
         public static string ACCOUNT_IP = "192.168.1.2";
         public static short  ACCOUNT_PORT = 11111;
@@ -31,7 +31,7 @@ namespace robot
 
             Console.WriteLine( "StartTime: " + GUtil.getTimeMs() );
 
-            int account = 1000;    //开始帐号
+            int account = 1015;    //开始帐号
             string passwd = "123";
             string macId = "";
  
@@ -72,124 +72,149 @@ namespace robot
         {
             ///account返回
             agent.addListenEvent( ( ushort ) E_OPCODE.EP_AC2C_ACCOUNT_INFO, agent.recvAccountServer );
-            //agent.addListenEvent( ( ushort ) E_OPCODE.EP_AC2C_MAC_ID, recvMacIdServer );
+            //agent.trans.addListenEvent( ( ushort ) E_OPCODE.EP_AC2C_MAC_ID, recvMacIdServer );
 
             ///login返回
             agent.addListenEvent( ( ushort ) E_OPCODE.EP_LS2C_LOGIN_RESPONSE, agent.recvLoginServer );
 
             
             ///断线之后的重连
-            //agent.addListenEvent( ( ushort ) E_OPCODE.EP_RM2C_ON_WEB_CLOSE, recvWebClose );
+            //agent.trans.addListenEvent( ( ushort ) E_OPCODE.EP_RM2C_ON_WEB_CLOSE, recvWebClose );
 
-            //agent.addListenEvent( ( ushort ) E_OPCODE.EP_RM2C_RELOGIN, recvWebOpen );
+            //agent.trans.addListenEvent( ( ushort ) E_OPCODE.EP_RM2C_RELOGIN, recvWebOpen );
 
             ///返回登陆 realmF
             agent.addListenEvent( ( ushort ) E_OPCODE.EP_RM2C_LOGIN, agent.recvLogin );
 
             
             ///被踢掉通知客户端
-            //agent.addListenEvent( ( ushort ) E_OPCODE.EP_RM2C_TICK_BY_OTHER, recvTick );
+            //agent.trans.addListenEvent( ( ushort ) E_OPCODE.EP_RM2C_TICK_BY_OTHER, recvTick );
 
             //禁言
-            //agent.addListenEvent( ( ushort ) E_OPCODE.EP_RM2C_STOP_INFO, recvStopInfo );
+            //agent.trans.addListenEvent( ( ushort ) E_OPCODE.EP_RM2C_STOP_INFO, recvStopInfo );
 
             ///用户基本信息
             agent.addListenEvent( ( ushort ) E_OPCODE.EP_RM2C_MASTER_BASE_INFO, agent.recvMaster );
 
             ///改名返回消息
-            agent.addListenEvent( ( ushort ) E_OPCODE.EP_RM2C_ROLE_RENAME, agent.recvChangeName );
+            agent.addListenEvent( ( ushort ) E_OPCODE.EP_RM2C_ROLE_RENAME, agent.trans.recvChangeName );
 
             ///返回web email
-            agent.addListenEvent( ( ushort ) E_OPCODE.EP_RM2C_WEB_EMAIL, agent.recvWebEmail );
+            agent.addListenEvent( ( ushort ) E_OPCODE.EP_RM2C_WEB_EMAIL, agent.trans.recvWebEmail );
 
             ///返回web email打开
-            agent.addListenEvent( ( ushort ) E_OPCODE.EP_RM2C_WEB_EMAIL_OPEN, agent.recvOpenEmail );
+            agent.addListenEvent( ( ushort ) E_OPCODE.EP_RM2C_WEB_EMAIL_OPEN, agent.trans.recvOpenEmail );
 
-            agent.addListenEvent( ( ushort ) E_OPCODE.EP_RM2C_REWARD_MONEY, agent.recvSignReward );
+            agent.addListenEvent( ( ushort ) E_OPCODE.EP_RM2C_REWARD_MONEY, agent.trans.recvSignReward );
 
             //返回副本信息
-            agent.addListenEvent( ( ushort ) E_OPCODE.EP_RM2C_FB, agent.recvFBInfo );
+            agent.addListenEvent( ( ushort ) E_OPCODE.EP_RM2C_FB, agent.trans.recvFBInfo );
+
+            //返回副本进入
+            agent.addListenEvent( ( ushort ) E_OPCODE.EP_RM2C_GOTO_FB, agent.trans.recvFBIn );
+
+            /// 副本 离开
+            agent.addListenEvent( ( ushort ) E_OPCODE.EP_RM2C_LEAVE_FB, agent.trans.recvFBOut );
+
+            /// 副本 战斗奖励返回
+            agent.addListenEvent( ( ushort ) E_OPCODE.EP_RM2C_FB_PK_BEGIN, agent.trans.recvFBCombatReward );
+
+            //副本 验证回复
+            agent.addListenEvent( ( ushort ) E_OPCODE.EP_RM2C_CHECK_FB_PK, agent.trans.recvFBCombatCheck );
+
+            //竞技场pk验证回复
+            agent.addListenEvent( ( ushort ) E_OPCODE.EP_RM2C_CHECK_PK, agent.trans.recvPKCombatResult );
 
             //返回副本扫荡
-            agent.addListenEvent( ( ushort ) E_OPCODE.EP_RM2C_FB_SWEEP, agent.recvSweep );
+            agent.addListenEvent( ( ushort ) E_OPCODE.EP_RM2C_FB_SWEEP, agent.trans.recvSweep );
 
 
-            agent.addListenEvent( ( ushort ) E_OPCODE.EP_RM2C_FB_RESET, agent.recvBuyFBCnt );
+            agent.addListenEvent( ( ushort ) E_OPCODE.EP_RM2C_FB_RESET, agent.trans.recvBuyFBCnt );
 
 
-            agent.addListenEvent( ( ushort ) E_OPCODE.EP_RM2C_TICK_BY_OTHER, agent.recvTickByOther );
+            agent.addListenEvent( ( ushort ) E_OPCODE.EP_RM2C_TICK_BY_OTHER, agent.trans.recvTickByOther );
 
             /////金币商店////////////////////////////
-            agent.addListenEvent( ( ushort ) E_OPCODE.EP_RM2C_GET_SMONEY_SHOP, agent.recvReplyMoneyShop );
-            agent.addListenEvent( ( ushort ) E_OPCODE.EP_RM2C_REFRESH_SMONEY_SHOP, agent.recvRefreshMoneyShop );
-            agent.addListenEvent( ( ushort ) E_OPCODE.EP_RM2C_SMONEY_SHOP_BUY, agent.recvBuyMoneyShop );
+            agent.addListenEvent( ( ushort ) E_OPCODE.EP_RM2C_GET_SMONEY_SHOP, agent.trans.recvReplyMoneyShop );
+            agent.addListenEvent( ( ushort ) E_OPCODE.EP_RM2C_REFRESH_SMONEY_SHOP, agent.trans.recvRefreshMoneyShop );
+            agent.addListenEvent( ( ushort ) E_OPCODE.EP_RM2C_SMONEY_SHOP_BUY, agent.trans.recvBuyMoneyShop );
 
             /////PK商店//////////////////////////////
-            agent.addListenEvent( ( ushort ) E_OPCODE.EP_RM2C_GET_PK_SHOP, agent.recvPKShopUpdate );
-            agent.addListenEvent( ( ushort ) E_OPCODE.EP_RM2C_REFRESH_PK_SHOP, agent.recvPKShopReset );
-            agent.addListenEvent( ( ushort ) E_OPCODE.EP_RM2C_PK_SHOP_BUY, agent.recvPKShopBuy );
+            agent.addListenEvent( ( ushort ) E_OPCODE.EP_RM2C_GET_PK_SHOP, agent.trans.recvPKShopUpdate );
+            agent.addListenEvent( ( ushort ) E_OPCODE.EP_RM2C_REFRESH_PK_SHOP, agent.trans.recvPKShopReset );
+            agent.addListenEvent( ( ushort ) E_OPCODE.EP_RM2C_PK_SHOP_BUY, agent.trans.recvPKShopBuy );
 
             /////远征商店////////////////////////////
-            agent.addListenEvent( ( ushort ) E_OPCODE.EP_RM2C_GET_MOUNTAIN_SHOP, agent.recvReplyEDShop );
-            agent.addListenEvent( ( ushort ) E_OPCODE.EP_RM2C_REFRESH_MOUNTAIN_SHOP, agent.recvUpdateEDShop );
-            agent.addListenEvent( ( ushort ) E_OPCODE.EP_RM2C_MOUNTAIN_SHOP_BUY, agent.recvBuyEDShop );
+            agent.addListenEvent( ( ushort ) E_OPCODE.EP_RM2C_GET_MOUNTAIN_SHOP, agent.trans.recvReplyEDShop );
+            agent.addListenEvent( ( ushort ) E_OPCODE.EP_RM2C_REFRESH_MOUNTAIN_SHOP, agent.trans.recvUpdateEDShop );
+            agent.addListenEvent( ( ushort ) E_OPCODE.EP_RM2C_MOUNTAIN_SHOP_BUY, agent.trans.recvBuyEDShop );
 
             ///发送背包宠物信息
-            agent.addListenEvent( ( ushort ) E_OPCODE.EP_RM2C_PET_INFO_BAG, agent.recvHeroBag );
+            agent.addListenEvent( ( ushort ) E_OPCODE.EP_RM2C_PET_INFO_BAG, agent.trans.recvHeroBag );
 
             //piece 列表返回
-            agent.addListenEvent( ( ushort ) E_OPCODE.EP_RM2C_PIECE, agent.recvHeroChipUpdate );
+            agent.addListenEvent( ( ushort ) E_OPCODE.EP_RM2C_PIECE, agent.trans.recvHeroChipUpdate );
 
             //碎片合成返回
-            agent.addListenEvent( ( ushort ) E_OPCODE.EP_RM2C_PET_PIECE_TO_PET, agent.recvPetChipToPet );
+            agent.addListenEvent( ( ushort ) E_OPCODE.EP_RM2C_PET_PIECE_TO_PET, agent.trans.recvPetChipToPet );
 
-            agent.addListenEvent( ( ushort ) E_OPCODE.EP_RM2C_PET_STAR_UP, agent.recvPetStarUp );
+            agent.addListenEvent( ( ushort ) E_OPCODE.EP_RM2C_PET_STAR_UP, agent.trans.recvPetStarUp );
 
             //吃经验药升级返回
-            agent.addListenEvent( ( ushort ) E_OPCODE.EP_RM2C_PET_LV_UP, agent.recvPetLvUp_New );
+            agent.addListenEvent( ( ushort ) E_OPCODE.EP_RM2C_PET_LV_UP, agent.trans.recvPetLvUp_New );
 
             ///发送装备信息
-            agent.addListenEvent( ( ushort ) E_OPCODE.EP_RM2C_EQUIPMENT, agent.recvHeroEquip );
+            agent.addListenEvent( ( ushort ) E_OPCODE.EP_RM2C_EQUIPMENT, agent.trans.recvHeroEquip );
 
-            agent.addListenEvent( ( ushort ) E_OPCODE.EP_RM2C_POWER_ADD, agent.recvPowerAdd );
+            agent.addListenEvent( ( ushort ) E_OPCODE.EP_RM2C_POWER_ADD, agent.trans.recvPowerAdd );
 
             ///购买体力回调
-            agent.addListenEvent( ( ushort ) E_OPCODE.EP_RM2C_POWER_BUY, agent.recvPowerBuy );
+            agent.addListenEvent( ( ushort ) E_OPCODE.EP_RM2C_POWER_BUY, agent.trans.recvPowerBuy );
 
             //穿装备
-            agent.addListenEvent( ( ushort ) E_OPCODE.EP_RM2C_EQUIP_PET_NOTIFY, agent.recvHeroEquipChange );
+            agent.addListenEvent( ( ushort ) E_OPCODE.EP_RM2C_EQUIP_PET_NOTIFY, agent.trans.recvHeroEquipChange );
 
             //镶钻石返回
-            agent.addListenEvent( ( ushort ) E_OPCODE.EP_RM2C_STONE_INLAY, agent.recvPetStoneInLay );
+            agent.addListenEvent( ( ushort ) E_OPCODE.EP_RM2C_STONE_INLAY, agent.trans.recvPetStoneInLay );
 
             //进阶石返回
-            agent.addListenEvent( ( ushort ) E_OPCODE.EP_RM2C_PET_STONE_UP, agent.recvPetStoneUp );
+            agent.addListenEvent( ( ushort ) E_OPCODE.EP_RM2C_PET_STONE_UP, agent.trans.recvPetStoneUp );
 
             //装备强化回应
-            agent.addListenEvent( ( ushort ) E_OPCODE.EP_RM2C_EQUIP_UP, agent.recvEquipUp );
+            agent.addListenEvent( ( ushort ) E_OPCODE.EP_RM2C_EQUIP_UP, agent.trans.recvEquipUp );
 
             //装备一键强化回应
-            agent.addListenEvent( ( ushort ) E_OPCODE.EP_RM2C_EQUIP_UP_ONE_KEY, agent.recvEquipUpAll );
+            agent.addListenEvent( ( ushort ) E_OPCODE.EP_RM2C_EQUIP_UP_ONE_KEY, agent.trans.recvEquipUpAll );
 
             //装备合成回应
-            agent.addListenEvent( ( ushort ) E_OPCODE.EP_RM2C_EQUIP_COM, agent.recvEquipCreat );
+            agent.addListenEvent( ( ushort ) E_OPCODE.EP_RM2C_EQUIP_COM, agent.trans.recvEquipCreat );
 
             //技能升级回应
-            agent.addListenEvent( ( ushort ) E_OPCODE.EP_RM2C_SKILL_UP_NEW, agent.recvSkillUp_New );
+            agent.addListenEvent( ( ushort ) E_OPCODE.EP_RM2C_SKILL_UP_NEW, agent.trans.recvSkillUp_New );
 
 
             /////爵位商店//////////////////////////////
-            agent.addListenEvent( ( ushort ) E_OPCODE.EP_RM2C_GET_NOBILITY_SHOP, agent.recvGetNobilityShop );
-            agent.addListenEvent( ( ushort ) E_OPCODE.EP_RM2C_REFRESH_NOBILITY_SHOP, agent.recvNobilityShopReset );
-            agent.addListenEvent( ( ushort ) E_OPCODE.EP_RM2C_NOBILITY_SHOP_BUY, agent.recvNobilityShopBuy );
+            agent.addListenEvent( ( ushort ) E_OPCODE.EP_RM2C_GET_NOBILITY_SHOP, agent.trans.recvGetNobilityShop );
+            agent.addListenEvent( ( ushort ) E_OPCODE.EP_RM2C_REFRESH_NOBILITY_SHOP, agent.trans.recvNobilityShopReset );
+            agent.addListenEvent( ( ushort ) E_OPCODE.EP_RM2C_NOBILITY_SHOP_BUY, agent.trans.recvNobilityShopBuy );
 
             //魂侠抽回应
-            agent.addListenEvent( ( ushort ) E_OPCODE.EP_RM2C_LUCKY_SOUL, agent.recvLuckySoul );
-            agent.addListenEvent( ( ushort ) E_OPCODE.EP_RM2C_LUCKY_SOUL_LIST, agent.recvLuckySoulList );
+            agent.addListenEvent( ( ushort ) E_OPCODE.EP_RM2C_LUCKY_SOUL, agent.trans.recvLuckySoul );
+            agent.addListenEvent( ( ushort ) E_OPCODE.EP_RM2C_LUCKY_SOUL_LIST, agent.trans.recvLuckySoulList );
 
-            agent.addListenEvent( ( ushort ) E_OPCODE.EP_RM2C_USE_PROP_ADD_SP, agent.recvPropAddSP );
+            agent.addListenEvent( ( ushort ) E_OPCODE.EP_RM2C_USE_PROP_ADD_SP, agent.trans.recvPropAddSP );
 
-            agent.addListenEvent( ( ushort ) E_OPCODE.EP_RM2C_USE_TEMP_VIP, agent.recvTempVip );
+            agent.addListenEvent( ( ushort ) E_OPCODE.EP_RM2C_USE_TEMP_VIP, agent.trans.recvTempVip );
+
+            agent.addListenEvent( ( ushort ) E_OPCODE.EP_RM2C_CHAT, agent.trans.recvChat );
+            agent.addListenEvent( ( ushort ) E_OPCODE.EP_RM2C_CHAT_RECENT_RESPONSE, agent.trans.recvChatRencent );
+
+            agent.addListenEvent( ( ushort ) E_OPCODE.EP_RM2C_MATE_PK, agent.trans.recvPKCombat );
+
+            agent.addListenEvent( ( ushort ) E_OPCODE.EP_RM2C_TEAM_SET, agent.trans.recvHeroTeamChange );
+
+            ///发送队伍信息
+            agent.addListenEvent( ( ushort ) E_OPCODE.EP_RM2C_TEAM_INFO, agent.trans.recvHeroTeam );
 
             //agent.addListenEvent( ( ushort ) E_OPCODE.EP_RM2C_PING_PRO_TWO, recvPingTwo );
             //agent.addListenEvent( ( ushort ) E_OPCODE.EP_RM2C_BEAST_INFO, recvBeastInfo );
@@ -202,10 +227,6 @@ namespace robot
             //agent.addListenEvent( ( ushort ) E_OPCODE.EP_RM2C_SOUL_SHOP, recvSoulShop );
             //agent.addListenEvent( ( ushort ) E_OPCODE.EP_RM2C_SOUL_SHOP_BUY, recvSoulShopBuy );
             //agent.addListenEvent( ( ushort ) E_OPCODE.EP_RM2C_OPEN_GIFT_BOX, recvOpenGiftBox );
-            //agent.addListenEvent( ( ushort ) E_OPCODE.EP_RM2C_CHAT, recvChat );
-            //agent.addListenEvent( ( ushort ) E_OPCODE.EP_RM2C_CHAT_RECENT_RESPONSE, recvChatRencent );
-            
-
 
             ///
             /**
@@ -214,8 +235,7 @@ namespace robot
             ///发送酒馆宠物信息
             agent.addListenEvent( ( ushort ) E_OPCODE.EP_RM2C_PET_INFO_BAR, recvHeroWarehouse );
 
-            ///发送队伍信息
-            agent.addListenEvent( ( ushort ) E_OPCODE.EP_RM2C_TEAM_INFO, recvHeroTeam );
+            
 
             ///发送装备材料组
             agent.addListenEvent( ( ushort ) E_OPCODE.EP_RM2C_EQUIP_GROUP, recvBagEquip );

@@ -7,12 +7,16 @@ namespace robot.client.common
 {
     class Dispatcher
     {
+        private static System.Object lockThis = new System.Object();
+
         private static int _IDSign = 10;
         public static int IDSign
         {
             get
-            {
-                return _IDSign++;   //Safe?
+            {   lock(lockThis) {
+                    _IDSign++;
+                }
+                return _IDSign;   
             }
         }
 

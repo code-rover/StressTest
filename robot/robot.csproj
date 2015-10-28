@@ -78,6 +78,7 @@
     <Compile Include="client\net\unity3d\ProtocolStone.cs" />
     <Compile Include="client\net\unity3d\ProtocolTower.cs" />
     <Compile Include="client\net\unity3d\ProtocolWBoss.cs" />
+    <Compile Include="client\net\unity3d\Transceiver.cs" />
     <Compile Include="client\net\unity3d\UConnection.cs" />
     <Compile Include="client\net\unity3d\USerialize.cs" />
     <Compile Include="client\net\unity3d\USession.cs" />

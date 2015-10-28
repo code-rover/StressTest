@@ -929,33 +929,38 @@ namespace net.unity3d
     {
         public static readonly E_OPCODE OPCODE = E_OPCODE.EP_C2RM_GOTO_FB;
 
-        public static IProtocal Create(ushort msg, HeaderBase h)
+        public static IProtocal Create( ushort msg, HeaderBase h )
         {
             return new C2RM_GOTO_FB();
         }
 
         public ushort Message
         {
-            get { return (ushort)OPCODE; }
+            get
+            {
+                return ( ushort ) OPCODE;
+            }
         }
 
-		public bool analysisBuffer(byte[] Buffer)
+        public bool analysisBuffer( byte[] Buffer )
         {
             return false;
         }
-		
+
         public byte[] getBuffer()
         {
             byte[] buffer = ToByteArray();
             return buffer;
         }
-		
+
         public UInt32 uiListen = new UInt32();
-		public UInt32 uiCsvFBid = new UInt32();
-		public UInt32 uiMasterid = new UInt32();
-		public UInt64 uiFriendPetid = new UInt64();
-		///玩家怪物站位
-		public UInt64[] vctIdServerPet = new UInt64[9];
+        public UInt32 uiCsvFBid = new UInt32();
+        public UInt32 uiMasterid = new UInt32();
+        public UInt64 uiFriendPetid = new UInt64();
+        /// 佣兵的server id
+        public UInt64 luiHelperID = new UInt64();
+        ///玩家怪物站位
+        public UInt64[] vctIdServerPet = new UInt64[ 9 ];
     };
 	
 	[Serializable()]
@@ -963,19 +968,22 @@ namespace net.unity3d
     {
         public static readonly E_OPCODE OPCODE = E_OPCODE.EP_RM2C_GOTO_FB;
 
-        public static IProtocal Create(ushort msg, HeaderBase h)
+        public static IProtocal Create( ushort msg, HeaderBase h )
         {
             return new RM2C_GOTO_FB();
         }
 
         public ushort Message
         {
-            get { return (ushort)OPCODE; }
+            get
+            {
+                return ( ushort ) OPCODE;
+            }
         }
 
-        public bool analysisBuffer(byte[] Buffer)
+        public bool analysisBuffer( byte[] Buffer )
         {
-            FromByteArrayNew(Buffer, this);
+            FromByteArrayNew( Buffer, this );
             return true;
         }
 
@@ -985,11 +993,13 @@ namespace net.unity3d
         }
 
         public int iResult = new int();
-		public UInt32 uiListen = new UInt32();
-		public UInt32 uiIdCsvFB = new UInt32();
-		public UInt32 uiMasterid = new UInt32();
-		public UInt64 uiFriendPetid = new UInt64();
-		public SPetInfo sPetInfo = new SPetInfo();
+        public UInt32 uiListen = new UInt32();
+        public UInt32 uiIdCsvFB = new UInt32();
+        public UInt32 uiMasterid = new UInt32();
+        public UInt64 uiFriendPetid = new UInt64();
+        /// 佣兵的server id
+        public UInt64 luiHelperID = new UInt64();
+        public SPetInfo sPetInfo = new SPetInfo();
     };
 	
 	

@@ -580,19 +580,22 @@ namespace net.unity3d
     {
         public static readonly E_OPCODE OPCODE = E_OPCODE.EP_RM2C_CHECK_PK;
 
-        public static IProtocal Create(ushort msg, HeaderBase h)
+        public static IProtocal Create( ushort msg, HeaderBase h )
         {
             return new RM2C_CHECK_PK();
         }
 
         public ushort Message
         {
-            get { return (ushort)OPCODE; }
+            get
+            {
+                return ( ushort ) OPCODE;
+            }
         }
 
-        public bool analysisBuffer(byte[] Buffer)
+        public bool analysisBuffer( byte[] Buffer )
         {
-            FromByteArrayNew(Buffer, this);
+            FromByteArrayNew( Buffer, this );
             return true;
         }
 
@@ -602,32 +605,32 @@ namespace net.unity3d
         }
 
         public UInt32 uiListen = new UInt32();
-		public int iResult = new int();
-		public byte cIsWin = new byte();
-		///对手server Id
-		public UInt32	uiIdEnemyMaster = new UInt32();	
-		///对手昵称
-		public byte[]	sEnemyName = new byte[32];
-		//获得游戏币
-		public Int64 liSMoney = new Int64();		
-		///获得匹配等级
-		public UInt32 uiLvFight = new UInt32();		
-		///获得竞技积分
-		public int iScoreFight = new int();			
-		///获得声望
-		public UInt32 uiPrestige = new UInt32();		
-		///本周胜场
-		public UInt16 usCntWinWeek = new UInt16();	
-		///本周匹配等级
-		public UInt32 uiLvFightWeek = new UInt32();		
-		//己方战斗力
-		public UInt32 uiMyFightNum = new UInt32();		
-		//对手战斗力
-		public UInt32 uiEnemyFightNum = new UInt32();		
-		
-		public string getRoleName()
+        public int iResult = new int();
+        public byte cIsWin = new byte();
+        ///对手server Id
+        public UInt32 uiIdEnemyMaster = new UInt32();
+        ///对手昵称
+        public byte[] sEnemyName = new byte[ 32 ];
+        //获得游戏币
+        public Int64 liSMoney = new Int64();
+        ///获得匹配等级
+        public UInt32 uiLvFight = new UInt32();
+        ///获得竞技积分
+        public int iScoreFight = new int();
+        ///获得声望
+        public UInt32 uiPrestige = new UInt32();
+        ///本周胜场
+        public UInt16 usCntWinWeek = new UInt16();
+        ///本周匹配等级
+        public UInt32 uiLvFightWeek = new UInt32();
+        //己方战斗力
+        public UInt32 uiMyFightNum = new UInt32();
+        //对手战斗力
+        public UInt32 uiEnemyFightNum = new UInt32();
+
+        public string getRoleName()
         {
-            return System.Text.Encoding.UTF8.GetString(sEnemyName, 0, IndexByteToString(sEnemyName));
+            return System.Text.Encoding.UTF8.GetString( sEnemyName, 0, IndexByteToString( sEnemyName ) );
         }
     };
 	

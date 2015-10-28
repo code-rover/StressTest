@@ -1817,68 +1817,84 @@ namespace net.unity3d
 		public byte cProectType2 = new byte();
 	}
 
-	/// 聊天的基本信息
-	public class SChatItem : ExFormatterBinary
-	{
-		public string GetName()
-		{
-			return System.Text.Encoding.UTF8.GetString(cName, 0, IndexByteToString(cName));
-		}
+    /// 聊天的基本信息
+    public class SChatItem : ExFormatterBinary
+    {
+        public string GetName()
+        {
+            return System.Text.Encoding.UTF8.GetString( cName, 0, IndexByteToString( cName ) );
+        }
 
-		public string GetContent()
-		{
-			return System.Text.Encoding.UTF8.GetString(cContent, 0, IndexByteToString(cContent));
-		}
+        public string GetContent()
+        {
+            return System.Text.Encoding.UTF8.GetString( cContent, 0, IndexByteToString( cContent ) );
+        }
 
-		public void setName(string psName)
-		{
-			byte[] nameByte = System.Text.Encoding.UTF8.GetBytes(psName);
-			for (int i = 0; i < nameByte.Length; i++)
-			{
-				cName[i] = nameByte[i];
-			}
-		}
+        public string GetNameDst()
+        {
+            return System.Text.Encoding.UTF8.GetString( cNameDst, 0, IndexByteToString( cNameDst ) );
+        }
 
-		public void setContent(string psContent)
-		{
-			byte[] contentByte = System.Text.Encoding.UTF8.GetBytes(psContent);
-			for (int i = 0; i < contentByte.Length; i++)
-			{
-				cContent[i] = contentByte[i];
-			}
-		}
+        public void setName( string psName )
+        {
+            byte[] nameByte = System.Text.Encoding.UTF8.GetBytes( psName );
+            for( int i = 0; i < nameByte.Length; i++ )
+            {
+                cName[ i ] = nameByte[ i ];
+            }
+        }
 
-		/// <summary>
-		/// 聊天的serverid
-		/// </summary>
-		public UInt64 ulChatID = new UInt64() ;
+        public void setContent( string psContent )
+        {
+            byte[] contentByte = System.Text.Encoding.UTF8.GetBytes( psContent );
+            for( int i = 0; i < contentByte.Length; i++ )
+            {
+                cContent[ i ] = contentByte[ i ];
+            }
+        }
 
-		///发送聊天信息的角色id
-		public UInt32 uiSrcRoleId = new UInt32();
-		/// <summary>
-		/// 队伍级别
-		/// </summary>
-		public UInt16 usTeamLv = new ushort();
-		/// <summary>
-		/// 队长的csvid
-		/// </summary>
-		public UInt32 uiTeamLeaderCsvID = new UInt32();
-		///发送聊天信息的角色name
-		public byte[] cName = new byte[32];
-		///私聊或者指定人帮助护送的玩家id
-		public UInt32 uiDstRoleId = new UInt32();
-		///聊天的时间
-		public UInt32 uiTalkTime = new UInt32();
-		/// 聊天的类型 0世界 1公会 2私聊 3所有的好友 4邀请所有好友(商队) 5邀请的个人(商队) 6邀请公会所有人（商队） 7Level
-		public byte cType = new byte(); 
-		/// 帮派id 帮派聊天和护送用
-		public UInt32 uiGangServerId = new UInt32();
-		/// 护送相关的信息
-		public SProtectItem sProtectItem = new SProtectItem();
-		/// 聊天的内容
-		public byte[] cContent = new byte[181];
+        public void setNameDst( string psNameDst )
+        {
+            byte[] nameByte = System.Text.Encoding.UTF8.GetBytes( psNameDst );
+            for( int i = 0; i < nameByte.Length; i++ )
+            {
+                cNameDst[ i ] = nameByte[ i ];
+            }
+        }
 
-	}
+        /// <summary>
+        /// 聊天的serverid
+        /// </summary>
+        public UInt64 ulChatID = new UInt64();
+
+        ///发送聊天信息的角色id
+        public UInt32 uiSrcRoleId = new UInt32();
+        /// <summary>
+        /// 队伍级别
+        /// </summary>
+        public UInt16 usTeamLv = new ushort();
+        /// <summary>
+        /// 队长的csvid
+        /// </summary>
+        public UInt32 uiTeamLeaderCsvID = new UInt32();
+        ///发送聊天信息的角色name
+        public byte[] cName = new byte[ 32 ];
+        ///私聊或者指定人帮助护送的玩家id
+        public UInt32 uiDstRoleId = new UInt32();
+        ///聊天的时间
+        public UInt32 uiTalkTime = new UInt32();
+        /// 聊天的类型 0世界 1公会 2私聊 3所有的好友 4邀请所有好友(商队) 5邀请的个人(商队) 6邀请公会所有人（商队） 7Level
+        public byte cType = new byte();
+        /// 帮派id 帮派聊天和护送用
+        public UInt32 uiGangServerId = new UInt32();
+        /// 护送相关的信息
+        public SProtectItem sProtectItem = new SProtectItem();
+        /// 聊天的内容
+        public byte[] cContent = new byte[ 181 ];
+
+        public byte[] cNameDst = new byte[ 32 ];
+
+    }
 
 	/// <summary>
 	/// 护送玩家基本信息

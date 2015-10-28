@@ -836,7 +836,12 @@ public class InfoPlayer
         this.infoFBList = new InfoFBList(this._dataMode);
         this.infoFBListElit = new InfoFBList( this._dataMode );
         this.infoFBListChallenge = new InfoFBList( this._dataMode );
+        this.infoHeroList = new InfoHeroList( this._dataMode );
     }
+
+    public uint enemyId;
+
+
     private DataMode _dataMode;
 	public double timeTeampUpdate;
 	
@@ -953,7 +958,7 @@ public class InfoPlayer
 	/// 卡牌仓库上限
 	public int maxHeroListWarehouse = 0;
 	/// 背包角色信息
-	public InfoHeroList infoHeroList = new InfoHeroList();
+    public InfoHeroList infoHeroList;
 	/// 魂兽背包信息
 	//public InfoBeastList infoBeastList = new InfoBeastList();
 	/// 好友
@@ -1691,12 +1696,29 @@ public class InfoStone
     }
 }
 
-
 /// 卡片 列表
 public class InfoHeroList
 {
+    public InfoHeroList(DataMode dm)
+    {
+        this._dataMode = dm;     
+    }
+
+    private DataMode _dataMode;
 	/// 获得角色
     private List<ulong> _heros = new List<ulong>();
+
+    /// 我的队伍信息
+    public List<uint> teamList = new List<uint>();
+
+    /// 获得队伍中的角色
+    public Dictionary<uint, ulong[]> teamInfo = new Dictionary<uint, ulong[]>();
+
+    /// 选择的阵型
+    public uint idTeamSelect;
+    public uint idTeamSelectPK;
+    public uint idTeamSelectTower;
+    public uint idTeamTBC;
 
     /// 获得所有的角色列表
     /*
@@ -1738,8 +1760,33 @@ public class InfoHeroList
         _heros.Clear();
     }
 
-    //TODO ...
+    /// 获得当前阵型全部角色
+    public List<InfoHero> getTeam()
+    {
+        return getTeam( idTeamSelect );
+    }
 
+    /// 获得团队1的角色
+    public List<InfoHero> getTeam( uint idTeam )
+    {
+        List<InfoHero> result = new List<InfoHero>();
+
+        if( teamInfo.ContainsKey( ( uint ) idTeam ) )
+        {
+            for( int i = 0; i < teamInfo[ ( uint ) idTeam ].Length; i++ )
+            {
+                if( null != _dataMode.getHero( teamInfo[ ( uint ) idTeam ][ i ] ) )
+                {
+                    result.Add( _dataMode.getHero( teamInfo[ ( uint ) idTeam ][ i ] ) );
+                    _dataMode.getHero( teamInfo[ ( uint ) idTeam ][ i ] ).isInTeam = true;
+                    _dataMode.getHero( teamInfo[ ( uint ) idTeam ][ i ] ).isTeamLeader = ( i == 0 );
+                }
+            }
+        }
+        return result;
+    }
+    //TODO ...
+    
 }
 
 /// 背包信息
@@ -1895,6 +1942,7 @@ public class InfoPropList
 /// 我的技能树
 public class InfoSkillList
 {
+    private static System.Object lockThis = new System.Object();
     /// 我的道具
     private Dictionary<int, InfoSkill> _skills = new Dictionary<int, InfoSkill>();
     public List<int> skillSort = new List<int>();
@@ -1920,8 +1968,11 @@ public class InfoSkillList
             return;
         }
         InfoSkill changeSkill = _skills[ sIDCsvOld ];
-        _skills.Remove( sIDCsvOld );
-        _skills.Add( sIDCsvNew, changeSkill );
+        lock(lockThis) {
+            _skills.Remove( sIDCsvOld );
+            if(!_skills.ContainsKey( sIDCsvNew ) )
+                _skills.Add( sIDCsvNew, changeSkill );
+        }
 
         /// 排序
         for( int index = 0; index < skillSort.Count; index++ )
@@ -2040,4 +2091,54 @@ public class InfoSkill
         ;
     }
     // add end
+
+    
+
+}
+
+
+public class ChatInfo
+{
+    public class ProtectItem
+    {
+        /// 护送的id
+        public ulong ProtectId;
+        /// 护送矿的类型 商队类型0～8（金小～钻石大） 0-2金3-5药6-8钻
+        public int ProtectType;
+        ///0小 1中 2大
+        public int ProectType2;
+        /// 护送的sessionid
+        public ulong ProtectSessionId;
+    }
+    //聊天唯一id
+    public ulong chatId;
+    public int teamLv;
+    public int teamLeaderCsvId;
+
+    //公会ID
+    public uint unionID;
+    ///发送聊天信息的角色id
+    public uint RoleId;
+    ///发送聊天信息的角色name
+    public string cName;
+    /// 私聊对方的名字
+    public string cNameDst;
+    ///私聊或者指定人帮助护送的玩家id
+    public int IdMaster;
+    ///聊天的时间
+    public int TalkTime;
+    /// 聊天的类型 1世界 2公会 3私聊 4所有的好友 5邀请所有好友 6邀请的个人 7邀请公会所有人 7Level
+    public byte Type;
+    /// 帮派id 帮派聊天和护送用
+    public int GangServerId;
+    /// 护送相关的信息
+    public ProtectItem sProtectItem = new ProtectItem();
+    /// 聊天的内容
+    public string Content;
+    ///私聊或者指定人帮助护送的玩家id
+    public uint DstRoleId;
+    //公会名字，单独协议赋值
+    public string unionName;
+    //是否是在私聊界面点击头像  
+    public bool isPrivateType = false;
 }

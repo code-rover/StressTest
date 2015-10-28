@@ -487,7 +487,7 @@ namespace net.unity3d
             catch (Exception ex)
             {
 				_is_relogin = true;
-                Logger.Error(ex.Message);
+                Logger.Error( pro.Message + "  " + ex.Message );
                 return true;
             }
             return true;
