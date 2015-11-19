@@ -402,10 +402,7 @@ namespace net.unity3d
                 Logger.Error(ex.Message);
             }
         }
-		
-		        
 
-        
 		public void begin_close()
         {
             try
@@ -469,7 +466,7 @@ namespace net.unity3d
 				//#if UNITY_EDITOR
 				
 				_tcp_client.Client.Shutdown(SocketShutdown.Both);
-				_tcp_client.Client.Close();
+				_tcp_client.Client.Close();    
 				//_tcp_client.Client.Close();
 				//#endif
 

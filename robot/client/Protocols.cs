@@ -450,6 +450,9 @@ namespace robot.client
             Session.addFactoryMethod( ( ushort ) RM2C_DISBAND_GAME_UNION.OPCODE, RM2C_DISBAND_GAME_UNION.Create );
             Session.addFactoryMethod( ( ushort ) RM2C_GET_GAME_UNION_LOG.OPCODE, RM2C_GET_GAME_UNION_LOG.Create );
             Session.addFactoryMethod( ( ushort ) RM2C_NOTIFY_LEAD_GU_INFO.OPCODE, RM2C_NOTIFY_LEAD_GU_INFO.Create );
+            Session.addFactoryMethod( ( ushort ) RM2C_SET_GU_ANNOUNCEMENT.OPCODE, RM2C_SET_GU_ANNOUNCEMENT.Create );
+            Session.addFactoryMethod( ( ushort ) RM2C_GU_EMAIL_TEXT.OPCODE, RM2C_GU_EMAIL_TEXT.Create );
+
 
             ///2015-08-06
             Session.addFactoryMethod( ( ushort ) RM2C_STOP_INFO.OPCODE, RM2C_STOP_INFO.Create );

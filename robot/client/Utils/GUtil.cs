@@ -366,6 +366,15 @@ public class GUtil
         return result;
     }
 
+    //millisecond
+    public static double getMS() 
+    {
+        //DateTime dt1 = new DateTime(1970,1,1);
+        TimeSpan ts = DateTime.Now - new DateTime(1970,1,1);
+       
+        return ts.TotalMilliseconds;
+    }
+
     public static long getEpoch()
     {
         return ( DateTime.UtcNow.Ticks - new DateTime( 1970, 1, 1 ).Ticks ) / 10000; //注意这里有时区问题，用now就要减掉8个小时

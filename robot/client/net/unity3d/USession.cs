@@ -5,6 +5,7 @@ using System.Net;
 using System.IO;
 using System.ComponentModel;
 using System.Threading;
+using System.Reflection;
 using Ionic.Zlib;
 using utils;
 
@@ -358,7 +359,29 @@ namespace net.unity3d
 							qn.msg = msg;
 							qn.args = args;
 
-                            Logger.Info( "<======" + " opcode: " + msg + " " +  GUtil.getTimeMs() );
+                            uint uiListen = 0;
+                            FieldInfo fi = pro.GetType().GetField( "uiListen" );
+                            if( fi != null )
+                            {
+                                uiListen = ( uint ) fi.GetValue( pro );
+
+                                //if( uiListen > 0 )
+                                //{
+                                //    double sendTime = robot.Program.diffTime[ uiListen ];
+                                //    if( sendTime > 0 )
+                                //    {
+                                //        double diff = GUtil.getMS() - sendTime;
+                                //        if( diff == 0 )
+                                //        {
+                                //            double a = diff;
+                                //        }
+                                //        robot.Program.timeStat[ msg ] = diff;
+                                //        robot.Program.diffTime.Remove( uiListen );
+                                //    }
+                                //};
+                            }
+
+                            Logger.Info( "<======" + " opcode: " + msg + "  uiListen: " + uiListen  + "   " + GUtil.getTimeMs() );
                             this.agentNet.lNetWorker.AddQueue( qn );
 						}
 	                }

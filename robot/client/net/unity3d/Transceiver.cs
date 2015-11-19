@@ -1557,18 +1557,18 @@ namespace net.unity3d
                 if( recv.SPiece.uiCsvId > 0 )
                     this.agent.dataMode.infoHeroChip.setHeroChip( ( int ) recv.SPiece.uiCsvId, recv.SPiece.iCnt );
 
-                if( recv.SEquip.uiIdCsvEquipment > 0 )
-                {
-                    TypeCsvProp csvprop = ManagerCsv.getProp( ( int ) recv.SEquip.uiIdCsvEquipment );
-                    if( csvprop.isPropBeast() )
-                    {
-                        //this.agent.dataMode.myPlayer.infoPropBeastList.changeProp( ( int ) recv.SEquip.uiIdCsvEquipment, recv.SEquip.iCnt );
-                    }
-                    else
-                    {
-                        this.agent.dataMode.myPlayer.infoPropList.changeProp( ( int ) recv.SEquip.uiIdCsvEquipment, recv.SEquip.iCnt );
-                    }
-                }
+                //if( recv.SEquip.uiIdCsvEquipment > 0 )
+                //{
+                //    TypeCsvProp csvprop = ManagerCsv.getProp( ( int ) recv.SEquip.uiIdCsvEquipment );
+                //    if( csvprop.isPropBeast() )
+                //    {
+                //        //this.agent.dataMode.myPlayer.infoPropBeastList.changeProp( ( int ) recv.SEquip.uiIdCsvEquipment, recv.SEquip.iCnt );
+                //    }
+                //    else
+                //    {
+                //        this.agent.dataMode.myPlayer.infoPropList.changeProp( ( int ) recv.SEquip.uiIdCsvEquipment, recv.SEquip.iCnt );
+                //    }
+                //}
                 //TODO
             }
             else
@@ -2260,5 +2260,849 @@ namespace net.unity3d
 
             Dispatcher.dispatchListener( recv.uiListen, recv );
         }
+
+        /// 护送 搜索商队
+        public void sendEscortFindRob( FunctionListenerEvent sListener )
+        {
+            Logger.Info( this.agent._account + "  SEND:C2RM_ESCORT_FIND_GROUP" );
+            C2RM_ESCORT_FIND_GROUP sender = new C2RM_ESCORT_FIND_GROUP();
+            sender.uiListen = Dispatcher.addListener( sListener, null);
+            this.agent.send( sender );
+        }
+
+        /// 护送 搜索商队
+        public void recvEscortFindRob( ArgsEvent args )
+        {
+            RM2C_ESCORT_FIND_GROUP recv = args.getData<RM2C_ESCORT_FIND_GROUP>();
+            Logger.Info(this.agent._account + " RECV:RM2C_ESCORT_FIND_GROUP   " + recv.iResult );
+            
+            if( recv.iResult == 1 )
+            {
+
+                /// 清空残血 残怒气数据
+                //DataMode._serverEscortRobBeast.Clear();
+                //DataMode._serverEscortRobHero.Clear();
+                ///// 领取面包
+                //DataMode.infoEscort.bread = ( int ) recv.EscortInfo.uiCntBread;
+                //DataMode.infoEscort.breadTimeStamp = ( double ) recv.EscortInfo.uiBreadLessTime;
+                //DataMode.infoEscort.breadBuyCnt = ( int ) recv.EscortInfo.uiCntBreadBuy;
+                //DataMode.infoEscort.searchCount = ( int ) recv.EscortInfo.uiCntSearch;
+                this.agent.dataMode.infoEscort.idServerEscortRob = recv.EscortInfo.uiIdEGF;
+                this.agent.dataMode.infoEscort.idServerEscortSearch = recv.EscortInfo.uiIdEGS;
+
+                /// 创建 商队
+                if( !this.agent.dataMode._serverEscortSafe.ContainsKey( recv.EscortGroup.SInfoBase.luiIdEG ) )
+                    this.agent.dataMode._serverEscortSafe.Add( recv.EscortGroup.SInfoBase.luiIdEG, new InfoEscortSafe() );
+
+                InfoEscortSafe infoSafe = this.agent.dataMode._serverEscortSafe[ recv.EscortGroup.SInfoBase.luiIdEG ];
+                infoSafe.idServer = recv.EscortGroup.SInfoBase.luiIdEG;
+                infoSafe.idSession = recv.EscortGroup.SInfoBase.uiSessionId;
+                infoSafe.timeStamp = ( double ) recv.EscortGroup.SInfoBase.uiBeginTime;
+                infoSafe.type = recv.EscortGroup.SInfoBase.cType;
+                infoSafe.typeSafe = ( int ) recv.EscortGroup.SInfoBase.uiEscortGroupType;
+                /// 搜索时候扣钱
+                
+
+                infoSafe.idServerSafeTeams.Clear();
+                for( int j = 0; j < recv.EscortGroup.vctTeamShow.Length; j++ )
+                {
+                    infoSafe.setSafeTeam( j, recv.EscortGroup.vctTeamShow[ j ].luiIdETid );
+
+                    /// 创建队伍
+                    if( recv.EscortGroup.vctTeamShow[ j ].luiIdETid <= 0 )
+                        continue;
+
+                    if( !this.agent.dataMode._serverEscortSafeTeam.ContainsKey( recv.EscortGroup.vctTeamShow[ j ].luiIdETid ) )
+                        this.agent.dataMode._serverEscortSafeTeam.Add( recv.EscortGroup.vctTeamShow[ j ].luiIdETid, new InfoEscortSafeTeam() );
+                    
+                    InfoEscortSafeTeam infoSafeTeam = this.agent.dataMode._serverEscortSafeTeam[ recv.EscortGroup.vctTeamShow[ j ].luiIdETid ];
+                    infoSafeTeam.idSession = recv.EscortGroup.vctTeamShow[ j ].uiSessionId;
+                    infoSafeTeam.idServerTeam = recv.EscortGroup.vctTeamShow[ j ].luiIdETid;
+                    infoSafeTeam.timeStamp = ( double ) recv.EscortGroup.vctTeamShow[ j ].uiBeginTime;
+                    infoSafeTeam.lv = ( int ) recv.EscortGroup.vctTeamShow[ j ].usLv;
+                    infoSafeTeam.fighting = recv.EscortGroup.vctTeamShow[ j ].uiFightValue;
+                    infoSafeTeam.type = recv.EscortGroup.vctTeamShow[ j ].cType;
+                    /// 服务器id
+                    infoSafeTeam.idLoginServer = recv.EscortGroup.uiIdServer;
+                    /// 数据类型
+                    List<ulong> teamData = new List<ulong>();
+                    teamData.Add( recv.EscortGroup.vctTeamShow[ j ].luiIdLeadServer );
+                    infoSafeTeam.idServerTeamHeroList = teamData;
+
+
+                    /// 创建 队长信息 信息
+                    if( recv.EscortGroup.vctTeamShow[ j ].luiIdLeadServer <= 0 )
+                        continue;
+                    /// 跨服信息
+                    ulong idServerHero = recv.EscortGroup.vctTeamShow[ j ].luiIdLeadServer;
+                    //if( DataMode.idLoginServer != infoSafeTeam.idLoginServer )
+                    //    idServerHero = DataMode.dummyEscortHero( idServerHero );
+
+                    if( !this.agent.dataMode._serverHero.ContainsKey( idServerHero ) )
+                        this.agent.dataMode._serverHero.Add( idServerHero, new InfoHero() );
+                    InfoHero infoHero = this.agent.dataMode._serverHero[ idServerHero ];
+                    infoHero.idServer = recv.EscortGroup.vctTeamShow[ j ].luiIdLeadServer;
+                    infoHero.idCsv = ( int ) recv.EscortGroup.vctTeamShow[ j ].uiIdLead;
+                }
+            }
+            
+            Dispatcher.dispatchListener( recv.uiListen, recv );
+        }
+
+        /// 护送 当前正在进攻的 商队信息
+        public void sendEscortDataRobInfo( FunctionListenerEvent sListener )
+        {
+            Logger.Info( this.agent._account + "  SEND:C2RM_ESCORT_BEAT_GROUP" );
+            
+            C2RM_ESCORT_BEAT_GROUP sender = new C2RM_ESCORT_BEAT_GROUP();
+            sender.uiListen = Dispatcher.addListener( sListener, null);
+            this.agent.send( sender );
+        }
+
+        /// 护送 获取正在进攻队伍的信息
+        public void sendEscortDataRobTeam( FunctionListenerEvent sListener )
+        {
+            Logger.Info( this.agent._account + "  SEND:C2RM_ESCORT_BEAT_TEAM" );
+            
+            C2RM_ESCORT_BEAT_TEAM sender = new C2RM_ESCORT_BEAT_TEAM();
+            sender.uiListen = Dispatcher.addListener( sListener, null);
+            this.agent.send( sender );
+        }
+
+
+        /// 护送 当前正在进攻的 商队信息
+        public void recvEscortDataRobInfo( ArgsEvent args )
+        {
+            RM2C_ESCORT_BEAT_GROUP recv = args.getData<RM2C_ESCORT_BEAT_GROUP>();
+            Logger.Info(this.agent._account + " RECV:RM2C_ESCORT_BEAT_GROUP 正在进攻的商队信息 " + recv.iResult );
+            
+            if( recv.iResult == 1 )
+            {
+                /// 创建 商队
+                if( !this.agent.dataMode._serverEscortSafe.ContainsKey( recv.EscortInfo.SInfoBase.luiIdEG ) )
+                    this.agent.dataMode._serverEscortSafe.Add( recv.EscortInfo.SInfoBase.luiIdEG, new InfoEscortSafe() );
+
+                InfoEscortSafe infoSafe = this.agent.dataMode._serverEscortSafe[ recv.EscortInfo.SInfoBase.luiIdEG ];
+                infoSafe.idServer = recv.EscortInfo.SInfoBase.luiIdEG;
+                infoSafe.idSession = recv.EscortInfo.SInfoBase.uiSessionId;
+                infoSafe.timeStamp = ( double ) recv.EscortInfo.SInfoBase.uiBeginTime;
+                //DataMode.infoEscort.timeStampRob = ( double ) recv.EscortInfo.uiFightTime;
+                //DataMode.infoEscort.timeStampSearch = ( double ) recv.EscortInfo.uiFindTime;
+
+                infoSafe.type = recv.EscortInfo.SInfoBase.cType;
+                infoSafe.typeSafe = ( int ) recv.EscortInfo.SInfoBase.uiEscortGroupType;
+                infoSafe.idServerSafeTeams.Clear();
+
+
+                for( int j = 0; j < recv.EscortInfo.vctTeamShow.Length; j++ )
+                {
+                    /// 创建队伍
+                    infoSafe.setSafeTeam( j, recv.EscortInfo.vctTeamShow[ j ].luiIdETid );
+                    if( recv.EscortInfo.vctTeamShow[ j ].luiIdETid <= 0 )
+                        continue;
+                    if( !this.agent.dataMode._serverEscortSafeTeam.ContainsKey( recv.EscortInfo.vctTeamShow[ j ].luiIdETid ) )
+                        this.agent.dataMode._serverEscortSafeTeam.Add( recv.EscortInfo.vctTeamShow[ j ].luiIdETid, new InfoEscortSafeTeam() );
+
+                    InfoEscortSafeTeam infoSafeTeam = this.agent.dataMode._serverEscortSafeTeam[ recv.EscortInfo.vctTeamShow[ j ].luiIdETid ];
+                    infoSafeTeam.idSession = recv.EscortInfo.vctTeamShow[ j ].uiSessionId;
+                    infoSafeTeam.idServerTeam = recv.EscortInfo.vctTeamShow[ j ].luiIdETid;
+                    infoSafeTeam.timeStamp = ( double ) recv.EscortInfo.vctTeamShow[ j ].uiBeginTime;
+                    infoSafeTeam.lv = ( int ) recv.EscortInfo.vctTeamShow[ j ].usLv;
+                    infoSafeTeam.fighting = recv.EscortInfo.vctTeamShow[ j ].uiFightValue;
+                    infoSafeTeam.type = recv.EscortInfo.vctTeamShow[ j ].cType;
+                    /// 服务器id
+                    infoSafeTeam.idLoginServer = recv.EscortInfo.uiIdServer;
+                    /// 数据类型
+                    List<ulong> teamData = new List<ulong>();
+                    teamData.Add( recv.EscortInfo.vctTeamShow[ j ].luiIdLeadServer );
+                    infoSafeTeam.idServerTeamHeroList = teamData;
+
+
+                    /// 创建 队长信息 信息
+                    if( recv.EscortInfo.vctTeamShow[ j ].luiIdLeadServer <= 0 )
+                        continue;
+
+                    /// 跨服信息
+                    ulong idServerHero = recv.EscortInfo.vctTeamShow[ j ].luiIdLeadServer;
+                    //if( DataMode.idLoginServer != infoSafeTeam.idLoginServer )
+                    //    idServerHero = DataMode.dummyEscortHero( idServerHero );
+
+                    if( !this.agent.dataMode._serverHero.ContainsKey( idServerHero ) )
+                        this.agent.dataMode._serverHero.Add( idServerHero, new InfoHero() );
+                    InfoHero infoHero = this.agent.dataMode._serverHero[ idServerHero ];
+                    infoHero.idServer = recv.EscortInfo.vctTeamShow[ j ].luiIdLeadServer;
+                    infoHero.idCsv = ( int ) recv.EscortInfo.vctTeamShow[ j ].uiIdLead;
+                }
+            }
+            
+            Dispatcher.dispatchListener( recv.uiListen, recv );
+        }
+
+        /// 护送 获取正在进攻队伍的信息
+        public void recvEscortDataRobTeam( ArgsEvent args )
+        {
+            RM2C_ESCORT_BEAT_TEAM recv = args.getData<RM2C_ESCORT_BEAT_TEAM>();
+            Logger.Info(this.agent._account + " RECV:RM2C_ESCORT_BEAT_TEAM 正在进攻的商队信息 " + recv.iResult );
+            
+            if( recv.iResult == 1 )
+            {
+                for( int i = 0; i < recv.vctInfo.Length; i++ )
+                {
+                    if( !this.agent.dataMode._serverEscortSafeTeam.ContainsKey( recv.vctInfo[ i ].luiIdET ) )
+                        this.agent.dataMode._serverEscortSafeTeam.Add( recv.vctInfo[ i ].luiIdET, new InfoEscortSafeTeam() );
+
+                    InfoEscortSafeTeam infoSafeTeam = this.agent.dataMode._serverEscortSafeTeam[ recv.vctInfo[ i ].luiIdET ];
+                    /// 无sessionID
+                    infoSafeTeam.idServerTeam = recv.vctInfo[ i ].luiIdET;
+                    infoSafeTeam.idServerPlayer = recv.vctInfo[ i ].uiIdMaster;
+                    infoSafeTeam.idLoginServer = recv.vctInfo[ i ].uiIdServer;
+                    infoSafeTeam.name = recv.vctInfo[ i ].GetName();
+                    infoSafeTeam.idServerBeast = recv.vctInfo[ i ].SBeast.uiIdBeast;
+
+                    /// 赋值队伍
+                    List<ulong> teamData = new List<ulong>();
+                    List<SEscortTeamPet> VctSPet = new List<SEscortTeamPet>();
+                    teamData.Add( recv.vctInfo[ i ].sLead.uiIdPet );
+                    VctSPet.Add( recv.vctInfo[ i ].sLead );
+                    for( int j = 0; j < recv.vctInfo[ i ].VctSPet.Length; j++ )
+                    {
+                        teamData.Add( recv.vctInfo[ i ].VctSPet[ j ].uiIdPet );
+                        VctSPet.Add( recv.vctInfo[ i ].VctSPet[ j ] );
+                    }
+                    infoSafeTeam.idServerTeamHeroList = teamData;
+
+
+                    /// 填充 队伍 信息
+                    {
+                        for( int j = 0; j < VctSPet.Count; j++ )
+                        {
+                            if( VctSPet[ j ].uiIdPet <= 0 )
+                                continue;
+                            /// 跨服考虑
+                            ulong idServerHero = VctSPet[ j ].uiIdPet;
+                            //if( DataMode.idLoginServer != infoSafeTeam.idLoginServer )
+                            //    idServerHero = DataMode.dummyEscortHero( idServerHero );
+                            if( !this.agent.dataMode._serverHero.ContainsKey( idServerHero ) )
+                                this.agent.dataMode._serverHero.Add( idServerHero, new InfoHero() );
+
+                            InfoHero infoHero = this.agent.dataMode._serverHero[ idServerHero ];
+                            infoHero.idCsv = ( int ) VctSPet[ j ].uiIdCsvPet;
+                            infoHero.idServer = VctSPet[ j ].uiIdPet;
+                            infoHero.exp = VctSPet[ j ].luiExp;
+
+                            TypeCsvHero csvHero = ManagerCsv.getHero( infoHero.idCsv );
+                            /// 设置装备
+                            infoHero.infoEquip.clear();
+                            for( int k = 0; k < VctSPet[ j ].vctluiIdEquip.Length; k++ )
+                            {
+                                infoHero.infoEquip.setProp( k, ( int ) VctSPet[ j ].vctluiIdEquip[ k ] );
+                            }
+                            /// 设置技能信息
+                            infoHero.infoSkill.clear();
+                            if( null != csvHero.idSkill )
+                            {
+                                for( int k = 0; k < csvHero.idSkill.Length; k++ )
+                                {
+                                    InfoSkill infoSkill = new InfoSkill();
+                                    if( VctSPet[ j ].sMotSkill[ k ].uiIdSkill == 0 )
+                                    {
+                                        infoSkill.idCsv = ( int ) double.Parse( csvHero.idSkill[ k ].ToString() );//GMath.toInt( csvHero.idSkill[ k ] );
+                                    }
+                                    if( VctSPet[ j ].sMotSkill[ k ].uiIdSkill != 0 )
+                                    {
+                                        infoSkill.idCsv = ( int ) VctSPet[ j ].sMotSkill[ k ].uiIdSkill;
+                                        infoSkill.isActive = true;
+                                    }
+                                    infoHero.infoSkill.skillSort.Add( infoSkill.idCsv );
+                                    infoHero.infoSkill.setInfoSkill( infoSkill );
+                                }
+                            }
+                            /// 设置手动技能
+                            infoHero.infoSkill.setSkillRelease( ( int ) VctSPet[ j ].uiIdCsvSkillHand );
+
+                            
+                        }
+                    }
+
+                    /// 获取这个商队 魂兽 信息
+                    //if( recv.vctInfo[ i ].SBeast.uiIdBeast > 0 )
+                    //{
+                    //    /// 跨服考虑
+                    //    ulong idServerBeast = recv.vctInfo[ i ].SBeast.uiIdBeast;
+
+                    //    //if( DataMode.idLoginServer != infoSafeTeam.idLoginServer )
+                    //    //    idServerBeast = DataMode.dummyEscortBeast( idServerBeast );
+
+                    //    //if( !_serverBeast.ContainsKey( idServerBeast ) )
+                    //    //    _serverBeast.Add( idServerBeast, new InfoBeast() );
+
+                    //    //InfoBeast infoBeast = _serverBeast[ idServerBeast ];
+                    //    //infoBeast.idServer = recv.vctInfo[ i ].SBeast.uiIdBeast;
+                    //    //infoBeast.idCsv = ( int ) recv.vctInfo[ i ].SBeast.uiIdCsvBeast;
+                    //    //infoBeast.exp = recv.vctInfo[ i ].SBeast.luiExp;
+                    //    //infoBeast.infoEquip.clear();
+                    //    //for( int j = 0; j < recv.vctInfo[ i ].SBeast.vctluiIdEquip.Length; j++ )
+                    //    //{
+                    //    //    infoBeast.infoEquip.setProp( j, ( int ) recv.vctInfo[ i ].SBeast.vctluiIdEquip[ j ] );
+                    //    //}
+                    //    ///// 设置抢矿属性 怒气
+                    //    //if( !_serverEscortRobBeast.ContainsKey( idServerBeast ) )
+                    //    //    _serverEscortRobBeast.Add( idServerBeast, new InfoEscortRobBeast() );
+                    //    //_serverEscortRobBeast[ idServerBeast ].angerMul = recv.vctInfo[ i ].SBeast.fAnger;
+                    //}
+                }
+            }
+             
+            Dispatcher.dispatchListener( recv.uiListen, recv );
+        }
+
+
+        /// 护送 获取一个商队的队伍信息
+        public void sendEscortDataTeam( ulong sIDServerEscortTeam, FunctionListenerEvent sListener )
+        {
+            Logger.Info(this.agent._account + " SEND:C2RM_ESCORT_GET_TEAM 获取一个商队的队伍信息" + sIDServerEscortTeam );
+            C2RM_ESCORT_GET_TEAM sender = new C2RM_ESCORT_GET_TEAM();
+            sender.STeam = new SEscortSearchBase();
+            sender.STeam.luiId = sIDServerEscortTeam;
+            //sender.STeam.uiSessionId = DataMode.getEscortSafeTeam( sIDServerEscortTeam ).idSession;
+            sender.uiListen = Dispatcher.addListener( sListener, null);
+            this.agent.send( sender );
+        }
+
+        /// 护送 获取一个商队的队伍信息 (队伍详细信息 包括装备 不包括血量)
+        public void recvEscortDataTeam( ArgsEvent args )
+        {
+            RM2C_ESCORT_GET_TEAM recv = args.getData<RM2C_ESCORT_GET_TEAM>();
+            Logger.Info(this.agent._account + " RECV:RM2C_ESCORT_GET_TEAM 获取一个商队的队伍信息 " + recv.iResult );
+            
+            if( recv.iResult == 1 )
+            {
+                if( !this.agent.dataMode._serverEscortSafeTeam.ContainsKey( recv.EscortInfo.luiIdETid ) )
+                    this.agent.dataMode._serverEscortSafeTeam.Add( recv.EscortInfo.luiIdETid, new InfoEscortSafeTeam() );
+                InfoEscortSafeTeam infoSafeTeam = this.agent.dataMode._serverEscortSafeTeam[ recv.EscortInfo.luiIdETid ];
+                infoSafeTeam.idSession = recv.EscortInfo.uiSessionId;
+                infoSafeTeam.idServerTeam = recv.EscortInfo.luiIdETid;
+                infoSafeTeam.idServerPlayer = recv.EscortInfo.uiIdMaster;
+                infoSafeTeam.idServerBeast = recv.EscortInfo.Beast.uiIdPet;
+                infoSafeTeam.idLoginServer = recv.EscortInfo.uiIdServer;
+                infoSafeTeam.timeStamp = ( double ) recv.EscortInfo.uiBeginTime;
+                infoSafeTeam.fighting = recv.EscortInfo.uiFightValue;
+                infoSafeTeam.name = recv.EscortInfo.GetName();
+                List<ulong> teamData = new List<ulong>();
+                teamData.Add( recv.EscortInfo.Team.uiIdLead );
+                //GUtil.addRange<ulong>( teamData, recv.EscortInfo.Team.uiIdPet );
+                infoSafeTeam.idServerTeamHeroList = teamData;
+
+                /// 填充 队伍 信息
+                {
+                    for( int i = 0; i < recv.EscortInfo.vctPetInfo.Length; i++ )
+                    {
+                        if( recv.EscortInfo.vctPetInfo[ i ].uiIdPet <= 0 )
+                            continue;
+                        /// 跨服考虑
+                        ulong idServerHero = recv.EscortInfo.vctPetInfo[ i ].uiIdPet;
+                        //if( DataMode.idLoginServer != infoSafeTeam.idLoginServer )
+                        //    idServerHero = DataMode.dummyEscortHero( idServerHero );
+                        if( !this.agent.dataMode._serverHero.ContainsKey( idServerHero ) )
+                            this.agent.dataMode._serverHero.Add( idServerHero, new InfoHero() );
+                        InfoHero infoHero = this.agent.dataMode._serverHero[ idServerHero ];
+                        infoHero.idServer = recv.EscortInfo.vctPetInfo[ i ].uiIdPet;
+                        /// 不是自己的重写 防止覆盖
+                        if( infoSafeTeam.idServerPlayer != this.agent.dataMode.myPlayer.idServer )
+                        {
+                            infoHero.idCsv = ( int ) recv.EscortInfo.vctPetInfo[ i ].uiIdCsvPet;
+                            infoHero.exp = recv.EscortInfo.vctPetInfo[ i ].luiExp;
+
+                            TypeCsvHero csvHero = ManagerCsv.getHero( infoHero.idCsv );
+                            /// 设置装备
+                            infoHero.infoEquip.clear();
+                            for( int j = 0; j < recv.EscortInfo.vctPetInfo[ i ].vctLuiIdEquip.Length; j++ )
+                            {
+                                infoHero.infoEquip.setProp( j, ( int ) recv.EscortInfo.vctPetInfo[ i ].vctLuiIdEquip[ j ] );
+                            }
+                            /// 设置技能信息
+                            //infoHero.infoSkill.clear();
+                            //if( null != csvHero.idSkill )
+                            //{
+                            //    for( int j = 0; j < csvHero.idSkill.Length; j++ )
+                            //    {
+                            //        InfoSkill infoSkill = new InfoSkill();
+                            //        if( recv.EscortInfo.vctPetInfo[ i ].vctUiIdCsvSkill[ j ] == 0 )
+                            //        {
+                            //            infoSkill.idCsv = GMath.toInt( csvHero.idSkill[ j ] );
+                            //        }
+                            //        if( recv.EscortInfo.vctPetInfo[ i ].vctUiIdCsvSkill[ j ] != 0 )
+                            //        {
+                            //            infoSkill.idCsv = ( int ) recv.EscortInfo.vctPetInfo[ i ].vctUiIdCsvSkill[ j ];
+                            //            infoSkill.isActive = true;
+                            //        }
+                            //        infoHero.infoSkill.skillSort.Add( infoSkill.idCsv );
+                            //        infoHero.infoSkill.setInfoSkill( infoSkill );
+                            //    }
+                            //}
+                            ///// 设置手动技能
+                            //infoHero.infoSkill.setSkillRelease( ( int ) recv.EscortInfo.vctPetInfo[ i ].uiIdCsvHandSkill );
+                        }
+                    }
+                }
+
+                /// 获取这个商队 魂兽 信息
+                //if( recv.EscortInfo.Beast.uiIdPet > 0 )
+                //{
+                //    /// 跨服考虑
+                //    ulong idServerBeast = recv.EscortInfo.Beast.uiIdPet;
+
+                //    if( DataMode.idLoginServer != infoSafeTeam.idLoginServer )
+                //        idServerBeast = DataMode.dummyEscortBeast( idServerBeast );
+                //    if( !_serverBeast.ContainsKey( idServerBeast ) )
+                //        _serverBeast.Add( idServerBeast, new InfoBeast() );
+                //    InfoBeast infoBeast = _serverBeast[ idServerBeast ];
+                //    infoBeast.idServer = recv.EscortInfo.Beast.uiIdPet;
+                //    infoBeast.idCsv = ( int ) recv.EscortInfo.Beast.uiIdCsvPet;
+                //    /// 不是自己的重写 防止覆盖
+                //    if( infoSafeTeam.idServerPlayer != DataMode.myPlayer.idServer )
+                //    {
+                //        infoBeast.exp = recv.EscortInfo.Beast.luiExp;
+                //        infoBeast.infoEquip.clear();
+                //        for( int i = 0; i < recv.EscortInfo.Beast.vctLuiIdEquip.Length; i++ )
+                //        {
+                //            infoBeast.infoEquip.setProp( i, ( int ) recv.EscortInfo.Beast.vctLuiIdEquip[ i ] );
+                //        }
+                //    }
+                //}
+            }
+
+            Dispatcher.dispatchListener( recv.uiListen, recv );
+        }
+
+        /// 护送 进入掠夺
+        public void sendEscortRobIn( ulong sIDServerSafeTeam, FunctionListenerEvent sListener )
+        {
+            Logger.Info(this.agent._account + " SEND:C2RM_ESCORT_GO_TO 护送 进入掠夺  id: " + sIDServerSafeTeam);
+            C2RM_ESCORT_GO_TO sender = new C2RM_ESCORT_GO_TO();
+            sender.luiIdTeam = sIDServerSafeTeam;
+            sender.uiListen = Dispatcher.addListener( sListener, null);
+            this.agent.send( sender );
+        }
+
+        /// 护送 离开掠夺
+        public void sendEscortRobOut( FunctionListenerEvent sListener )
+        {
+            Logger.Info(this.agent._account + " SEND:C2RM_ESCORT_LEAVE 离开 掠夺" );
+            C2RM_ESCORT_LEAVE sender = new C2RM_ESCORT_LEAVE();
+            sender.uiListen = Dispatcher.addListener( sListener, null);
+            this.agent.send( sender );
+        }
+
+        /// 护送 进入掠夺
+        public void recvEscortRobIn( ArgsEvent args )
+        {
+            RM2C_ESCORT_GO_TO recv = args.getData<RM2C_ESCORT_GO_TO>();
+            Logger.Info( this.agent._account + " RECV:RM2C_ESCORT_GO_TO 进入 掠夺 " + recv.iResult );
+            if( recv.iResult == 1 )
+            {
+                /*
+                DataMode.infoEscort.bread = ( int ) recv.SInfo.uiCntBread;
+                DataMode.infoEscort.breadTimeStamp = ( double ) recv.SInfo.uiBreadLessTime;
+                DataMode.infoEscort.breadBuyCnt = ( int ) recv.SInfo.uiCntBreadBuy;
+                DataMode.infoEscort.searchCount = ( int ) recv.SInfo.uiCntSearch;
+                DataMode.infoEscort.idServerEscortRob = recv.SInfo.uiIdEGF;
+                DataMode.infoEscort.idServerEscortSearch = recv.SInfo.uiIdEGS;
+                */
+            }
+            Dispatcher.dispatchListener( recv.uiListen, recv );
+        }
+
+        /// 护送 离开掠夺
+        public void recvEscortRobOut( ArgsEvent args )
+        {
+            RM2C_ESCORT_LEAVE recv = args.getData<RM2C_ESCORT_LEAVE>();
+            Logger.Info( this.agent._account + " RECV:RM2C_ESCORT_LEAVE 离开 掠夺 " + recv.iResult );
+            if( recv.iResult == 1 )
+            {
+                /*
+                /// WILL DONE 退出掠夺战斗
+                WindowsMngr.getInstance().closeWindow( WindowsID.CARAVAN_RESULT );
+                bool isOpenFbCaravanMap = false;
+                foreach( ulong idServerEscort in DataMode.infoEscort.idServerEscortSafe )
+                {
+                    if( null == DataMode.getEscortSafe( idServerEscort ) )
+                        continue;
+                    if( !DataMode.getEscortSafe( idServerEscort ).isEmpty )
+                        continue;
+                    WindowsMngr.getInstance().openFbCaravanMap( idServerEscort );
+                    isOpenFbCaravanMap = true;
+                    break;
+                }
+                /// 如果没有新矿 打开老矿搜索界面
+                if( !isOpenFbCaravanMap )
+                    WindowsMngr.getInstance().openFbCaravanMap( ManagerSenceEscortRob.infoSafe.idServer );
+                 */
+            }
+            Dispatcher.dispatchListener( recv.uiListen, recv );
+        }
+
+        /// 护送 战斗数据开始
+        public void sendEscortCombatStart()
+        {
+            Logger.Info(agent._account + " SEND:C2RM_ESCORT_PK_BEGIN >> " + "护送 战斗数据 Begin" );
+            C2RM_ESCORT_PK_BEGIN sender = new C2RM_ESCORT_PK_BEGIN();
+            
+            sender.uiBeginTime = ( uint )GUtil.getEpoch(); //AICombat.timeStartWaitTeamp;
+            sender.luiIdBeast = 0;
+            sender.uiFriendId = 0;
+            sender.vctPet = new ulong[ 9 ];
+            sender.vctTeamPet = new ulong[ 9 ];
+ 
+            /*
+            /// 站位 主角
+            List<InfoHero> infoHeroArr = DataMode.myPlayer.infoHeroList.getTeam( DataMode.myPlayer.infoHeroList.idTeamEscortRob );
+
+            if( null != ManagerSenceEscortRob.infoFriendHero )
+            {
+                infoHeroArr.Add( ManagerSenceEscortRob.infoFriendHero );
+                sender.uiFriendId = ManagerSenceEscortRob.infoFriend.idServer;
+            }
+            DataMode.myPlayer.infoHeroList.mathStandIndexArr( infoHeroArr );
+            ulong[] standInfo = new ulong[ 9 ];
+            foreach( InfoHero infoHero in infoHeroArr )
+            {
+                standInfo[ infoHero.standIndex ] = infoHero.idServer;
+            }
+            sender.vctPet = standInfo;
+            /// 增加魂兽信息
+            if( null != DataMode.myPlayer.infoHeroList.getTeamBeast( DataMode.myPlayer.infoHeroList.idTeamEscortRob ) )
+                sender.luiIdBeast = DataMode.myPlayer.infoHeroList.getTeamBeast( DataMode.myPlayer.infoHeroList.idTeamEscortRob ).idServer;
+            /// 站位 怪物
+            infoHeroArr = ManagerSenceEscortRob.infoSafeTeam.getTeam();
+            DataMode.myPlayer.infoHeroList.mathStandIndexArr( infoHeroArr );
+            standInfo = new ulong[ 9 ];
+            foreach( InfoHero infoHero in infoHeroArr )
+            {
+                standInfo[ infoHero.standIndex ] = infoHero.idServer;
+            }
+            sender.vctTeamPet = standInfo;
+             */
+            /// 发送 协议
+            this.agent.send( sender );
+        }
+
+
+        /// 护送 战斗数据结束
+        public void sendEscortCombatEnd( bool isWin, /*AICombat[]*/ int aiCombat, FunctionListenerEvent listener )
+        {
+            Logger.Info( agent._account + " SEND:C2RM_ESCORT_PK_OVER >> " + "护送 战斗数据 End >> " + isWin );
+            
+            C2RM_ESCORT_PK_OVER sender = new C2RM_ESCORT_PK_OVER();
+            sender.uiListen = Dispatcher.addListener( listener, null );
+
+            sender.fStopTime = 0; //GUtil.getEpoch();
+            sender.luiIdBeast = 0;
+            //sender.vctHpPet = new float[](0,0,0,0);
+            //sender.vctPetSkill = new SEscortPetSkill[ 18 ];
+            sender.cIsWin = 1;
+            sender.fBeastAnger = 0;
+            sender.fBeastAngerEnemy = 0;
+
+            /*
+            /// 把血量传送给服务器
+            for( int index = 0; index < aiCombat.Length; index++ )
+            {
+
+                if( null == aiCombat[ index ] || aiCombat[ index ].isDie() )
+                    continue;
+                /// 设置血量(超时间)
+                if( AICombat.timeOverTeamp < Data.gameTime )
+                    sender.vctHpPet[ index ] = 0;
+                else
+                    sender.vctHpPet[ index ] = aiCombat[ index ].getCombatData().hp / aiCombat[ index ].getCombatData().hpTotal;
+                /// 暂存数据模型中
+                if( index < 9 && null != DataMode.getEscortRobHero( aiCombat[ index ].getCombatData().myServerHero.idServer ) )
+                    DataMode.getEscortRobHero( aiCombat[ index ].getCombatData().myServerHero.idServer ).hpMul = sender.vctHpPet[ index ];
+
+                /// 设置宠物id
+                sender.vctPetSkill[ index ].luiIdPet = aiCombat[ index ].getCombatData().myServerHero.idServer;
+                /// 设置技能cd
+                List<int> skillSort = aiCombat[ index ].getCombatData().myServerHero.infoSkill.skillSort;
+                int i = 0;
+                /// 主动技能
+                if( aiCombat[ index ].getCombatData().mySkillRelease.Count > 0 )
+                {
+                    i = skillSort.IndexOf( aiCombat[ index ].getCombatData().mySkillRelease[ 0 ].csvSkill.id );
+                    if( -1 != i && i < sender.vctPetSkill[ index ].m_vctfProSkill.Length )
+                    {
+                        sender.vctPetSkill[ index ].m_vctfProSkill[ i ] = ( float ) ( aiCombat[ index ].getCombatData().mySkillRelease[ 0 ].timeStampUnlock - Data.gameTime ) / aiCombat[ index ].getCombatData().mySkillRelease[ 0 ].csvSkill.cd;
+                        sender.vctPetSkill[ index ].m_vctfProSkill[ i ] = Mathf.Max( 0f, sender.vctPetSkill[ index ].m_vctfProSkill[ i ] );
+                        sender.vctPetSkill[ index ].m_vctfProSkill[ i ] = 1f - sender.vctPetSkill[ index ].m_vctfProSkill[ i ];
+                    }
+                }
+                /// 被动技能
+                for( int j = 0; j < aiCombat[ index ].getCombatData().mySkillAuto.Count; j++ )
+                {
+                    i = skillSort.IndexOf( aiCombat[ index ].getCombatData().mySkillAuto[ j ].csvSkill.id );
+                    if( -1 != i && i < sender.vctPetSkill[ index ].m_vctfProSkill.Length )
+                    {
+                        sender.vctPetSkill[ index ].m_vctfProSkill[ i ] = ( float ) ( aiCombat[ index ].getCombatData().mySkillAuto[ j ].timeStampUnlock - Data.gameTime ) / aiCombat[ index ].getCombatData().mySkillAuto[ j ].csvSkill.cd;
+                        sender.vctPetSkill[ index ].m_vctfProSkill[ i ] = Mathf.Max( 0f, sender.vctPetSkill[ index ].m_vctfProSkill[ i ] );
+                        sender.vctPetSkill[ index ].m_vctfProSkill[ i ] = 1f - sender.vctPetSkill[ index ].m_vctfProSkill[ i ];
+                    }
+
+                }
+            }
+
+            sender.cIsWin = ( byte ) ( isWin ? 1 : 0 );
+            sender.fStopTime = ( float ) Data.gameTime;
+            sender.uiListen = DataMode.addListener( listener );
+            if( null != ManagerCombatBeast.beastSlef )
+            {
+                sender.luiIdBeast = ManagerCombatBeast.beastSlef.infoBeast.idServer;
+                sender.fBeastAnger = Mathf.Max( ManagerCombatBeast.beastSlef.anger / ManagerCombatBeast.beastSlef.dataAttCount.angerTotal, 0f );
+            }
+            if( null != ManagerCombatBeast.beastEnemy )
+            {
+                sender.fBeastAngerEnemy = Mathf.Max( ManagerCombatBeast.beastEnemy.anger / ManagerCombatBeast.beastEnemy.dataAttCount.angerTotal, 0f );
+            }
+             */
+            /// 战斗协议发送
+            this.agent.send( sender );
+        }
+
+        /// 护送 结果返回
+        public void recvEscortRobResult( ArgsEvent args )
+        {
+            RM2C_ESCORT_PK_OVER recv = args.getData<RM2C_ESCORT_PK_OVER>();
+            Logger.Info(this.agent._account + " RECV:RM2C_ESCORT_PK_OVER 战斗结果返回 " + recv.iResult );
+            
+            if( recv.iResult == 1 )
+            {
+                /// 新矿信息
+                for( int i = 0; i < recv.vctInfo.Length; i++ )
+                {
+                    //dataMode.infoEscort.idServerEscortSafe.Add( recv.vctInfo[ i ].SInfoBase.luiIdEG );
+                    /// 创建 商队
+                    if( !this.agent.dataMode._serverEscortSafe.ContainsKey( recv.vctInfo[ i ].SInfoBase.luiIdEG ) )
+                        this.agent.dataMode._serverEscortSafe.Add( recv.vctInfo[ i ].SInfoBase.luiIdEG, new InfoEscortSafe() );
+
+                    InfoEscortSafe infoSafe = this.agent.dataMode._serverEscortSafe[ recv.vctInfo[ i ].SInfoBase.luiIdEG ];
+                    infoSafe.idServerSafeTeams.Clear();
+                    infoSafe.idServer = recv.vctInfo[ i ].SInfoBase.luiIdEG;
+                    infoSafe.idSession = recv.vctInfo[ i ].SInfoBase.uiSessionId;
+                    infoSafe.timeStamp = ( double ) recv.vctInfo[ i ].SInfoBase.uiBeginTime;
+                    infoSafe.type = recv.vctInfo[ i ].SInfoBase.cType;
+                    infoSafe.typeSafe = ( int ) recv.vctInfo[ i ].SInfoBase.uiEscortGroupType;
+                }
+                /// 攻打人的信息
+                {
+                    /// 攻打的人的数据
+                    if( !this.agent.dataMode._serverEscortSafe.ContainsKey( recv.AckEscortGroup.SInfoBase.luiIdEG ) )
+                        this.agent.dataMode._serverEscortSafe.Add( recv.AckEscortGroup.SInfoBase.luiIdEG, new InfoEscortSafe() );
+
+                    InfoEscortSafe infoSafe = this.agent.dataMode._serverEscortSafe[ recv.AckEscortGroup.SInfoBase.luiIdEG ];
+                    infoSafe.idServer = recv.AckEscortGroup.SInfoBase.luiIdEG;
+                    infoSafe.idSession = recv.AckEscortGroup.SInfoBase.uiSessionId;
+                    infoSafe.timeStamp = ( double ) recv.AckEscortGroup.SInfoBase.uiBeginTime;
+                    infoSafe.type = recv.AckEscortGroup.SInfoBase.cType;
+                    infoSafe.typeSafe = ( int ) recv.AckEscortGroup.SInfoBase.uiEscortGroupType;
+
+                    /// 证明掠夺了新商队
+                    //if( recv.vctInfo.Length > 0 )
+                    //{
+                    //    /// 把奖励写进数据模型
+                    //    DataMode.myPlayer.money += recv.Money.iQMoney;
+                    //    DataMode.myPlayer.money_game += recv.Money.iSMoney;
+                    //    DataMode.myPlayer.infoPropList.addProp( ( int ) recv.Equ.uiIdCsvEquipment, recv.Equ.iCnt );
+                    //}
+                    /// 收获的奖励
+                    //infoSafe.infoRewardRob.clear();
+                    //if( recv.Money.iSMoney > 0 )
+                    //    infoSafe.infoRewardRob.addMoneyGame( ( int ) recv.Money.iSMoney );
+                    //if( recv.Money.iQMoney > 0 )
+                    //    infoSafe.infoRewardRob.addMoney( ( int ) recv.Money.iQMoney );
+                    //if( recv.Equ.iCnt > 0 )
+                    //    infoSafe.infoRewardRob.addProp( ( int ) recv.Equ.uiIdCsvEquipment, recv.Equ.iCnt );
+
+                    infoSafe.idServerSafeTeams.Clear();
+                    /// 攻打矿坑的信息
+                    for( int j = 0; j < recv.AckEscortGroup.vctTeamShow.Length; j++ )
+                    {
+                        /// 设置队伍
+                        infoSafe.setSafeTeam( j, recv.AckEscortGroup.vctTeamShow[ j ].luiIdETid );
+                        /// 创建队伍
+                        if( recv.AckEscortGroup.vctTeamShow[ j ].luiIdETid <= 0 )
+                            continue;
+                        if( !this.agent.dataMode._serverEscortSafeTeam.ContainsKey( recv.AckEscortGroup.vctTeamShow[ j ].luiIdETid ) )
+                            this.agent.dataMode._serverEscortSafeTeam.Add( recv.AckEscortGroup.vctTeamShow[ j ].luiIdETid, new InfoEscortSafeTeam() );
+
+                        InfoEscortSafeTeam infoSafeTeam = this.agent.dataMode._serverEscortSafeTeam[ recv.AckEscortGroup.vctTeamShow[ j ].luiIdETid ];
+                        infoSafeTeam.idSession = recv.AckEscortGroup.vctTeamShow[ j ].uiSessionId;
+                        infoSafeTeam.idServerTeam = recv.AckEscortGroup.vctTeamShow[ j ].luiIdETid;
+                        infoSafeTeam.timeStamp = ( double ) recv.AckEscortGroup.vctTeamShow[ j ].uiBeginTime;
+                        infoSafeTeam.lv = ( int ) recv.AckEscortGroup.vctTeamShow[ j ].usLv;
+                        infoSafeTeam.fighting = recv.AckEscortGroup.vctTeamShow[ j ].uiFightValue;
+                        /// 服务器id
+                        infoSafeTeam.idLoginServer = recv.AckEscortGroup.uiIdServer;
+                        /// 数据类型
+                        List<ulong> teamData = new List<ulong>();
+                        teamData.Add( recv.AckEscortGroup.vctTeamShow[ j ].luiIdLeadServer );
+                        infoSafeTeam.idServerTeamHeroList = teamData;
+
+
+                        /// 创建 队长信息 信息
+                        if( recv.AckEscortGroup.vctTeamShow[ j ].luiIdLeadServer <= 0 )
+                            continue;
+                        /// 跨服信息
+                        ulong idServerHero = recv.AckEscortGroup.vctTeamShow[ j ].luiIdLeadServer;
+                        //if( DataMode.idLoginServer != infoSafeTeam.idLoginServer )
+                         //   idServerHero = DataMode.dummyEscortHero( idServerHero );
+
+                        if( !this.agent.dataMode._serverHero.ContainsKey( idServerHero ) )
+                            this.agent.dataMode._serverHero.Add( idServerHero, new InfoHero() );
+                        InfoHero infoHero = this.agent.dataMode._serverHero[ idServerHero ];
+                        infoHero.idServer = recv.AckEscortGroup.vctTeamShow[ j ].luiIdLeadServer;
+                        infoHero.idCsv = ( int ) recv.AckEscortGroup.vctTeamShow[ j ].uiIdLead;
+                    }
+                }
+            }
+             
+            /// 胜利失败返回
+            //WindowsMngr.getInstance().openWindow( WindowsID.CARAVAN_RESULT, ( int ) recv.uiType );
+
+            Dispatcher.dispatchListener( recv.uiListen, recv );
+        }
+
+        /// WILL DONE 护送 改变己方商队队伍阵法
+        public void sendEscortTeamChange( ulong sIDServerEscort, int sIndex, ulong sIDServerTeam, ulong sIDServerLeader, ulong[] sIDServerHero, ulong sIDServerBeast, FunctionListenerEvent sListener )
+        {
+            
+            Logger.Info(this.agent._account + " SEND:C2RM_ESCORT_SET_SELF_TEAM 改变己方商队队伍阵法" );
+            C2RM_ESCORT_SET_SELF_TEAM sender = new C2RM_ESCORT_SET_SELF_TEAM();
+            sender.uiListen = Dispatcher.addListener( sListener, null);
+            sender.TeamUpdate.uiIdLead = sIDServerLeader;
+            sender.TeamUpdate.uiIdPet = sIDServerHero;
+            sender.TeamUpdate.uiLoc = ( uint ) sIndex;
+            sender.TeamUpdate.SGroup.luiId = sIDServerEscort;
+            if( null != this.agent.dataMode.getEscortSafe( sIDServerEscort ) )
+                sender.TeamUpdate.SGroup.uiSessionId = this.agent.dataMode.getEscortSafe( sIDServerEscort ).idSession;
+
+            sender.TeamUpdate.luiIdBeast = sIDServerBeast;
+
+            sender.TeamUpdate.STeam.luiId = sIDServerTeam;
+            if( null != this.agent.dataMode.getEscortSafeTeam( sIDServerTeam ) )
+                sender.TeamUpdate.STeam.uiSessionId = this.agent.dataMode.getEscortSafeTeam( sIDServerTeam ).idSession;
+
+            this.agent.send( sender );
+             
+        }
+
+        /// 护送 放弃护送
+        public void sendEscortGiveUp( ulong sIDServerSafe, FunctionListenerEvent listener )
+        {
+            Logger.Info(this.agent._account + " SEND:C2RM_ESCORT_GIVE_UP >> " + "护送 放弃" );
+
+            sIDServerSafe = this.agent.dataMode.infoEscort.idServerEscortSearch;
+            C2RM_ESCORT_GIVE_UP sender = new C2RM_ESCORT_GIVE_UP();
+            sender.SGroup.luiId = sIDServerSafe;
+            InfoEscortSafe ies = this.agent.dataMode.getEscortSafe( sIDServerSafe );
+            sender.SGroup.uiSessionId = ies.idSession;
+            if( null != ies.getMySafeTeam( this.agent ) )
+            {
+                sender.STeam.luiId = this.agent.dataMode.getEscortSafe( sIDServerSafe ).getMySafeTeam( this.agent ).idServerTeam;
+                sender.STeam.uiSessionId = this.agent.dataMode.getEscortSafe( sIDServerSafe ).getMySafeTeam( this.agent ).idSession;
+            }
+            sender.uiListen = Dispatcher.addListener( listener, null);
+            this.agent.send( sender );
+        }
+
+        /// 护送 放弃
+        public void recvEscortGiveUp( ArgsEvent args )
+        {
+            RM2C_ESCORT_GIVE_UP recv = args.getData<RM2C_ESCORT_GIVE_UP>();
+            Logger.Info(this.agent._account + " RECV:RM2C_ESCORT_GIVE_UP 护送 放弃 " + recv.iResult );
+            
+            Dispatcher.dispatchListener( recv.uiListen, recv );
+        }
+
+
+        //创建公会
+        public void sendCreateUnion(string _name, int _icon, int _iconbg, int _limitLv, int _type,FunctionListenerEvent listener )
+        {
+            Logger.Info( this.agent._account + " SEND:C2RM_CREATE_GAME_UNION >> 创建公会" );
+            C2RM_CREATE_GAME_UNION sender = new C2RM_CREATE_GAME_UNION();
+            sender.setName( _name );
+            sender.m_uiGUPic = ( uint ) _icon;
+            sender.m_ucJoinType = ( byte ) _type;
+            sender.m_usJoinLevel = ( ushort ) _limitLv;
+            sender.uiListen = Dispatcher.addListener( listener, null );
+            this.agent.send( sender );
+        }
+
+        //解散公会
+        public void sendDisbandUnion(int _unionID, FunctionListenerEvent listener)
+        {
+            Logger.Info( this.agent._account + " SEND:C2RM_DISBAND_GAME_UNION >> 解散公会  " + _unionID);
+            C2RM_DISBAND_GAME_UNION sender = new C2RM_DISBAND_GAME_UNION();
+            sender.uiListen = Dispatcher.addListener( listener, null);
+            sender.m_uiDisbandGUID = ( uint ) _unionID;
+            this.agent.send( sender );
+        }
+
+        //创建公会回调
+        public void recvCreateUnion( ArgsEvent args )
+        {
+            RM2C_CREATE_GAME_UNION recv = args.getData<RM2C_CREATE_GAME_UNION>();
+            Logger.Info(this.agent._account + " RECV:RM2C_CREATE_GAME_UNION >> " + recv.iResult);
+
+            Dispatcher.dispatchListener( recv.uiListen, recv );
+        }
+
+        //解散公会
+        public void recvDisbandUnion( ArgsEvent args )
+        {
+            RM2C_DISBAND_GAME_UNION recv = args.getData<RM2C_DISBAND_GAME_UNION>();
+            Logger.Info( this.agent._account + "  RECV:RM2C_DISBAND_GAME_UNION >> " + recv.m_iResult );
+            
+            Dispatcher.dispatchListener( recv.uiListen, recv );
+        }
+
+        //请求加入公会(某一个)
+        public void recvRequestJoinUnion( ArgsEvent args )
+        {
+            RM2C_REQUEST_JOIN_GAME_UNION recv = args.getData<RM2C_REQUEST_JOIN_GAME_UNION>();
+            Logger.Info( this.agent._account + " RECV:RM2C_REQUEST_JOIN_GAME_UNION >> " + recv.m_iResult );
+
+            Dispatcher.dispatchListener( recv.uiListen, recv );
+        }
+
+        //请求返回 申请公会列表
+        public void recvGetUnionList( ArgsEvent args )
+        {
+            RM2C_GAME_UNION_LIST recv = args.getData<RM2C_GAME_UNION_LIST>();
+            Logger.Info( this.agent._account + " RECV:RM2C_GAME_UNION_LIST >>  " );
+            ////清空申请列表
+            //DataMode.applayUnionList.Clear();
+
+            //for( int i = 0; i < recv.m_SGUList.Length; i++ )
+            //{
+            //    unionInfo _info = new unionInfo();
+            //    if( i < ( int ) recv.m_ucRequestCount )
+            //        _info.isApplay = true;
+            //    else
+            //        _info.isApplay = false;
+            //    _info.uID = ( int ) recv.m_SGUList[ i ].m_uiID;
+            //    _info.uName = recv.m_SGUList[ i ].getName();
+            //    _info.uType = ( int ) recv.m_SGUList[ i ].m_ucType;
+            //    _info.uLimitJoinLevel = ( int ) recv.m_SGUList[ i ].m_uiJoinLevel;
+            //    _info.uIcon = ( int ) recv.m_SGUList[ i ].m_uiPic;
+            //    _info.uIconBG = ( int ) recv.m_SGUList[ i ].m_uiPicFrame;
+            //    _info.uAnnouncement = recv.m_SGUList[ i ].getAnnouncement();
+            //    _info.uCurMemberCnt = ( int ) recv.m_SGUList[ i ].m_ucCurMemberCount;
+            //    _info.uMaxMemberCnt = ( int ) recv.m_SGUList[ i ].m_ucTotalMemberCount;
+
+            //    DataMode.applayUnionList.Add( _info );
+            //}
+
+            Dispatcher.dispatchListener( recv.uiListen, recv );
+        }
+
     }
 }

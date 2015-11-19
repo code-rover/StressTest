@@ -251,68 +251,74 @@ namespace net.unity3d
 	};
 
 	[Serializable()]
-	public class C2RM_ESCORT_GET_TEAM : ExFormatterBinary, IProtocal
-	{
-		//补签
-		public static readonly E_OPCODE OPCODE = E_OPCODE.EP_C2RM_ESCORT_GET_TEAM;
-		
-		public static IProtocal Create(ushort msg, HeaderBase h)
-		{
-			return new C2RM_ESCORT_GET_TEAM();
-		}
-		
-		public ushort Message
-		{
-			get { return (ushort)OPCODE; }
-		}
-		
-		public bool analysisBuffer(byte[] Buffer)
-		{
-			return false;
-		}
-		
-		public byte[] getBuffer()
-		{
-			byte[] buffer = ToByteArray();
-			return buffer;
-		}
-		
-		public UInt32 uiListen = new UInt32();
-		public SEscortSearchBase STeam = new SEscortSearchBase();
-	};
-	
-	[Serializable()]
-	public class RM2C_ESCORT_GET_TEAM : ExFormatterBinary, IProtocal
-	{
-		//补签返回
-		public static readonly E_OPCODE OPCODE = E_OPCODE.EP_RM2C_ESCORT_GET_TEAM;
-		
-		public static IProtocal Create(ushort msg, HeaderBase h)
-		{
-			return new RM2C_ESCORT_GET_TEAM();
-		}
-		
-		public ushort Message
-		{
-			get { return (ushort)OPCODE; }
-		}
-		
-		public bool analysisBuffer(byte[] Buffer)
-		{
-			FromByteArrayNew(Buffer, this);
-			return true;
-		}
-		
-		public byte[] getBuffer()
-		{
-			return null;
-		}
-		
-		public UInt32 uiListen = new UInt32();
-		public int iResult = new int();
-		///护送玩家基本信息
-		public SEscortRoleInfoPks EscortInfo = new SEscortRoleInfoPks();
-	};
+    public class C2RM_ESCORT_GET_TEAM : ExFormatterBinary, IProtocal
+    {
+        //补签
+        public static readonly E_OPCODE OPCODE = E_OPCODE.EP_C2RM_ESCORT_GET_TEAM;
+
+        public static IProtocal Create( ushort msg, HeaderBase h )
+        {
+            return new C2RM_ESCORT_GET_TEAM();
+        }
+
+        public ushort Message
+        {
+            get
+            {
+                return ( ushort ) OPCODE;
+            }
+        }
+
+        public bool analysisBuffer( byte[] Buffer )
+        {
+            return false;
+        }
+
+        public byte[] getBuffer()
+        {
+            byte[] buffer = ToByteArray();
+            return buffer;
+        }
+
+        public UInt32 uiListen = new UInt32();
+        public SEscortSearchBase STeam = new SEscortSearchBase();
+    };
+
+    [Serializable()]
+    public class RM2C_ESCORT_GET_TEAM : ExFormatterBinary, IProtocal
+    {
+        //补签返回
+        public static readonly E_OPCODE OPCODE = E_OPCODE.EP_RM2C_ESCORT_GET_TEAM;
+
+        public static IProtocal Create( ushort msg, HeaderBase h )
+        {
+            return new RM2C_ESCORT_GET_TEAM();
+        }
+
+        public ushort Message
+        {
+            get
+            {
+                return ( ushort ) OPCODE;
+            }
+        }
+
+        public bool analysisBuffer( byte[] Buffer )
+        {
+            FromByteArrayNew( Buffer, this );
+            return true;
+        }
+
+        public byte[] getBuffer()
+        {
+            return null;
+        }
+
+        public UInt32 uiListen = new UInt32();
+        public int iResult = new int();
+        ///护送玩家基本信息
+        public SEscortRoleInfoPks EscortInfo = new SEscortRoleInfoPks();
+    };
 
 	[Serializable()]
 	public class C2RM_ESCORT_BEAT_SELF_PET : ExFormatterBinary, IProtocal
@@ -477,223 +483,242 @@ namespace net.unity3d
 	};
 
 	[Serializable()]
-	public class C2RM_ESCORT_BEAT_GROUP : ExFormatterBinary, IProtocal
-	{
-		//补签
-		public static readonly E_OPCODE OPCODE = E_OPCODE.EP_C2RM_ESCORT_BEAT_GROUP;
-		
-		public static IProtocal Create(ushort msg, HeaderBase h)
-		{
-			return new C2RM_ESCORT_BEAT_GROUP();
-		}
-		
-		public ushort Message
-		{
-			get { return (ushort)OPCODE; }
-		}
-		
-		public bool analysisBuffer(byte[] Buffer)
-		{
-			return false;
-		}
-		
-		public byte[] getBuffer()
-		{
-			byte[] buffer = ToByteArray();
-			return buffer;
-		}
-		
-		public UInt32 uiListen = new UInt32();
-	};
-	
-	[Serializable()]
-	public class RM2C_ESCORT_BEAT_GROUP : ExFormatterBinary, IProtocal
-	{
-		//补签返回
-		public static readonly E_OPCODE OPCODE = E_OPCODE.EP_RM2C_ESCORT_BEAT_GROUP;
-		
-		public static IProtocal Create(ushort msg, HeaderBase h)
-		{
-			return new RM2C_ESCORT_BEAT_GROUP();
-		}
-		
-		public ushort Message
-		{
-			get { return (ushort)OPCODE; }
-		}
-		
-		public bool analysisBuffer(byte[] Buffer)
-		{
-			FromByteArrayNew(Buffer, this);
-			return true;
-		}
-		
-		public byte[] getBuffer()
-		{
-			return null;
-		}
-		
-		public UInt32 uiListen = new UInt32();
-		public int iResult = new int();
-		///正在进攻的商队信息
-		public SEscortGroup EscortInfo = new SEscortGroup();
-		///可获得货币
-		public SMoney Money = new SMoney();
-		///可获得药水
-		public SEquipment Equ = new SEquipment();
-	};
+    public class C2RM_ESCORT_BEAT_GROUP : ExFormatterBinary, IProtocal
+    {
+        //补签
+        public static readonly E_OPCODE OPCODE = E_OPCODE.EP_C2RM_ESCORT_BEAT_GROUP;
+
+        public static IProtocal Create( ushort msg, HeaderBase h )
+        {
+            return new C2RM_ESCORT_BEAT_GROUP();
+        }
+
+        public ushort Message
+        {
+            get
+            {
+                return ( ushort ) OPCODE;
+            }
+        }
+
+        public bool analysisBuffer( byte[] Buffer )
+        {
+            return false;
+        }
+
+        public byte[] getBuffer()
+        {
+            byte[] buffer = ToByteArray();
+            return buffer;
+        }
+
+        public UInt32 uiListen = new UInt32();
+    };
+
+    [Serializable()]
+    public class RM2C_ESCORT_BEAT_GROUP : ExFormatterBinary, IProtocal
+    {
+        //补签返回
+        public static readonly E_OPCODE OPCODE = E_OPCODE.EP_RM2C_ESCORT_BEAT_GROUP;
+
+        public static IProtocal Create( ushort msg, HeaderBase h )
+        {
+            return new RM2C_ESCORT_BEAT_GROUP();
+        }
+
+        public ushort Message
+        {
+            get
+            {
+                return ( ushort ) OPCODE;
+            }
+        }
+
+        public bool analysisBuffer( byte[] Buffer )
+        {
+            FromByteArrayNew( Buffer, this );
+            return true;
+        }
+
+        public byte[] getBuffer()
+        {
+            return null;
+        }
+
+        public UInt32 uiListen = new UInt32();
+        public int iResult = new int();
+        ///正在进攻的商队信息
+        public SEscortGroup EscortInfo = new SEscortGroup();
+        ///可获得货币
+        public SMoney Money = new SMoney();
+        ///可获得药水
+        public SEquipment Equ = new SEquipment();
+    };
+
 
 	[Serializable()]
-	public class C2RM_ESCORT_BEAT_TEAM : ExFormatterBinary, IProtocal
-	{
-		//补签
-		public static readonly E_OPCODE OPCODE = E_OPCODE.EP_C2RM_ESCORT_BEAT_TEAM;
-		
-		public static IProtocal Create(ushort msg, HeaderBase h)
-		{
-			return new C2RM_ESCORT_BEAT_TEAM();
-		}
-		
-		public ushort Message
-		{
-			get { return (ushort)OPCODE; }
-		}
-		
-		public bool analysisBuffer(byte[] Buffer)
-		{
-			return false;
-		}
-		
-		public byte[] getBuffer()
-		{
-			byte[] buffer = ToByteArray();
-			return buffer;
-		}
-		
-		public UInt32 uiListen = new UInt32();
-	};
-	
-	[Serializable()]
-	public class RM2C_ESCORT_BEAT_TEAM : ExFormatterBinary, IProtocal
-	{
-		public static readonly E_OPCODE OPCODE = E_OPCODE.EP_RM2C_ESCORT_BEAT_TEAM;
-		
-		private void init(int len)
-		{
-			if (len >= 0)
-			{
-				vctInfo = new SEscortTeamFight[len];
-				for (int i = 0; i < len; i++)
-				{
-					vctInfo[i] = new SEscortTeamFight();
-				}
-			}
-		}
-		
-		public static IProtocal Create(ushort msg, HeaderBase h)
-		{
-			return new RM2C_ESCORT_BEAT_TEAM();
-		}
-		
-		public ushort Message
-		{
-			get { return (ushort)OPCODE; }
-		}
-		
-		public bool analysisBuffer(byte[] Buffer)
-		{
-			MemoryStream msBuff = new MemoryStream(Buffer);
-			BinaryReader br = new BinaryReader(msBuff);
-			UInt32 len = br.ReadUInt32();
-			init((int)len);
-			MemoryStream realBuff = new MemoryStream(Buffer, 4, Buffer.Length - 4);
-			///USerialize.ConvertBytesToClass(realBuff);
-			byte[] realData = realBuff.ToArray();
-			FromByteArray(realData, this);
-			return true;
-		}
-		
-		public byte[] getBuffer()
-		{
-			return null;
-		}
-		
-		public UInt32 uiListen = new UInt32();
-		public int iResult = new int();
-		/// 卡牌出战信息
-		public SEscortTeamFight[] vctInfo;
-	};
+    public class C2RM_ESCORT_BEAT_TEAM : ExFormatterBinary, IProtocal
+    {
+        //补签
+        public static readonly E_OPCODE OPCODE = E_OPCODE.EP_C2RM_ESCORT_BEAT_TEAM;
+
+        public static IProtocal Create( ushort msg, HeaderBase h )
+        {
+            return new C2RM_ESCORT_BEAT_TEAM();
+        }
+
+        public ushort Message
+        {
+            get
+            {
+                return ( ushort ) OPCODE;
+            }
+        }
+
+        public bool analysisBuffer( byte[] Buffer )
+        {
+            return false;
+        }
+
+        public byte[] getBuffer()
+        {
+            byte[] buffer = ToByteArray();
+            return buffer;
+        }
+
+        public UInt32 uiListen = new UInt32();
+    };
+
+    [Serializable()]
+    public class RM2C_ESCORT_BEAT_TEAM : ExFormatterBinary, IProtocal
+    {
+        public static readonly E_OPCODE OPCODE = E_OPCODE.EP_RM2C_ESCORT_BEAT_TEAM;
+
+        private void init( int len )
+        {
+            if( len >= 0 )
+            {
+                vctInfo = new SEscortTeamFight[ len ];
+                for( int i = 0; i < len; i++ )
+                {
+                    vctInfo[ i ] = new SEscortTeamFight();
+                }
+            }
+        }
+
+        public static IProtocal Create( ushort msg, HeaderBase h )
+        {
+            return new RM2C_ESCORT_BEAT_TEAM();
+        }
+
+        public ushort Message
+        {
+            get
+            {
+                return ( ushort ) OPCODE;
+            }
+        }
+
+        public bool analysisBuffer( byte[] Buffer )
+        {
+            MemoryStream msBuff = new MemoryStream( Buffer );
+            BinaryReader br = new BinaryReader( msBuff );
+            UInt32 len = br.ReadUInt32();
+            init( ( int ) len );
+            MemoryStream realBuff = new MemoryStream( Buffer, 4, Buffer.Length - 4 );
+            ///USerialize.ConvertBytesToClass(realBuff);
+            byte[] realData = realBuff.ToArray();
+            FromByteArray( realData, this );
+            return true;
+        }
+
+        public byte[] getBuffer()
+        {
+            return null;
+        }
+
+        public UInt32 uiListen = new UInt32();
+        public int iResult = new int();
+        /// 卡牌出战信息
+        public SEscortTeamFight[] vctInfo;
+    };
 
 	[Serializable()]
-	public class C2RM_ESCORT_FIND_GROUP : ExFormatterBinary, IProtocal
-	{
-		//补签
-		public static readonly E_OPCODE OPCODE = E_OPCODE.EP_C2RM_ESCORT_FIND_GROUP;
-		
-		public static IProtocal Create(ushort msg, HeaderBase h)
-		{
-			return new C2RM_ESCORT_FIND_GROUP();
-		}
-		
-		public ushort Message
-		{
-			get { return (ushort)OPCODE; }
-		}
-		
-		public bool analysisBuffer(byte[] Buffer)
-		{
-			return false;
-		}
-		
-		public byte[] getBuffer()
-		{
-			byte[] buffer = ToByteArray();
-			return buffer;
-		}
-		
-		public UInt32 uiListen = new UInt32();
-	};
-	
-	[Serializable()]
-	public class RM2C_ESCORT_FIND_GROUP : ExFormatterBinary, IProtocal
-	{
-		//补签返回
-		public static readonly E_OPCODE OPCODE = E_OPCODE.EP_RM2C_ESCORT_FIND_GROUP;
-		
-		public static IProtocal Create(ushort msg, HeaderBase h)
-		{
-			return new RM2C_ESCORT_FIND_GROUP();
-		}
-		
-		public ushort Message
-		{
-			get { return (ushort)OPCODE; }
-		}
-		
-		public bool analysisBuffer(byte[] Buffer)
-		{
-			FromByteArrayNew(Buffer, this);
-			return true;
-		}
-		
-		public byte[] getBuffer()
-		{
-			return null;
-		}
-		
-		public UInt32 uiListen = new UInt32();
-		public int iResult = new int();
-		///花费的货币
-		public SMoney SCostMoney = new SMoney();				
-		///可获得货币
-		public SMoney Money = new SMoney();
-		///可获得药水
-		public SEquipment Equ = new SEquipment();
-		///护送玩家基本信息
-		public SEscortGroup EscortGroup = new SEscortGroup();
-		///自己的护送基本信息
-		public SEscortInfoBase EscortInfo = new SEscortInfoBase();
-	};
+    public class C2RM_ESCORT_FIND_GROUP : ExFormatterBinary, IProtocal
+    {
+        //补签
+        public static readonly E_OPCODE OPCODE = E_OPCODE.EP_C2RM_ESCORT_FIND_GROUP;
+
+        public static IProtocal Create( ushort msg, HeaderBase h )
+        {
+            return new C2RM_ESCORT_FIND_GROUP();
+        }
+
+        public ushort Message
+        {
+            get
+            {
+                return ( ushort ) OPCODE;
+            }
+        }
+
+        public bool analysisBuffer( byte[] Buffer )
+        {
+            return false;
+        }
+
+        public byte[] getBuffer()
+        {
+            byte[] buffer = ToByteArray();
+            return buffer;
+        }
+
+        public UInt32 uiListen = new UInt32();
+    };
+
+    [Serializable()]
+    public class RM2C_ESCORT_FIND_GROUP : ExFormatterBinary, IProtocal
+    {
+        //补签返回
+        public static readonly E_OPCODE OPCODE = E_OPCODE.EP_RM2C_ESCORT_FIND_GROUP;
+
+        public static IProtocal Create( ushort msg, HeaderBase h )
+        {
+            return new RM2C_ESCORT_FIND_GROUP();
+        }
+
+        public ushort Message
+        {
+            get
+            {
+                return ( ushort ) OPCODE;
+            }
+        }
+
+        public bool analysisBuffer( byte[] Buffer )
+        {
+            FromByteArrayNew( Buffer, this );
+            return true;
+        }
+
+        public byte[] getBuffer()
+        {
+            return null;
+        }
+
+        public UInt32 uiListen = new UInt32();
+        public int iResult = new int();
+        ///花费的货币
+        public SMoney SCostMoney = new SMoney();
+        ///可获得货币
+        public SMoney Money = new SMoney();
+        ///可获得药水
+        public SEquipment Equ = new SEquipment();
+        ///护送玩家基本信息
+        public SEscortGroup EscortGroup = new SEscortGroup();
+        ///自己的护送基本信息
+        public SEscortInfoBase EscortInfo = new SEscortInfoBase();
+    };
 
 	[Serializable()]
 	public class C2RM_ESCORT_SET_SELF_TEAM : ExFormatterBinary, IProtocal
@@ -1160,54 +1185,57 @@ namespace net.unity3d
 	};
 	
 	[Serializable()]
-	public class C2RM_ESCORT_PK_OVER : ExFormatterBinary, IProtocal
-	{
-		//补签
-		public static readonly E_OPCODE OPCODE = E_OPCODE.EP_C2RM_ESCORT_PK_OVER;
+    public class C2RM_ESCORT_PK_OVER : ExFormatterBinary, IProtocal
+    {
+        //补签
+        public static readonly E_OPCODE OPCODE = E_OPCODE.EP_C2RM_ESCORT_PK_OVER;
 
-		public C2RM_ESCORT_PK_OVER()
-		{
-			for(int i = 0; i < 18; ++i)
-			{
-				vctPetSkill[i] = new SEscortPetSkill();
-			}
-		}
-		
-		public static IProtocal Create(ushort msg, HeaderBase h)
-		{
-			return new C2RM_ESCORT_PK_OVER();
-		}
-		
-		public ushort Message
-		{
-			get { return (ushort)OPCODE; }
-		}
-		
-		public bool analysisBuffer(byte[] Buffer)
-		{
-			return false;
-		}
-		
-		public byte[] getBuffer()
-		{
-			byte[] buffer = ToByteArray();
-			return buffer;
-		}
-		
-		public UInt32 uiListen = new UInt32();
-		///停止时间戳
-		public float fStopTime = new float();
-		///是否胜利
-		public byte cIsWin = new byte();
-		public float[] vctHpPet = new float[18];
-		public SEscortPetSkill[] vctPetSkill = new SEscortPetSkill[18];
-		/// 魂兽id
-		public UInt64 luiIdBeast = new UInt64();
-		///魂兽剩余怒气百分比
-		public float fBeastAnger = new float();
-		///敌人魂兽剩余怒气百分比
-		public float fBeastAngerEnemy = new float();
-	};
+        public C2RM_ESCORT_PK_OVER()
+        {
+            for( int i = 0; i < 18; ++i )
+            {
+                vctPetSkill[ i ] = new SEscortPetSkill();
+            }
+        }
+
+        public static IProtocal Create( ushort msg, HeaderBase h )
+        {
+            return new C2RM_ESCORT_PK_OVER();
+        }
+
+        public ushort Message
+        {
+            get
+            {
+                return ( ushort ) OPCODE;
+            }
+        }
+
+        public bool analysisBuffer( byte[] Buffer )
+        {
+            return false;
+        }
+
+        public byte[] getBuffer()
+        {
+            byte[] buffer = ToByteArray();
+            return buffer;
+        }
+
+        public UInt32 uiListen = new UInt32();
+        ///停止时间戳
+        public float fStopTime = new float();
+        ///是否胜利
+        public byte cIsWin = new byte();
+        public float[] vctHpPet = new float[ 18 ];
+        public SEscortPetSkill[] vctPetSkill = new SEscortPetSkill[ 18 ];
+        /// 魂兽id
+        public UInt64 luiIdBeast = new UInt64();
+        ///魂兽剩余怒气百分比
+        public float fBeastAnger = new float();
+        ///敌人魂兽剩余怒气百分比
+        public float fBeastAngerEnemy = new float();
+    };
 
 	[Serializable()]
 	public class RM2C_ESCORT_PK_OVER : ExFormatterBinary, IProtocal

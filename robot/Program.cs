@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading;
+using System.Collections.Generic;
 using net;
 using net.unity3d;
 using utils;
@@ -8,17 +9,24 @@ namespace robot
 {
     class Program
     {
-        public static int COUNT = 1;
+        public static int COUNT = 100;//1000;
 
         public static string ACCOUNT_IP = "192.168.1.2";
-        public static short  ACCOUNT_PORT = 11111;
+        //public static string ACCOUNT_IP = "120.26.14.229";//"192.168.1.2";
+        public static short ACCOUNT_PORT = 11111;
+        //public static short ACCOUNT_PORT = 9000; //11111;
         public static int    ACCOUNT_TIMEOUT = 30;
 
         public static string LOGIN_IP = "192.168.1.2";
-        public static short  LOGIN_PORT = 12007;
+        //public static string LOGIN_IP = "120.26.14.229"; //;"192.168.1.2";
+        public static short LOGIN_PORT = 12007;
+        //public static short LOGIN_PORT = 9005; //;12007;
         public static int    LOGIN_TIMEOUT = 30;
 
         public static AgentNet[] agents = new AgentNet[COUNT];
+
+        //public static Dictionary<uint, double> diffTime = new Dictionary<uint, double>();
+        //public static Dictionary<int, double> timeStat = new Dictionary<int, double>();
 
         static void Main( string[] args )
         {
@@ -31,7 +39,7 @@ namespace robot
 
             Console.WriteLine( "StartTime: " + GUtil.getTimeMs() );
 
-            int account = 1015;    //开始帐号
+            int account = 1000;    //开始帐号
             string passwd = "123";
             string macId = "";
  
@@ -43,6 +51,7 @@ namespace robot
                 agents[i].setLoginInfo( account.ToString(), passwd, macId, ( byte ) 1, "", "", "" );
                 agents[i].connectAccountServer( ACCOUNT_IP, ACCOUNT_PORT, ACCOUNT_TIMEOUT);
 
+                //agents[ i ].conned = true;
                 initListener(agents[i]);  //消息监听注册
                 account++;
             }
@@ -50,13 +59,31 @@ namespace robot
             while( true )
             {
                 //Thread.Sleep( 500 );
+                int canStopNum = 0;
                 foreach( AgentNet agent in agents )
                 {
+//                     if( !agent.conned )
+//                     {
+//                         canStopNum++;
+//                         continue;
+//                     }
                     agent.tick();
                 }
                 ///Logger.Debug( "----------------------------- " + GUtil.getTimeMs());
+
+//                 if( canStopNum >= agents.Length )
+//                 {
+//                     break;
+//                 }
             }
-            
+
+            Logger.Info("=============================================");
+            //Logger.Info( "消息回应时间统计:" );
+
+            //foreach(var item in robot.Program.timeStat) {
+            //    Logger.Info( "msg: " + item.Key + " time: " + item.Value );    
+            //}
+
             Console.ReadKey( true );
         }
 
@@ -215,6 +242,74 @@ namespace robot
 
             ///发送队伍信息
             agent.addListenEvent( ( ushort ) E_OPCODE.EP_RM2C_TEAM_INFO, agent.trans.recvHeroTeam );
+
+            agent.addListenEvent( ( ushort ) E_OPCODE.EP_RM2C_ESCORT_FIND_GROUP, agent.trans.recvEscortFindRob );
+
+            agent.addListenEvent( ( ushort ) E_OPCODE.EP_RM2C_ESCORT_BEAT_GROUP, agent.trans.recvEscortDataRobInfo );
+            agent.addListenEvent( ( ushort ) E_OPCODE.EP_RM2C_ESCORT_BEAT_TEAM, agent.trans.recvEscortDataRobTeam );
+            //agent.addListenEvent( ( ushort ) E_OPCODE.EP_RM2C_ESCORT_GET_GROUP, agent.trans.recvEscortDataList );
+            agent.addListenEvent( ( ushort ) E_OPCODE.EP_RM2C_ESCORT_GET_TEAM, agent.trans.recvEscortDataTeam );
+            agent.addListenEvent( ( ushort ) E_OPCODE.EP_RM2C_ESCORT_GO_TO, agent.trans.recvEscortRobIn );
+            agent.addListenEvent( ( ushort ) E_OPCODE.EP_RM2C_ESCORT_LEAVE, agent.trans.recvEscortRobOut );
+            agent.addListenEvent( ( ushort ) E_OPCODE.EP_RM2C_ESCORT_PK_OVER, agent.trans.recvEscortRobResult );
+
+            agent.addListenEvent( ( ushort ) E_OPCODE.EP_RM2C_ESCORT_GIVE_UP, agent.trans.recvEscortGiveUp );
+
+
+
+            //公会协议
+            agent.addListenEvent( ( ushort ) E_OPCODE.EP_RM2C_GAME_UNION_LIST, agent.trans.recvGetUnionList );
+            ////请求加入公会回调
+            agent.addListenEvent( ( ushort ) E_OPCODE.EP_RM2C_REQUEST_JOIN_GAME_UNION, agent.trans.recvRequestJoinUnion );
+            ////创建公会回调
+            agent.addListenEvent( ( ushort ) E_OPCODE.EP_RM2C_CREATE_GAME_UNION, agent.trans.recvCreateUnion );
+            ////解散公会
+            agent.addListenEvent( ( ushort ) E_OPCODE.EP_RM2C_DISBAND_GAME_UNION, agent.trans.recvDisbandUnion );
+
+            ////公会成员列表
+            //AgentNet.getInstance().addListenEvent( ( ushort ) E_OPCODE.EP_RM2C_GU_MEMBER_LIST, recvMemberList );
+            ////搜索公会
+            //AgentNet.getInstance().addListenEvent( ( ushort ) E_OPCODE.EP_RM2C_SEARCH_GAME_UNION, recvSearchUnion );
+            ////申请加入公会的列表(其他玩家加入我的公会)
+            //AgentNet.getInstance().addListenEvent( ( ushort ) E_OPCODE.EP_RM2C_REQUEST_JOINER_LIST, recvRequestJoinUnionList );
+            ////申请加入公会的列表(同意或者拒绝)
+            //AgentNet.getInstance().addListenEvent( ( ushort ) E_OPCODE.EP_RM2C_AGREEN_JOIN, recvAgreeJoinUnion );
+            ////修改公会宣言
+            //AgentNet.getInstance().addListenEvent( ( ushort ) E_OPCODE.EP_RM2C_SET_GU_ANNOUNCEMENT, recvSetUnionAnnoun );
+            
+            ////设置公会属性
+            //AgentNet.getInstance().addListenEvent( ( ushort ) E_OPCODE.EP_RM2C_SET_GAME_UNION, recvSetUnion );
+            ////获取公会详细属性
+            //AgentNet.getInstance().addListenEvent( ( ushort ) E_OPCODE.EP_RM2C_GET_GAME_UNION_INFO, recvUnionInfo );
+            ////设置公会职业
+            //AgentNet.getInstance().addListenEvent( ( ushort ) E_OPCODE.EP_RM2C_APPOINT_JOB, recvAppointJob );
+            ////公会日志
+            //AgentNet.getInstance().addListenEvent( ( ushort ) E_OPCODE.EP_RM2C_GET_GAME_UNION_LOG, recvUnionLogInfo );
+            //// get union name
+            //AgentNet.getInstance().addListenEvent( ( ushort ) E_OPCODE.EP_RM2C_ROLE_UNION_RESPONSE, recvRoleUnion );
+            ////膜拜
+            //AgentNet.getInstance().addListenEvent( ( ushort ) E_OPCODE.EP_RM2C_GU_WORSHIP, recvWorship );
+            ////膜拜大神按钮，显示可领取奖励
+            //AgentNet.getInstance().addListenEvent( ( ushort ) E_OPCODE.EP_RM2C_OPEN_WORSHIP_UI, recvShowWorshipReward );
+            ////回复派遣佣兵协议 类型0-派驻，1-归队
+            //AgentNet.getInstance().addListenEvent( ( ushort ) E_OPCODE.EP_RM2C_GU_DISPATCH_PET, recvDispatchPet );
+            ////领取膜拜奖励
+            //AgentNet.getInstance().addListenEvent( ( ushort ) E_OPCODE.EP_RM2C_WORSHIP_REWARD, recvGetWorshipReward );
+            ////公会成员全体邮件
+            //AgentNet.getInstance().addListenEvent( ( ushort ) E_OPCODE.EP_RM2C_EMAIL_ALL_MEMBER, recvMaillAllMember );
+            ////接受公会全体成员邮件内容
+            //AgentNet.getInstance().addListenEvent( ( ushort ) E_OPCODE.EP_RM2C_GU_EMAIL_TEXT, recvUnionEmailContent );
+            ////接受公会月卡协议
+            //AgentNet.getInstance().addListenEvent( ( ushort ) E_OPCODE.EP_RM2C_PRESENT_GU_MONTH_CARD, recvGuMonthCard );
+            ////重新接受公会信息
+            //AgentNet.getInstance().addListenEvent( ( ushort ) E_OPCODE.EP_RM2C_NOTIFY_LEAD_GU_INFO, recvNotifyLeadGuInfo );
+            ////多倍掉率
+            //AgentNet.getInstance().addListenEvent( ( ushort ) E_OPCODE.EP_RM2C_BGND_DROP, recvBgndDrop );
+            ////多倍掉率 更新掉率信息
+            //AgentNet.getInstance().addListenEvent( ( ushort ) E_OPCODE.EP_RM2C_BGND_DROP_SET, recvBgndDropUpdate );
+            ////是否有其他玩家  打开了设置公会界面
+            //AgentNet.getInstance().addListenEvent( ( ushort ) E_OPCODE.EP_RM2C_OPEN_SET_GAME_UNION, recvOpenSetUnion );
+
 
             //agent.addListenEvent( ( ushort ) E_OPCODE.EP_RM2C_PING_PRO_TWO, recvPingTwo );
             //agent.addListenEvent( ( ushort ) E_OPCODE.EP_RM2C_BEAST_INFO, recvBeastInfo );

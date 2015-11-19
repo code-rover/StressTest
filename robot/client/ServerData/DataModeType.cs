@@ -2142,3 +2142,281 @@ public class ChatInfo
     //是否是在私聊界面点击头像  
     public bool isPrivateType = false;
 }
+
+
+/// 护送队伍 信息
+public class InfoEscortSafe
+{
+	public ulong idServer;
+	public uint idSession;
+	/// 护送矿的类型 商队类型0～8（金小～钻石大） 0-2金3-5药6-8钻
+	public int typeSafe;
+	/// 起送时间
+	public double timeStamp;
+	/// 0运输中1结束2被击败
+	public byte type;
+
+	/// 护矿中的队伍信息(守矿中 攻打的矿坑serverID需要虚拟)
+	public List<ulong> idServerSafeTeams = new List<ulong>();
+
+	public bool isHasTeam
+	{
+		get
+		{
+			bool result = false;
+			for(int index = 0; index < idServerSafeTeams.Count; index++)
+			{
+				if(idServerSafeTeams[index] > 0)
+				{
+					result = true;
+					break;
+				}
+			}
+			return result;
+		}
+	}
+
+	/// 掠夺 和 被掠夺 放弃后的矿 奖励
+	//public TypePopupReward infoRewardRob = new TypePopupReward();
+	/// 获得我这个矿中所有队伍
+    //public List<InfoEscortSafeTeam> infoEscortSafeTeams
+    //{
+    //    get
+    //    {
+    //        List<InfoEscortSafeTeam> result = new List<InfoEscortSafeTeam>();
+    //        for(int i = 0; i < idServerSafeTeams.Count; i++)
+    //        {
+    //            result.Add(DataMode.getEscortSafeTeam(idServerSafeTeams[i]));
+    //        }
+    //        return result;
+    //    }
+    //}
+
+	/// 直接设置商队
+	public void setSafeTeam(int sIndex, ulong sIDServerTeam)
+	{
+		while(idServerSafeTeams.Count <= sIndex)
+		{
+			idServerSafeTeams.Add(0);
+		}
+		idServerSafeTeams[sIndex] = sIDServerTeam;
+	}
+    
+	/// 我的守护队伍
+    //public InfoEscortSafeTeam mySafeTeam
+    //{
+    //    get
+    //    {
+    //        InfoEscortSafeTeam result = null;
+    //        for(int i = 0; i < idServerSafeTeams.Count; i++)
+    //        {
+    //            if(null == DataMode.getEscortSafeTeam(idServerSafeTeams[i]))
+    //                continue;
+    //            if(DataMode.getEscortSafeTeam(idServerSafeTeams[i]).isDummy)
+    //                continue;
+    //            if(DataMode.getEscortSafeTeam(idServerSafeTeams[i]).idServerPlayer != DataMode.myPlayer.idServer)
+    //                continue;
+    //            result = DataMode.getEscortSafeTeam(idServerSafeTeams[i]);
+    //            break;
+    //        }
+    //        return result;
+    //    }
+    //}
+
+    public InfoEscortSafeTeam getMySafeTeam(AgentNet agent) {
+        InfoEscortSafeTeam result = null;
+        for( int i = 0; i < idServerSafeTeams.Count; i++ )
+        {
+            if( null == agent.dataMode.getEscortSafeTeam( idServerSafeTeams[ i ] ) )
+                continue;
+            //if( agent.dataMode.getEscortSafeTeam( idServerSafeTeams[ i ] ).isDummy )
+            //    continue;
+            if( agent.dataMode.getEscortSafeTeam( idServerSafeTeams[ i ] ).idServerPlayer != agent.dataMode.myPlayer.idServer )
+                continue;
+            result = agent.dataMode.getEscortSafeTeam( idServerSafeTeams[ i ] );
+            break;
+        }
+        return result;
+    }
+
+	/// 是否为无人防守的空矿
+    //public bool isEmpty
+    //{
+    //    get
+    //    {
+    //        bool result = true;
+    //        for(int i = 0; i < idServerSafeTeams.Count; i++)
+    //        {
+    //            if(null == DataMode.getEscortSafeTeam(idServerSafeTeams[i]))
+    //                continue;
+    //            result = false;
+    //            break;
+    //        }
+    //        return result;
+    //    }
+    //}
+    /*
+	/// 最小 护送 等级
+	public int lvMin
+	{
+		get
+		{
+			int result = int.MaxValue;
+			for(int i = 0; i < idServerSafeTeams.Count; i++)
+			{
+				if(null == DataMode.getEscortSafeTeam(idServerSafeTeams[i]))
+					continue;
+				result = Mathf.Min(result, DataMode.getEscortSafeTeam(idServerSafeTeams[i]).lv);
+			}
+			if(result == int.MaxValue)
+				result = ManagerCsv.getSystem(InfoSystem.CARDTEAM).lv;
+			return result;
+		}
+	}
+     */
+	/// 计算当前时间商队应该产生的收获（只计算当中的主角）
+	
+	
+
+}
+/// 守矿队伍信息 还有其他玩家信息(不存server中)
+public class InfoEscortSafeTeam
+{
+	/// 我进行护送时间戳
+	public double timeStamp;
+	/// 护送的serverid (基本无用)
+	public uint idServerPlayer;
+	public string name = "NULL";
+	public int lv = 1;
+	public uint fighting;
+
+
+	public ulong idServerTeam;
+	public uint idSession;
+	/// 登陆的服务器
+	public uint idLoginServer;
+
+	public List<ulong> idServerTeamHeroList = new List<ulong>();
+	public ulong idServerBeast;
+	/// 掠夺这个商队的时候 展示 0未打，1正在打，2已打败
+	public int type;
+	/// 查看是否模拟信息
+	//public bool isDummy{get{return idLoginServer != DataMode.idLoginServer;}}
+	/// 获得 信息
+    /*
+	public InfoPlayer getPlayer()
+	{
+		if(isDummy)
+			return DataMode.getPlayer(DataMode.dummyEscortPlayer(idServerPlayer));
+		return DataMode.getPlayer(idServerPlayer);
+	}
+     */
+    /*
+	/// 获得 队伍
+	public List<InfoHero> getTeam()
+	{
+		List<InfoHero> result = new List<InfoHero>();
+		foreach(ulong idServerHero in idServerTeamHeroList)
+		{
+			if(idServerHero <= 0)
+				continue;
+			if(isDummy)
+				result.Add(DataMode.getHero(DataMode.dummyEscortHero(idServerHero)));
+			else
+				result.Add(DataMode.getHero(idServerHero));
+		}
+		return result;
+	}
+     */
+	/// 是否在阵法中
+	public bool isInTeam(ulong sIDServerHero)
+	{
+		//if(isDummy)
+		//	return false;
+		return idServerTeamHeroList.IndexOf(sIDServerHero) != -1;
+	}
+	/// 获得 队长
+    //public InfoHero getTeamLeader()
+    //{
+    //    if(idServerTeamHeroList.Count <= 0)
+    //        return null;
+    //    //if(isDummy)
+    //    //	return DataMode.getHero(DataMode.dummyEscortHero(idServerTeamHeroList[0]));
+    //    return DataMode.getHero(idServerTeamHeroList[0]);
+    //}
+	/// 获得我的魂兽
+    //public InfoBeast getTeamBeast()
+    //{
+    //    //if(isDummy)
+    //    //	return DataMode.getBeast(DataMode.dummyEscortBeast(idServerBeast));
+    //    return DataMode.getBeast(idServerBeast);
+
+    //}
+}
+
+
+/// 我护送 的信息 （不存server中）
+public class InfoEscort
+{
+    /// 我护送的 信息
+    public List<ulong> idServerEscortSafe = new List<ulong>();
+
+    /// 获得这个角色所在队伍中（0表示没有在队伍中）
+    //public ulong getHeroInTeam( ulong sIDServerHero )
+    //{
+    //    ulong idServerTeamResult = 0;
+    //    if( sIDServerHero > 0 )
+    //    {
+    //        for( int index = 0; index < idServerEscortSafe.Count; index++ )
+    //        {
+    //            if( null == DataMode.getEscortSafe( idServerEscortSafe[ index ] ) )
+    //                continue;
+    //            if( null == DataMode.getEscortSafe( idServerEscortSafe[ index ] ).mySafeTeam )
+    //                continue;
+    //            if( -1 == DataMode.getEscortSafe( idServerEscortSafe[ index ] ).mySafeTeam.getTeam().IndexOf( DataMode.getHero( sIDServerHero ) ) )
+    //                continue;
+    //            idServerTeamResult = DataMode.getEscortSafe( idServerEscortSafe[ index ] ).mySafeTeam.idServerTeam;
+    //            break;
+    //        }
+    //    }
+    //    return idServerTeamResult;
+
+    //}
+    /// 是否有空闲英雄
+    //public bool isHasFreeHero
+    //{
+    //    get
+    //    {
+    //        bool result = false;
+    //        List<InfoHero> infoHeroList = DataMode.myPlayer.infoHeroList.getHeros();
+    //        for( int index = 0; index < infoHeroList.Count; index++ )
+    //        {
+    //            if( null == infoHeroList[ index ] )
+    //                continue;
+    //            if( infoHeroList[ index ].lv < ManagerCsv.getAttribute().escortSafeLimitLv )
+    //                continue;
+    //            if( 0 != getHeroInTeam( infoHeroList[ index ].idServer ) )
+    //                continue;
+    //            result = true;
+    //            break;
+    //        }
+    //        return result;
+    //    }
+    //}
+    /// 我掠夺护送 信息
+    public ulong idServerEscortRob;
+    public ulong idServerEscortSearch;
+    public double timeStampSearch;
+    public double timeStampRob;
+    /// 面包信息
+    public int bread;
+    public double breadTimeStamp;
+    public int breadBuyCnt;
+    /// 剩余搜商队次数
+    public int searchCount;
+
+    /// 我前去掠夺的时候基友信息
+    public ulong idServerArms;
+    public bool isArmsInTeam;
+
+}

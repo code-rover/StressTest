@@ -69,6 +69,31 @@ public class DataMode
             return null;
         return _serverFB[ idServer ];
     }
+
+
+    /// 护送 信息
+    public InfoEscort infoEscort = new InfoEscort();
+
+    /// 护送 队伍信息
+    public  Dictionary<ulong, InfoEscortSafe> _serverEscortSafe = new Dictionary<ulong, InfoEscortSafe>();
+    public Dictionary<ulong, InfoEscortSafeTeam> _serverEscortSafeTeam = new Dictionary<ulong, InfoEscortSafeTeam>();
+
+    /// 护送 信息
+    public InfoEscortSafe getEscortSafe( ulong sIDServer )
+    {
+        if( _serverEscortSafe.ContainsKey( sIDServer ) )
+            return _serverEscortSafe[ sIDServer ];
+        return null;
+    }
+    /// 护送 队伍信息
+    public InfoEscortSafeTeam getEscortSafeTeam( ulong sIDServerTeam )
+    {
+        if( _serverEscortSafeTeam.ContainsKey( sIDServerTeam ) )
+            return _serverEscortSafeTeam[ sIDServerTeam ];
+        return null;
+    }
+
+
 }
 
 

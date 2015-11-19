@@ -5,6 +5,7 @@ using robot.client.common;
 using System.Diagnostics;
 using System.Threading;
 using System.Timers;
+using System.Reflection;
 
 namespace net.unity3d
 {
@@ -17,6 +18,8 @@ namespace net.unity3d
         public DataMode dataMode = new DataMode();
 
         public Transceiver trans = null;
+
+        
 
         public AgentNet()              
         {
@@ -278,7 +281,18 @@ namespace net.unity3d
 
         public bool send( IProtocal pro )
         {
-            Logger.Info( "======> " + this._account + "  " + pro.Message + " time: " + GUtil.getTimeMs() );
+            FieldInfo fi = pro.GetType().GetField( "uiListen" );
+
+            uint uiListen = 0; 
+            if( fi != null)
+            {
+                uiListen = ( uint ) fi.GetValue( pro );    
+            }
+            Logger.Info( "======> " + this._account + "  " + pro.Message + "  uiListen: " + uiListen + "  time: " + GUtil.getTimeMs() );
+
+            //if(uiListen > 0) {
+            //    robot.Program.diffTime[ uiListen ] = GUtil.getMS();
+            //}
 
             if( pro.Message >= 200 && pro.Message <= 1999 )
             {
@@ -355,10 +369,17 @@ namespace net.unity3d
             _AccountSer = null;
             _LoginSer = null;
             _XmanLogic = null;
+
+            conned = false;
         }
+
+        public bool conned;
 
         public bool isLogicConnected()
         {
+            if( _XmanLogic == null )
+                return true;
+
             return _XmanLogic.isConnected();
         }
 
@@ -444,6 +465,13 @@ namespace net.unity3d
         //魂侠抽测试
         private Queue<Action> lucky_soul_queue = new Queue<Action>();
 
+        //商队
+        private Queue<Action> escort_queue = new Queue<Action>();
+
+        //公会
+        private Queue<Action> union_queue = new Queue<Action>();
+        
+
         /// account返回
         public void recvAccountServer( ArgsEvent args )
         {
@@ -503,7 +531,7 @@ namespace net.unity3d
             //Logger.Info( "player IdLead: " + playerInfo. sPlayerBaseInfo.uiIdLead );
             Logger.Info( "player name: " + playerInfo.sPlayerBaseInfo.getMasterName() );
             Logger.Info( "player idServer: " + playerInfo.sPlayerBaseInfo.uiIdMaster );
-            Logger.Info( "player vip: " + playerInfo.sPlayerBaseInfo.uiVip );
+            //Logger.Info( "player vip: " + playerInfo.sPlayerBaseInfo. );
             Logger.Info( "player exp: " + playerInfo.sPlayerBaseInfo.luiExp );
             Logger.Info( "player power: " + playerInfo.sLeadPowerInfo.usPower );
             Logger.Info( "=========================================" );
@@ -606,7 +634,7 @@ namespace net.unity3d
 
             Action task2 = () =>
             {
-                this.LuckySoulStart(10000, ( UtilListenerEvent evt ) =>
+                this.LuckySoulStart(1, ( UtilListenerEvent evt ) =>
                 {
                     this.doNext();
                 } );
@@ -732,30 +760,62 @@ namespace net.unity3d
                 } );
             };
 
+            Action task18 = () =>
+            {
+                this.escortStart( () =>
+                {
+                    this.doNext();
+                } );
+            };
+
+            Action task19 = () =>
+            {
+                this.unionStart( () =>
+                {
+                    this.doNext();
+                } );
+            };
+
               
             Action endAction = null;
             endAction = () =>
             {
                 Logger.Info( "loop end" );
 
-                // for next loop
+                //this.close();
+                //// for next loop
                 //this.taskQueueClear();
 
-                //this.addTask( task1 );   //email
+                ////this.addTask( task1 );   //email
                 //this.addTask( task2 );   //LuckySoul
-                //this.addTask( task3 );   //SMoneyShop
-                //this.addTask( task4 );
-                //this.addTask( task5 );
-                //this.addTask( task6 );
-                //this.addTask( task7 );     //hero
-                //this.addTask( task8 );     //petLvUp
-                //this.addTask( task9 );     //Equip
-                //this.addTask( task10 );    //Stone
-                //this.addTask( task11 );    //EquipUp
-                //this.addTask( task12 );    //EquipCom
-                //this.addTask( task13 );    //Skill 
+                ////this.addTask( task3 );   //SMoneyShop
+                ////this.addTask( task4 );
+                ////this.addTask( task5 );
+
+                ////this.addTask( task7 );     //hero
+                ////this.addTask( task8 );     //petLvUp
+                ////this.addTask( task9 );     //Equip
+                ////this.addTask( task10 );    //Stone
+                ////this.addTask( task11 );    //EquipUp
+                ////this.addTask( task12 );    //EquipCom
+                ////this.addTask( task13 );    //Skill 
                 ////this.addTask( task14 );  //世界聊天
-                ////this.addTask( task15 );    //pk
+
+                //this.addTask( task16 );    //fb
+                //this.addTask( task6 );     //fb sweep
+                //this.addTask( task15 );    //竞技场pk
+
+                //this.addTask( task17 );    //pk
+                //this.addTask( task18 );      //escort
+                //this.addTask( task18 );      //escort
+                //this.addTask( task18 );      //escort
+                //this.addTask( task18 );      //escort
+                //this.addTask( task18 );      //escort
+                //this.addTask( task18 );      //escort
+                //this.addTask( task18 );      //escort
+                //this.addTask( task18 );      //escort
+                //this.addTask( task18 );      //escort
+                //this.addTask( task18 );      //escort
 
                 //this.addTask( endAction );   //add end action
 
@@ -764,26 +824,36 @@ namespace net.unity3d
 
             this.taskQueueClear();
 
-            //this.addTask( task1 );   //email
+            ////this.addTask( task1 );   //email
             //this.addTask( task2 );   //LuckySoul
             //this.addTask( task3 );   //SMoneyShop
             //this.addTask( task4 );
-            //this.addTask( task5 );
+            ////this.addTask( task5 );
             
-            //this.addTask( task7 );     //hero
-            //this.addTask( task8 );     //petLvUp
-            //this.addTask( task9 );     //Equip
-            //this.addTask( task10 );    //Stone
-            //this.addTask( task11 );    //EquipUp
-            //this.addTask( task12 );    //EquipCom
+            ////this.addTask( task7 );     //hero
+            ////this.addTask( task8 );     //petLvUp
+            ////this.addTask( task9 );     //Equip
+            ////this.addTask( task10 );    //Stone
+            ////this.addTask( task11 );    //EquipUp
+            ////this.addTask( task12 );    //EquipCom
             //this.addTask( task13 );    //Skill 
-            //this.addTask( task14 );  //世界聊天
+            ////this.addTask( task14 );  //世界聊天
 
-            this.addTask( task16 );    //fb
-            this.addTask( task6 );     //fb sweep
-            this.addTask( task15 );    //竞技场pk
-            
+            //this.addTask( task16 );    //fb
+            //this.addTask( task6 );     //fb sweep
+            //this.addTask( task15 );    //竞技场pk
+
             //this.addTask( task17 );    //pk
+            //this.addTask( task18 );      //escort
+            //this.addTask( task18 );      //escort
+            //this.addTask( task18 );      //escort
+            //this.addTask( task18 );      //escort
+            //this.addTask( task18 );      //escort
+            //this.addTask( task18 );      //escort
+            //this.addTask( task18 );      //escort
+            //this.addTask( task18 );      //escort
+            //this.addTask( task18 );      //escort
+            this.addTask( task19 );        //union
 
             this.addTask( endAction );   //add end action
 
@@ -2085,6 +2155,122 @@ namespace net.unity3d
 
             } );  //sendHeroUpdateBag
             
+        }
+
+        //商队
+        private void escortStart( Action _cb )
+        {
+            this.escort_queue.Clear();
+
+            //搜索商队
+            this.trans.sendEscortFindRob( ( UtilListenerEvent evt0 ) =>
+            {
+                RM2C_ESCORT_FIND_GROUP recv = ( RM2C_ESCORT_FIND_GROUP ) evt0.eventArgs;
+
+                //当前正在进攻的 商队信息
+                this.trans.sendEscortDataRobInfo( ( UtilListenerEvent evt1 ) =>  //C2RM_ESCORT_BEAT_GROUP
+                {
+                    RM2C_ESCORT_BEAT_GROUP recv1 = ( RM2C_ESCORT_BEAT_GROUP ) evt1.eventArgs;
+
+                    bool canAttack = false;
+                    //防守队伍
+                    foreach( SEscortTeamShowBase item in recv1.EscortInfo.vctTeamShow )
+                    {
+                        if(item.cType == 0 && item.luiIdETid > 0) {   //可以攻打的队伍  
+                            canAttack = true;
+                            ulong tid = item.luiIdETid;    //upvalue
+                            uint tsid = item.uiSessionId;
+                            Action action = () =>
+                            {
+                                //GOTO
+                                this.trans.sendEscortRobIn(tid, ( UtilListenerEvent evt2 ) =>
+                                {
+                                    RM2C_ESCORT_GO_TO recv2 = ( RM2C_ESCORT_GO_TO ) evt2.eventArgs;
+
+                                    if( recv2.iResult == 1 )
+                                    {
+                                        this.trans.sendEscortCombatStart();
+                                        this.trans.sendEscortCombatEnd(true, 0, ( UtilListenerEvent evt3 ) =>
+                                        {
+                                            RM2C_ESCORT_PK_OVER recv3 = ( RM2C_ESCORT_PK_OVER ) evt3.eventArgs;
+
+                                            //LEAVE
+                                            this.trans.sendEscortRobOut( ( UtilListenerEvent evt5 ) =>
+                                            {
+                                                RM2C_ESCORT_LEAVE recv5 = ( RM2C_ESCORT_LEAVE ) evt5.eventArgs;
+
+                                                //this.trans.sendEscortGiveUp(0, ( UtilListenerEvent evt6 ) =>
+                                                //{
+                                                    Action next = this.escort_queue.Dequeue();
+                                                    next();
+                                                //} );
+
+
+                                            } );
+                                        } );
+                                    }
+                                    else   //goto failed, just skip it and do next task in the queue
+                                    {
+                                        Action next = this.escort_queue.Dequeue();
+                                        next();    
+                                    }
+
+                                } ); //sendEscortRobIn
+                            };
+
+                            this.escort_queue.Enqueue( action );
+                        }
+
+                    }; //foreach
+
+                    if( canAttack )
+                    {
+                        
+                    }
+
+                    Action end = () =>
+                    {
+                        Logger.Info( "escort end" );
+                        _cb();
+                    };
+                    this.escort_queue.Enqueue( end );
+
+                    Action firstAction = this.escort_queue.Dequeue();
+                    firstAction();
+
+                } ); //sendEscortDataRobInfo
+
+            } );  //sendEscortFindRob
+        }
+
+
+
+        //公会
+        private void unionStart( Action _cb )
+        {
+            //this.union_queue.Clear();
+
+            //创建公会
+            this.trans.sendCreateUnion("union_" + this._account, 1, 1, 0, 1,  ( UtilListenerEvent evt0 ) =>
+            {
+                RM2C_CREATE_GAME_UNION recv = ( RM2C_CREATE_GAME_UNION ) evt0.eventArgs;
+
+                if(recv.iResult == 1) {
+                    
+                    //解散公会
+                    this.trans.sendDisbandUnion((int)recv.m_stGUInfo.m_uiID, ( UtilListenerEvent evt1 ) =>  
+                    {
+                        RM2C_DISBAND_GAME_UNION recv1 = ( RM2C_DISBAND_GAME_UNION ) evt1.eventArgs;
+
+                        _cb();
+                    } ); //sendDisbandUnion
+                }
+                else  //failed
+                {
+                    _cb();
+                }
+
+            } );  //sendCreateUnion
         }
     }
   
