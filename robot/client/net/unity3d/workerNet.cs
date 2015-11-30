@@ -23,7 +23,6 @@ namespace net.unity3d
 
 		// 单独出啦，管理所有包。在逻辑层取包，调用回调。
         private Queue<NodeQueue> _recv_queue = new Queue<NodeQueue>();
-		private static workerNet _self;
 		
 		/// <summary>
         /// 回调事件加入链表

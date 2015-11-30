@@ -290,9 +290,9 @@ namespace net.unity3d
             }
             Logger.Info( "======> " + this._account + "  " + pro.Message + "  uiListen: " + uiListen + "  time: " + GUtil.getTimeMs() );
 
-            //if(uiListen > 0) {
-            //    robot.Program.diffTime[ uiListen ] = GUtil.getMS();
-            //}
+            if(uiListen > 0) {
+                robot.Program.sendTime[ uiListen ] = GUtil.getMS();
+            }
 
             if( pro.Message >= 200 && pro.Message <= 1999 )
             {
@@ -2251,26 +2251,28 @@ namespace net.unity3d
             //this.union_queue.Clear();
 
             //创建公会
-            this.trans.sendCreateUnion("union_" + this._account, 1, 1, 0, 1,  ( UtilListenerEvent evt0 ) =>
+            this.trans.sendCreateUnion("union_" + this._account, 1, 1, 0, 1, (UtilListenerEvent evt0) =>
             {
-                RM2C_CREATE_GAME_UNION recv = ( RM2C_CREATE_GAME_UNION ) evt0.eventArgs;
+                RM2C_CREATE_GAME_UNION recv = (RM2C_CREATE_GAME_UNION)evt0.eventArgs;
 
-                if(recv.iResult == 1) {
-                    
+                if (recv.iResult == 504 || recv.iResult == 1)
+                {
                     //解散公会
-                    this.trans.sendDisbandUnion((int)recv.m_stGUInfo.m_uiID, ( UtilListenerEvent evt1 ) =>  
+                    this.trans.sendDisbandUnion((int)recv.m_stGUInfo.m_uiID, (UtilListenerEvent evt1) =>
                     {
-                        RM2C_DISBAND_GAME_UNION recv1 = ( RM2C_DISBAND_GAME_UNION ) evt1.eventArgs;
+                        RM2C_DISBAND_GAME_UNION recv1 = (RM2C_DISBAND_GAME_UNION)evt1.eventArgs;
 
                         _cb();
-                    } ); //sendDisbandUnion
+                    }); //sendDisbandUnion
                 }
                 else  //failed
                 {
                     _cb();
                 }
 
-            } );  //sendCreateUnion
+                //_cb();
+
+            });  //sendCreateUnion
         }
     }
   

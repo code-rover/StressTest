@@ -32,7 +32,6 @@ namespace net.unity3d
 		private string _account;
 		private string _password = null;
 		private string _macid;
-		private string _accountStr;
 		
         private TcpClient _tcp_client;
 

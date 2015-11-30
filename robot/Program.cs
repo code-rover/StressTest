@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Threading;
 using System.Collections.Generic;
+using System.Collections.Concurrent;
+using System.Timers;
 using net;
 using net.unity3d;
 using utils;
@@ -9,24 +11,26 @@ namespace robot
 {
     class Program
     {
-        public static int COUNT = 100;//1000;
+        public static int COUNT          = 4000;//1000;     //玩家人数
+        public static int LOGIN_INTERVAL = 500;            //玩家登陆时间间隔(ms)
+        public static int ACCOUNT_START  = 1000;            //开始帐号
 
-        public static string ACCOUNT_IP = "192.168.1.2";
-        //public static string ACCOUNT_IP = "120.26.14.229";//"192.168.1.2";
-        public static short ACCOUNT_PORT = 11111;
-        //public static short ACCOUNT_PORT = 9000; //11111;
-        public static int    ACCOUNT_TIMEOUT = 30;
+        //public static string ACCOUNT_IP = "192.168.1.2";
+        public static string ACCOUNT_IP = "120.26.14.229";  //"192.168.1.2";
+        //public static short ACCOUNT_PORT = 11111;
+        public static short ACCOUNT_PORT = 9000; //11111;
+        public static int   ACCOUNT_TIMEOUT = 30;
 
-        public static string LOGIN_IP = "192.168.1.2";
-        //public static string LOGIN_IP = "120.26.14.229"; //;"192.168.1.2";
-        public static short LOGIN_PORT = 12007;
-        //public static short LOGIN_PORT = 9005; //;12007;
+        //public static string LOGIN_IP = "192.168.1.2";
+        public static string LOGIN_IP = "120.26.14.229"; //;"192.168.1.2";
+        //public static short LOGIN_PORT = 12007;
+        public static short LOGIN_PORT = 9005; //;12007;
         public static int    LOGIN_TIMEOUT = 30;
 
         public static AgentNet[] agents = new AgentNet[COUNT];
 
-        //public static Dictionary<uint, double> diffTime = new Dictionary<uint, double>();
-        //public static Dictionary<int, double> timeStat = new Dictionary<int, double>();
+        public static ConcurrentDictionary<uint, double> sendTime = new ConcurrentDictionary<uint, double>();
+        public static ConcurrentDictionary<int, List<int>> timeStat = new ConcurrentDictionary<int, List<int>>();
 
         static void Main( string[] args )
         {
@@ -39,45 +43,49 @@ namespace robot
 
             Console.WriteLine( "StartTime: " + GUtil.getTimeMs() );
 
-            int account = 1000;    //开始帐号
+            int account = ACCOUNT_START;    //开始帐号
             string passwd = "123";
             string macId = "";
  
             // create AgentNets
             for(int i=0; i<agents.Length; i++)
             {
-                agents[i] = new AgentNet();
-                agents[i].close();
-                agents[i].setLoginInfo( account.ToString(), passwd, macId, ( byte ) 1, "", "", "" );
-                agents[i].connectAccountServer( ACCOUNT_IP, ACCOUNT_PORT, ACCOUNT_TIMEOUT);
+                int rand = (i + 1) * LOGIN_INTERVAL; //new System.Random().Next(500, 5000);
 
-                //agents[ i ].conned = true;
-                initListener(agents[i]);  //消息监听注册
+                System.Timers.Timer timer = new System.Timers.Timer();
+                timer.Interval = rand;
+                timer.AutoReset = false; //once
+                timer.Enabled = true;
+
+                int c = i;
+                int _account = account;
+                timer.Elapsed += new ElapsedEventHandler((object source, System.Timers.ElapsedEventArgs e) =>
+                {
+                    agents[c] = new AgentNet();
+                    agents[c].close();
+                    agents[c].setLoginInfo(_account.ToString(), passwd, macId, (byte)1, "", "", "");
+                    agents[c].connectAccountServer(ACCOUNT_IP, ACCOUNT_PORT, ACCOUNT_TIMEOUT);
+
+                    initListener(agents[c]);  //消息监听注册    
+                });
+                
                 account++;
             }
             
             while( true )
             {
                 //Thread.Sleep( 500 );
-                int canStopNum = 0;
                 foreach( AgentNet agent in agents )
                 {
-//                     if( !agent.conned )
-//                     {
-//                         canStopNum++;
-//                         continue;
-//                     }
-                    agent.tick();
+                    if (agent != null)
+                    {
+                        agent.tick();
+                    }
                 }
                 ///Logger.Debug( "----------------------------- " + GUtil.getTimeMs());
+            };
 
-//                 if( canStopNum >= agents.Length )
-//                 {
-//                     break;
-//                 }
-            }
-
-            Logger.Info("=============================================");
+            //Logger.Info("=============================================");
             //Logger.Info( "消息回应时间统计:" );
 
             //foreach(var item in robot.Program.timeStat) {

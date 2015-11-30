@@ -360,25 +360,32 @@ namespace net.unity3d
 							qn.args = args;
 
                             uint uiListen = 0;
+                            int iResult = 0;
+
                             FieldInfo fi = pro.GetType().GetField( "uiListen" );
-                            if( fi != null )
+                            FieldInfo fi2 = pro.GetType().GetField( "iResult" );
+
+                            if (fi != null && fi2 != null)
                             {
                                 uiListen = ( uint ) fi.GetValue( pro );
+                                iResult = (int)fi2.GetValue(pro);
 
-                                //if( uiListen > 0 )
-                                //{
-                                //    double sendTime = robot.Program.diffTime[ uiListen ];
-                                //    if( sendTime > 0 )
-                                //    {
-                                //        double diff = GUtil.getMS() - sendTime;
-                                //        if( diff == 0 )
-                                //        {
-                                //            double a = diff;
-                                //        }
-                                //        robot.Program.timeStat[ msg ] = diff;
-                                //        robot.Program.diffTime.Remove( uiListen );
-                                //    }
-                                //};
+                                if (uiListen > 0 && iResult == 1)
+                                {
+                                    double sendTime = robot.Program.sendTime[uiListen];
+                                    if (sendTime > 0)
+                                    {
+                                        int diff = (int)(GUtil.getMS() - sendTime);
+
+                                        if (!robot.Program.timeStat.ContainsKey(msg)) {
+                                            robot.Program.timeStat[msg] = new List<int>();    
+                                        };
+
+                                        robot.Program.timeStat[msg].Add(diff);
+
+                                        // robot.Program.sendTime.TryRemove(uiListen, v);// .TryRemove(uiListen, v);// .Remove(uiListen);
+                                    }
+                                };
                             }
 
                             Logger.Info( "<======" + " opcode: " + msg + "  uiListen: " + uiListen  + "   " + GUtil.getTimeMs() );

@@ -2121,7 +2121,7 @@ namespace net.unity3d
         public void recvFBOut( ArgsEvent args )
         {
             RM2C_LEAVE_FB recv = args.getData<RM2C_LEAVE_FB>();
-            Logger.Info(this.agent._account + " <<<<<< RM2C_LEAVE_FB " + recv.iResult + "/" + recv.usIdTown );
+            Logger.Info(this.agent._account + " RECV:RM2C_LEAVE_FB " + recv.iResult + "/" + recv.usIdTown );
             
             Dispatcher.dispatchListener( recv.uiListen, recv );
         }
@@ -2138,7 +2138,7 @@ namespace net.unity3d
         /// 副本 战斗数据结束
         public void sendFBCombatEnd( bool isWin, FunctionListenerEvent listener )
         {
-            Logger.Info(this.agent._account + " >>>>>>>:C2RM_CHECK_FB_PK_OVER >> " + "战斗数据 End >> " + isWin );
+            Logger.Info(this.agent._account + " SEND:C2RM_CHECK_FB_PK_OVER >> " + "战斗数据 End >> " + isWin );
             C2RM_CHECK_FB_PK_OVER sender = new C2RM_CHECK_FB_PK_OVER();
 
             if( isWin )
@@ -2170,7 +2170,7 @@ namespace net.unity3d
         public void recvFBCombatCheck( ArgsEvent args )
         {
             RM2C_CHECK_FB_PK recv = args.getData<RM2C_CHECK_FB_PK>();
-            Logger.Info(this.agent._account + " <<<<<<<<<<< RM2C_CHECK_FB_PK    " + recv.iResult);
+            Logger.Info(this.agent._account + " RECV:RM2C_CHECK_FB_PK    " + recv.iResult);
             /// 如果成功
             if( recv.iResult != 1 )
             {
@@ -2184,7 +2184,7 @@ namespace net.unity3d
         /// 世界boss 战斗数据开始
         public void sendPKCombatStart()
         {
-            Logger.Info(this.agent._account + " >>>>>> C2RM_CHECK_PK_BEGIN >> " + "pk 战斗数据 Begin" );
+            Logger.Info(this.agent._account + " SEND:C2RM_CHECK_PK_BEGIN >> " + "pk 战斗数据 Begin" );
             C2RM_CHECK_PK_BEGIN sender = new C2RM_CHECK_PK_BEGIN();
             sender.uiBeginTime = ( uint ) 0;
 
@@ -2240,7 +2240,7 @@ namespace net.unity3d
         /// 世界boss 战斗数据结束
         public void sendPKCombatEnd( bool isWin, FunctionListenerEvent listener )
         {
-            Logger.Info(this.agent._account + " >>>>> C2RM_CHECK_PK_OVER");
+            Logger.Info(this.agent._account + " SEND:C2RM_CHECK_PK_OVER");
             C2RM_CHECK_PK_OVER sender = new C2RM_CHECK_PK_OVER();
             sender.cIsWin = ( byte ) ( isWin ? 1 : 0 );
             sender.fStopTime = ( float ) 0;
@@ -2252,7 +2252,7 @@ namespace net.unity3d
         public void recvPKCombatResult( ArgsEvent args )
         {
             RM2C_CHECK_PK recv = args.getData<RM2C_CHECK_PK>();
-            Logger.Info(this.agent._account + " <<<<<<< RM2C_CHECK_PK  " + recv.iResult);
+            Logger.Info(this.agent._account + " RECV:RM2C_CHECK_PK  " + recv.iResult);
             if( recv.iResult != 1 )
             {
                 Logger.Error( this.agent._account + " RM2C_CHECK_PK Failed " + recv.iResult );
@@ -2264,7 +2264,7 @@ namespace net.unity3d
         /// 护送 搜索商队
         public void sendEscortFindRob( FunctionListenerEvent sListener )
         {
-            Logger.Info( this.agent._account + "  SEND:C2RM_ESCORT_FIND_GROUP" );
+            Logger.Info( this.agent._account + " SEND:C2RM_ESCORT_FIND_GROUP" );
             C2RM_ESCORT_FIND_GROUP sender = new C2RM_ESCORT_FIND_GROUP();
             sender.uiListen = Dispatcher.addListener( sListener, null);
             this.agent.send( sender );
