@@ -6,6 +6,8 @@ using System.Timers;
 using net;
 using net.unity3d;
 using utils;
+using System.Windows.Forms;
+using WindowsFormsApplication1;
 
 namespace robot
 {
@@ -27,19 +29,31 @@ namespace robot
         public static short LOGIN_PORT = 9005; //;12007;
         public static int    LOGIN_TIMEOUT = 30;
 
-        public static AgentNet[] agents = new AgentNet[COUNT];
+        public static bool isQuit = false;
+
+        public static List<string> task_list = new List<string>();
+
+        public static AgentNet[] agents;
 
         public static ConcurrentDictionary<uint, double> sendTime = new ConcurrentDictionary<uint, double>();
         public static ConcurrentDictionary<int, List<int>> timeStat = new ConcurrentDictionary<int, List<int>>();
 
+        [STAThread]
         static void Main( string[] args )
         {
+            Application.Run(new Form1());
+
+            if (isQuit)
+                return;
+
             Logger.Info("===========================================================");
             Logger.Info( "    Stress Test" );
             Logger.Info( "===========================================================" );
             Logger.Info("");
 
             load_csv();  //加载csv
+
+            agents = new AgentNet[COUNT];
 
             Console.WriteLine( "StartTime: " + GUtil.getTimeMs() );
 
@@ -50,7 +64,9 @@ namespace robot
             // create AgentNets
             for(int i=0; i<agents.Length; i++)
             {
-                int rand = (i + 1) * LOGIN_INTERVAL; //new System.Random().Next(500, 5000);
+                int rand = i * LOGIN_INTERVAL; //new System.Random().Next(500, 5000);
+                if (rand == 0)
+                    rand = 100;
 
                 System.Timers.Timer timer = new System.Timers.Timer();
                 timer.Interval = rand;

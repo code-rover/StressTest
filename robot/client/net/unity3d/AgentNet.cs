@@ -752,14 +752,7 @@ namespace net.unity3d
                 } );
             };
 
-            Action task17 = () =>
-            {
-                this.pkStart(() =>
-                {
-                    this.doNext();
-                } );
-            };
-
+           
             Action task18 = () =>
             {
                 this.escortStart( () =>
@@ -776,53 +769,38 @@ namespace net.unity3d
                 } );
             };
 
-              
+            Dictionary<string, Action> actionIndex = new Dictionary<string, Action>();
+            actionIndex.Add("task1", task1);   //打开所有邮件
+            actionIndex.Add("task2", task2);   //魂匣
+            actionIndex.Add("task3", task3);   //金币商店
+            actionIndex.Add("task4", task4);   //pk商店
+            actionIndex.Add("task6", task6);   //副本扫荡
+            actionIndex.Add("task7", task7);   //英雄升星
+            actionIndex.Add("task8", task8);   //吃经验药升级
+            actionIndex.Add("task9", task9);   //穿装备
+            actionIndex.Add("task10", task10); //镶钻
+            actionIndex.Add("task11", task11); //装备强化
+            actionIndex.Add("task12", task12); //装备合成
+            actionIndex.Add("task13", task13); //技能升级
+            actionIndex.Add("task14", task14); //世界聊天
+            actionIndex.Add("task15", task15); //竞技场
+            actionIndex.Add("task16", task16); //打副本
+            actionIndex.Add("task18", task18); //商队
+            actionIndex.Add("task19", task19); //公会
+
             Action endAction = null;
             endAction = () =>
             {
-                Logger.Info( "loop end" );
-
-                //this.close();
-                //// for next loop
-                //this.taskQueueClear();
-
-                ////this.addTask( task1 );   //email
-                //this.addTask( task2 );   //LuckySoul
-                ////this.addTask( task3 );   //SMoneyShop
-                ////this.addTask( task4 );
-                ////this.addTask( task5 );
-
-                ////this.addTask( task7 );     //hero
-                ////this.addTask( task8 );     //petLvUp
-                ////this.addTask( task9 );     //Equip
-                ////this.addTask( task10 );    //Stone
-                ////this.addTask( task11 );    //EquipUp
-                ////this.addTask( task12 );    //EquipCom
-                ////this.addTask( task13 );    //Skill 
-                ////this.addTask( task14 );  //世界聊天
-
-                //this.addTask( task16 );    //fb
-                //this.addTask( task6 );     //fb sweep
-                //this.addTask( task15 );    //竞技场pk
-
-                //this.addTask( task17 );    //pk
-                //this.addTask( task18 );      //escort
-                //this.addTask( task18 );      //escort
-                //this.addTask( task18 );      //escort
-                //this.addTask( task18 );      //escort
-                //this.addTask( task18 );      //escort
-                //this.addTask( task18 );      //escort
-                //this.addTask( task18 );      //escort
-                //this.addTask( task18 );      //escort
-                //this.addTask( task18 );      //escort
-                //this.addTask( task18 );      //escort
-
-                //this.addTask( endAction );   //add end action
-
-                //this.doNext();  //start task
+                Logger.Info( "task done." );
             };
 
             this.taskQueueClear();
+
+            foreach(string item in robot.Program.task_list) {
+                Action action = actionIndex[item];
+                if(action != null)
+                    this.addTask(action);  
+            }
 
             ////this.addTask( task1 );   //email
             //this.addTask( task2 );   //LuckySoul
@@ -845,15 +823,7 @@ namespace net.unity3d
 
             //this.addTask( task17 );    //pk
             //this.addTask( task18 );      //escort
-            //this.addTask( task18 );      //escort
-            //this.addTask( task18 );      //escort
-            //this.addTask( task18 );      //escort
-            //this.addTask( task18 );      //escort
-            //this.addTask( task18 );      //escort
-            //this.addTask( task18 );      //escort
-            //this.addTask( task18 );      //escort
-            //this.addTask( task18 );      //escort
-            this.addTask( task19 );        //union
+            //this.addTask( task19 );        //union
 
             this.addTask( endAction );   //add end action
 
