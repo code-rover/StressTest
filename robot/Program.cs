@@ -29,6 +29,7 @@ namespace robot
         public static short LOGIN_PORT = 9005; //;12007;
         public static int    LOGIN_TIMEOUT = 30;
 
+        public static string PASSWORD = "123";
         public static bool isQuit = false;
 
         public static List<string> task_list = new List<string>();
@@ -58,7 +59,7 @@ namespace robot
             Console.WriteLine( "StartTime: " + GUtil.getTimeMs() );
 
             int account = ACCOUNT_START;    //开始帐号
-            string passwd = "123";
+            //string passwd = "123";
             string macId = "";
  
             // create AgentNets
@@ -79,7 +80,7 @@ namespace robot
                 {
                     agents[c] = new AgentNet();
                     agents[c].close();
-                    agents[c].setLoginInfo(_account.ToString(), passwd, macId, (byte)1, "", "", "");
+                    agents[c].setLoginInfo(_account.ToString(), PASSWORD, macId, (byte)1, "", "", "");
                     agents[c].connectAccountServer(ACCOUNT_IP, ACCOUNT_PORT, ACCOUNT_TIMEOUT);
 
                     initListener(agents[c]);  //消息监听注册    

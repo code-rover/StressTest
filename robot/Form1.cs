@@ -82,6 +82,7 @@ namespace WindowsFormsApplication1
 
             String ac_start = ini.get("ac_start");
             String login_count = ini.get("login_count");
+            String password = ini.get("password");
             String interval = ini.get("interval");
 
             if (ac_ip != null)
@@ -103,6 +104,9 @@ namespace WindowsFormsApplication1
 
             if (login_count != null)
                 this.text_login_count.Text = login_count;
+
+            if (password != null)
+                this.text_password.Text = password;
 
             if (interval != null)
                 this.text_interval.Text = interval;
@@ -142,6 +146,7 @@ namespace WindowsFormsApplication1
 
             int ac_start = 1000;
             int login_count = 1;
+            string password = "123";
             int interval = 1000;  //ms
 
             try
@@ -156,6 +161,7 @@ namespace WindowsFormsApplication1
 
                 ac_start = int.Parse(this.text_ac_start.Text);
                 login_count = int.Parse(this.text_login_count.Text);
+                password = this.text_password.Text;
                 interval = int.Parse(this.text_interval.Text);
             }
             catch
@@ -175,6 +181,7 @@ namespace WindowsFormsApplication1
 
             ini.set("ac_start", ac_start.ToString());
             ini.set("login_count", login_count.ToString());
+            ini.set("password", password);
             ini.set("interval", interval.ToString());
             ini.save();
 
@@ -190,6 +197,7 @@ namespace WindowsFormsApplication1
 
             robot.Program.ACCOUNT_START = ac_start;
             robot.Program.COUNT = login_count;
+            robot.Program.PASSWORD = password;
             robot.Program.LOGIN_INTERVAL = interval;
 
             this.Dispose();

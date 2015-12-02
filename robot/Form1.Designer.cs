@@ -55,6 +55,8 @@
             this.label10 = new System.Windows.Forms.Label();
             this.listBox1 = new System.Windows.Forms.ListBox();
             this.btn_quit = new System.Windows.Forms.Button();
+            this.text_password = new System.Windows.Forms.TextBox();
+            this.label11 = new System.Windows.Forms.Label();
             this.ac_server.SuspendLayout();
             this.groupBox1.SuspendLayout();
             this.groupBox2.SuspendLayout();
@@ -63,7 +65,7 @@
             // 
             // button_go
             // 
-            this.button_go.Location = new System.Drawing.Point(188, 571);
+            this.button_go.Location = new System.Drawing.Point(176, 616);
             this.button_go.Name = "button_go";
             this.button_go.Size = new System.Drawing.Size(75, 23);
             this.button_go.TabIndex = 0;
@@ -73,7 +75,7 @@
             // 
             // text_login_count
             // 
-            this.text_login_count.Location = new System.Drawing.Point(100, 44);
+            this.text_login_count.Location = new System.Drawing.Point(100, 43);
             this.text_login_count.Name = "text_login_count";
             this.text_login_count.Size = new System.Drawing.Size(137, 21);
             this.text_login_count.TabIndex = 1;
@@ -81,7 +83,7 @@
             // label1
             // 
             this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(9, 47);
+            this.label1.Location = new System.Drawing.Point(9, 46);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(65, 12);
             this.label1.TabIndex = 2;
@@ -99,7 +101,7 @@
             // label3
             // 
             this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(9, 74);
+            this.label3.Location = new System.Drawing.Point(9, 95);
             this.label3.Name = "label3";
             this.label3.Size = new System.Drawing.Size(89, 12);
             this.label3.TabIndex = 6;
@@ -107,7 +109,7 @@
             // 
             // text_interval
             // 
-            this.text_interval.Location = new System.Drawing.Point(100, 71);
+            this.text_interval.Location = new System.Drawing.Point(100, 92);
             this.text_interval.Name = "text_interval";
             this.text_interval.Size = new System.Drawing.Size(137, 21);
             this.text_interval.TabIndex = 5;
@@ -247,6 +249,8 @@
             // 
             // groupBox2
             // 
+            this.groupBox2.Controls.Add(this.text_password);
+            this.groupBox2.Controls.Add(this.label11);
             this.groupBox2.Controls.Add(this.label3);
             this.groupBox2.Controls.Add(this.text_login_count);
             this.groupBox2.Controls.Add(this.label1);
@@ -255,7 +259,7 @@
             this.groupBox2.Controls.Add(this.text_ac_start);
             this.groupBox2.Location = new System.Drawing.Point(12, 222);
             this.groupBox2.Name = "groupBox2";
-            this.groupBox2.Size = new System.Drawing.Size(257, 100);
+            this.groupBox2.Size = new System.Drawing.Size(257, 126);
             this.groupBox2.TabIndex = 16;
             this.groupBox2.TabStop = false;
             this.groupBox2.Text = "登陆参数";
@@ -265,18 +269,18 @@
             this.groupBox3.Controls.Add(this.treeView1);
             this.groupBox3.Controls.Add(this.label10);
             this.groupBox3.Controls.Add(this.listBox1);
-            this.groupBox3.Location = new System.Drawing.Point(12, 328);
+            this.groupBox3.Location = new System.Drawing.Point(12, 354);
             this.groupBox3.Name = "groupBox3";
-            this.groupBox3.Size = new System.Drawing.Size(257, 234);
+            this.groupBox3.Size = new System.Drawing.Size(257, 252);
             this.groupBox3.TabIndex = 17;
             this.groupBox3.TabStop = false;
             this.groupBox3.Text = "任务";
             // 
             // treeView1
             // 
-            this.treeView1.Location = new System.Drawing.Point(146, 20);
+            this.treeView1.Location = new System.Drawing.Point(142, 20);
             this.treeView1.Name = "treeView1";
-            this.treeView1.Size = new System.Drawing.Size(105, 214);
+            this.treeView1.Size = new System.Drawing.Size(95, 220);
             this.treeView1.TabIndex = 3;
             // 
             // label10
@@ -292,15 +296,15 @@
             // 
             this.listBox1.FormattingEnabled = true;
             this.listBox1.ItemHeight = 12;
-            this.listBox1.Location = new System.Drawing.Point(6, 20);
+            this.listBox1.Location = new System.Drawing.Point(15, 20);
             this.listBox1.Margin = new System.Windows.Forms.Padding(3, 3, 3, 10);
             this.listBox1.Name = "listBox1";
-            this.listBox1.Size = new System.Drawing.Size(92, 400);
+            this.listBox1.Size = new System.Drawing.Size(92, 220);
             this.listBox1.TabIndex = 1;
             // 
             // btn_quit
             // 
-            this.btn_quit.Location = new System.Drawing.Point(18, 571);
+            this.btn_quit.Location = new System.Drawing.Point(27, 616);
             this.btn_quit.Name = "btn_quit";
             this.btn_quit.Size = new System.Drawing.Size(75, 23);
             this.btn_quit.TabIndex = 18;
@@ -308,11 +312,27 @@
             this.btn_quit.UseVisualStyleBackColor = true;
             this.btn_quit.Click += new System.EventHandler(this.btn_quit_Click);
             // 
+            // text_password
+            // 
+            this.text_password.Location = new System.Drawing.Point(100, 68);
+            this.text_password.Name = "text_password";
+            this.text_password.Size = new System.Drawing.Size(137, 21);
+            this.text_password.TabIndex = 9;
+            // 
+            // label11
+            // 
+            this.label11.AutoSize = true;
+            this.label11.Location = new System.Drawing.Point(9, 71);
+            this.label11.Name = "label11";
+            this.label11.Size = new System.Drawing.Size(65, 12);
+            this.label11.TabIndex = 10;
+            this.label11.Text = "帐号密码：";
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(285, 623);
+            this.ClientSize = new System.Drawing.Size(285, 649);
             this.ControlBox = false;
             this.Controls.Add(this.btn_quit);
             this.Controls.Add(this.groupBox3);
@@ -365,6 +385,8 @@
         private System.Windows.Forms.Label label10;
         private System.Windows.Forms.Button btn_quit;
         private System.Windows.Forms.TreeView treeView1;
+        private System.Windows.Forms.TextBox text_password;
+        private System.Windows.Forms.Label label11;
     }
 }
 
